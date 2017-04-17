@@ -54,9 +54,10 @@ func (p *Parser) ParseModule() (fn *ast.FnExpr, err error) {
 
 	// parse the module
 	nodes := p.nodeSequence(ast.EOF)
+	p.expect(ast.EOF)
 
 	params := []*ast.IdentExpr{}
-	return &ast.FnExpr{nil, params, &ast.Block{nodes}, 0, 0, nil}, err
+	return &ast.FnExpr{nil, params, &ast.Block{nil, nodes, nil}, 0, 0, nil}, err
 }
 
 func (p *Parser) parseExpression() (expr ast.Expr, err error) {
@@ -88,27 +89,27 @@ func (p *Parser) parseExpression() (expr ast.Expr, err error) {
 // waiting to be parsed
 func (p *Parser) statement() ast.Stmt {
 
-	switch {
+	switch p.cur.Kind {
 
-	case p.accept(ast.CONST):
+	case ast.CONST:
 		return p.constStmt()
 
-	case p.accept(ast.LET):
+	case ast.LET:
 		return p.letStmt()
 
-	case p.accept(ast.IF):
+	case ast.IF:
 		return p.ifStmt()
 
-	case p.accept(ast.WHILE):
+	case ast.WHILE:
 		return p.whileStmt()
 
-	case p.accept(ast.BREAK):
+	case ast.BREAK:
 		return p.breakStmt()
 
-	case p.accept(ast.CONTINUE):
+	case ast.CONTINUE:
 		return p.continueStmt()
 
-	case p.accept(ast.RETURN):
+	case ast.RETURN:
 		return p.returnStmt()
 
 	default:
@@ -118,30 +119,31 @@ func (p *Parser) statement() ast.Stmt {
 
 func (p *Parser) constStmt() *ast.Const {
 
+	token := p.expect(ast.CONST)
 	sym := p.expect(ast.IDENT)
 	p.expect(ast.EQ)
 	ident := &ast.IdentExpr{sym, nil}
-
 	expr := p.expression()
-	p.expect(ast.SEMICOLON)
+	semi := p.expect(ast.SEMICOLON)
 
-	return &ast.Const{ident, expr}
+	return &ast.Const{token, ident, expr, semi}
 }
 
 func (p *Parser) letStmt() *ast.Let {
 
+	token := p.expect(ast.LET)
 	sym := p.expect(ast.IDENT)
 	p.expect(ast.EQ)
 	ident := &ast.IdentExpr{sym, nil}
-
 	expr := p.expression()
-	p.expect(ast.SEMICOLON)
+	semi := p.expect(ast.SEMICOLON)
 
-	return &ast.Let{ident, expr}
+	return &ast.Let{token, ident, expr, semi}
 }
 
 func (p *Parser) ifStmt() *ast.If {
 
+	token := p.expect(ast.IF)
 	cond := p.expression()
 	then := p.block()
 
@@ -150,54 +152,56 @@ func (p *Parser) ifStmt() *ast.If {
 		switch p.cur.Kind {
 
 		case ast.LBRACE:
-			return &ast.If{cond, then, p.block()}
+			return &ast.If{token, cond, then, p.block()}
 
 		case ast.IF:
-			p.expect(ast.IF)
-			return &ast.If{cond, then, p.ifStmt()}
+			return &ast.If{token, cond, then, p.ifStmt()}
 
 		default:
 			panic(p.unexpected())
 		}
 
 	} else {
-		return &ast.If{cond, then, nil}
+		return &ast.If{token, cond, then, nil}
 	}
 }
 
 func (p *Parser) whileStmt() *ast.While {
 
-	return &ast.While{p.expression(), p.block()}
+	return &ast.While{p.expect(ast.WHILE), p.expression(), p.block()}
 }
 
 func (p *Parser) breakStmt() *ast.Break {
-
-	p.expect(ast.SEMICOLON)
-	return &ast.Break{}
+	return &ast.Break{
+		p.expect(ast.BREAK),
+		p.expect(ast.SEMICOLON)}
 }
 
 func (p *Parser) continueStmt() *ast.Continue {
-
-	p.expect(ast.SEMICOLON)
-	return &ast.Continue{}
+	return &ast.Continue{
+		p.expect(ast.CONTINUE),
+		p.expect(ast.SEMICOLON)}
 }
 
 func (p *Parser) returnStmt() *ast.Return {
 
-	if p.accept(ast.SEMICOLON) {
-		return &ast.Return{nil}
+	token := p.expect(ast.RETURN)
+
+	if p.cur.Kind == ast.SEMICOLON {
+		return &ast.Return{token, nil, p.expect(ast.SEMICOLON)}
 	} else {
 		val := p.expression()
-		p.expect(ast.SEMICOLON)
-		return &ast.Return{val}
+		return &ast.Return{token, val, p.expect(ast.SEMICOLON)}
 	}
 }
 
 // parse a sequence of nodes that are wrapped in curly braces
 func (p *Parser) block() *ast.Block {
 
-	p.expect(ast.LBRACE)
-	return &ast.Block{p.nodeSequence(ast.RBRACE)}
+	lbrace := p.expect(ast.LBRACE)
+	nodes := p.nodeSequence(ast.RBRACE)
+	rbrace := p.expect(ast.RBRACE)
+	return &ast.Block{lbrace, nodes, rbrace}
 }
 
 // Parse a sequence of statements or expressions.
@@ -206,7 +210,7 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 	nodes := []ast.Node{}
 
 	for {
-		if p.accept(endKind) {
+		if p.cur.Kind == endKind {
 			break
 		}
 

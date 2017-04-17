@@ -360,6 +360,27 @@ func okExprPos(t *testing.T, p *Parser, expectBegin ast.Pos, expectEnd ast.Pos) 
 	}
 }
 
+func okPos(t *testing.T, p *Parser, expectBegin ast.Pos, expectEnd ast.Pos) {
+
+	mod, err := p.ParseModule()
+	if err != nil {
+		t.Error(err, " != nil")
+	}
+
+	if len(mod.Body.Nodes) != 1 {
+		t.Error("node count", len(mod.Body.Nodes))
+	}
+
+	n := mod.Body.Nodes[0]
+	if n.Begin() != expectBegin {
+		t.Error(n.Begin(), " != ", expectBegin)
+	}
+
+	if n.End() != expectEnd {
+		t.Error(n.End(), " != ", expectEnd)
+	}
+}
+
 func TestPos(t *testing.T) {
 	p := newParser("1.23")
 	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 4})
@@ -394,8 +415,33 @@ func TestPos(t *testing.T) {
 	p = newParser("a.b = 2")
 	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 7})
 
-	//func (*FnExpr) exprMarker()     {}
+	p = newParser(`
+fn() { 
+    return x; 
+}`)
+	okExprPos(t, p, ast.Pos{2, 1}, ast.Pos{4, 1})
 
-	//expr, _ := p.parseExpression()
-	//fmt.Println(expr.Begin(), expr.End())
+	p = newParser("const a = 1;")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 12})
+
+	p = newParser("let a = 1\n;")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{2, 1})
+
+	p = newParser("break;")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 6})
+
+	p = newParser("\n  continue;")
+	okPos(t, p, ast.Pos{2, 3}, ast.Pos{2, 11})
+
+	p = newParser("return;")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 7})
+
+	p = newParser("while true { 42; \n}")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{2, 1})
+
+	p = newParser("if 0 {}")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 7})
+
+	p = newParser("if 0 {} else {}")
+	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 15})
 }

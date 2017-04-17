@@ -28,8 +28,8 @@ type (
 	Node interface {
 		fmt.Stringer
 		Traverse(Visitor)
-		//Begin() Pos // inclusive
-		//End() Pos // inclusive
+		Begin() Pos
+		End() Pos
 	}
 
 	Stmt interface {
@@ -40,10 +40,6 @@ type (
 	Expr interface {
 		Node
 		exprMarker()
-
-		// TODO temporary
-		Begin() Pos
-		End() Pos
 	}
 )
 
@@ -54,38 +50,52 @@ type (
 	// statement
 
 	Block struct {
-		Nodes []Node
+		LBrace *Token
+		Nodes  []Node
+		RBrace *Token
 	}
 
 	Const struct {
-		Ident *IdentExpr
-		Val   Expr
+		Token     *Token
+		Ident     *IdentExpr
+		Val       Expr
+		Semicolon *Token
 	}
 
 	Let struct {
-		Ident *IdentExpr
-		Val   Expr
+		Token     *Token
+		Ident     *IdentExpr
+		Val       Expr
+		Semicolon *Token
 	}
 
 	If struct {
-		Cond Expr
-		Then *Block
-		Else Stmt
+		Token *Token
+		Cond  Expr
+		Then  *Block
+		Else  Stmt
 	}
 
 	While struct {
-		Cond Expr
-		Body *Block
+		Token *Token
+		Cond  Expr
+		Body  *Block
 	}
 
 	Break struct {
+		Token     *Token
+		Semicolon *Token
 	}
 
 	Continue struct {
+		Token     *Token
+		Semicolon *Token
 	}
 
 	Return struct {
-		Val Expr
+		Token     *Token
+		Val       Expr
+		Semicolon *Token
 	}
 
 	//---------------------
@@ -117,7 +127,7 @@ type (
 	}
 
 	FnExpr struct {
-		First *Token
+		Token *Token
 
 		FormalParams []*IdentExpr
 		Body         *Block
@@ -129,15 +139,15 @@ type (
 	}
 
 	InvokeExpr struct {
-		Last *Token
+		RParen *Token
 
 		Operand Expr
 		Params  []Expr
 	}
 
 	ObjExpr struct {
-		First *Token
-		Last  *Token
+		Token  *Token
+		RBrace *Token
 
 		Keys   []*Token
 		Values []Expr
@@ -191,6 +201,36 @@ func (*PutExpr) exprMarker()    {}
 //--------------------------------------------------------------
 // Begin, End
 
+func (n *Block) Begin() Pos { return n.LBrace.Position }
+func (n *Block) End() Pos   { return n.RBrace.Position }
+
+func (n *Const) Begin() Pos { return n.Token.Position }
+func (n *Const) End() Pos   { return n.Semicolon.Position }
+
+func (n *Let) Begin() Pos { return n.Token.Position }
+func (n *Let) End() Pos   { return n.Semicolon.Position }
+
+func (n *If) Begin() Pos { return n.Token.Position }
+func (n *If) End() Pos {
+	if n.Else == nil {
+		return n.Then.End()
+	} else {
+		return n.Else.End()
+	}
+}
+
+func (n *While) Begin() Pos { return n.Token.Position }
+func (n *While) End() Pos   { return n.Body.End() }
+
+func (n *Break) Begin() Pos { return n.Token.Position }
+func (n *Break) End() Pos   { return n.Semicolon.Position }
+
+func (n *Continue) Begin() Pos { return n.Token.Position }
+func (n *Continue) End() Pos   { return n.Semicolon.Position }
+
+func (n *Return) Begin() Pos { return n.Token.Position }
+func (n *Return) End() Pos   { return n.Semicolon.Position }
+
 func (n *Assignment) Begin() Pos { return n.Ident.Begin() }
 func (n *Assignment) End() Pos   { return n.Val.End() }
 
@@ -214,14 +254,14 @@ func (n *IdentExpr) End() Pos {
 		n.Symbol.Position.Col + len(n.Symbol.Text) - 1}
 }
 
-func (n *FnExpr) Begin() Pos { return n.First.Position }
-func (n *FnExpr) End() Pos   { return Pos{} /*TODO*/ }
+func (n *FnExpr) Begin() Pos { return n.Token.Position }
+func (n *FnExpr) End() Pos   { return n.Body.End() }
 
 func (n *InvokeExpr) Begin() Pos { return n.Operand.Begin() }
-func (n *InvokeExpr) End() Pos   { return n.Last.Position }
+func (n *InvokeExpr) End() Pos   { return n.RParen.Position }
 
-func (n *ObjExpr) Begin() Pos { return n.First.Position }
-func (n *ObjExpr) End() Pos   { return n.Last.Position }
+func (n *ObjExpr) Begin() Pos { return n.Token.Position }
+func (n *ObjExpr) End() Pos   { return n.RBrace.Position }
 
 func (n *ThisExpr) Begin() Pos { return n.Token.Position }
 func (n *ThisExpr) End() Pos {
