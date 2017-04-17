@@ -28,8 +28,8 @@ type (
 	Node interface {
 		fmt.Stringer
 		Traverse(Visitor)
-		//Begin() Pos
-		//End() Pos
+		//Begin() Pos // inclusive
+		//End() Pos // inclusive
 	}
 
 	Stmt interface {
@@ -40,6 +40,10 @@ type (
 	Expr interface {
 		Node
 		exprMarker()
+
+		// TODO temporary
+		Begin() Pos
+		End() Pos
 	}
 )
 
@@ -113,6 +117,8 @@ type (
 	}
 
 	FnExpr struct {
+		First *Token
+
 		FormalParams []*IdentExpr
 		Body         *Block
 
@@ -123,11 +129,16 @@ type (
 	}
 
 	InvokeExpr struct {
+		Last *Token
+
 		Operand Expr
 		Params  []Expr
 	}
 
 	ObjExpr struct {
+		First *Token
+		Last  *Token
+
 		Keys   []*Token
 		Values []Expr
 		// The index of the obj expression in the local variable array.
@@ -137,6 +148,7 @@ type (
 	}
 
 	ThisExpr struct {
+		Token    *Token
 		Variable *Variable
 	}
 
@@ -175,6 +187,54 @@ func (*ObjExpr) exprMarker()    {}
 func (*ThisExpr) exprMarker()   {}
 func (*SelectExpr) exprMarker() {}
 func (*PutExpr) exprMarker()    {}
+
+//--------------------------------------------------------------
+// Begin, End
+
+func (n *Assignment) Begin() Pos { return n.Ident.Begin() }
+func (n *Assignment) End() Pos   { return n.Val.End() }
+
+func (n *BinaryExpr) Begin() Pos { return n.Lhs.Begin() }
+func (n *BinaryExpr) End() Pos   { return n.Rhs.End() }
+
+func (n *UnaryExpr) Begin() Pos { return n.Op.Position }
+func (n *UnaryExpr) End() Pos   { return n.Operand.End() }
+
+func (n *BasicExpr) Begin() Pos { return n.Token.Position }
+func (n *BasicExpr) End() Pos {
+	return Pos{
+		n.Token.Position.Line,
+		n.Token.Position.Col + len(n.Token.Text) - 1}
+}
+
+func (n *IdentExpr) Begin() Pos { return n.Symbol.Position }
+func (n *IdentExpr) End() Pos {
+	return Pos{
+		n.Symbol.Position.Line,
+		n.Symbol.Position.Col + len(n.Symbol.Text) - 1}
+}
+
+func (n *FnExpr) Begin() Pos { return n.First.Position }
+func (n *FnExpr) End() Pos   { return Pos{} /*TODO*/ }
+
+func (n *InvokeExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *InvokeExpr) End() Pos   { return n.Last.Position }
+
+func (n *ObjExpr) Begin() Pos { return n.First.Position }
+func (n *ObjExpr) End() Pos   { return n.Last.Position }
+
+func (n *ThisExpr) Begin() Pos { return n.Token.Position }
+func (n *ThisExpr) End() Pos {
+	return Pos{
+		n.Token.Position.Line,
+		n.Token.Position.Col + len("this") - 1}
+}
+
+func (n *SelectExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *SelectExpr) End() Pos   { return n.Key.Position }
+
+func (n *PutExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *PutExpr) End() Pos   { return n.Value.End() }
 
 //--------------------------------------------------------------
 // string

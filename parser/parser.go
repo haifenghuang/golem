@@ -56,7 +56,7 @@ func (p *Parser) ParseModule() (fn *ast.FnExpr, err error) {
 	nodes := p.nodeSequence(ast.EOF)
 
 	params := []*ast.IdentExpr{}
-	return &ast.FnExpr{params, &ast.Block{nodes}, 0, 0, nil}, err
+	return &ast.FnExpr{nil, params, &ast.Block{nodes}, 0, 0, nil}, err
 }
 
 func (p *Parser) parseExpression() (expr ast.Expr, err error) {
@@ -120,10 +120,11 @@ func (p *Parser) constStmt() *ast.Const {
 
 	sym := p.expect(ast.IDENT)
 	p.expect(ast.EQ)
+	ident := &ast.IdentExpr{sym, nil}
+
 	expr := p.expression()
 	p.expect(ast.SEMICOLON)
 
-	ident := &ast.IdentExpr{sym, nil}
 	return &ast.Const{ident, expr}
 }
 
@@ -131,10 +132,11 @@ func (p *Parser) letStmt() *ast.Let {
 
 	sym := p.expect(ast.IDENT)
 	p.expect(ast.EQ)
+	ident := &ast.IdentExpr{sym, nil}
+
 	expr := p.expression()
 	p.expect(ast.SEMICOLON)
 
-	ident := &ast.IdentExpr{sym, nil}
 	return &ast.Let{ident, expr}
 }
 
@@ -227,11 +229,10 @@ func (p *Parser) expression() ast.Expr {
 
 	if p.cur.Kind == ast.IDENT && p.next.Kind == ast.EQ {
 
-		sym := p.cur
-		p.consume()
-		p.consume()
-		ident := &ast.IdentExpr{sym, nil}
+		sym := p.expect(ast.IDENT)
+		p.expect(ast.EQ)
 
+		ident := &ast.IdentExpr{sym, nil}
 		return &ast.Assignment{ident, p.expression()}
 
 	} else {
@@ -314,7 +315,8 @@ func (p *Parser) primaryExpr() ast.Expr {
 		switch p.cur.Kind {
 
 		case ast.LPAREN:
-			prm = &ast.InvokeExpr{prm, p.actualParams()}
+			actual, last := p.actualParams()
+			prm = &ast.InvokeExpr{last, prm, actual}
 
 		case ast.DOT:
 			p.expect(ast.DOT)
@@ -348,16 +350,13 @@ func (p *Parser) primary() ast.Expr {
 		return p.identExpr()
 
 	case ast.THIS:
-		p.consume()
-		return &ast.ThisExpr{}
+		return &ast.ThisExpr{p.consume(), nil}
 
 	case ast.FN:
-		p.consume()
-		return p.fnExpr()
+		return p.fnExpr(p.consume())
 
 	case ast.OBJ:
-		p.consume()
-		return p.objExpr()
+		return p.objExpr(p.consume())
 
 	default:
 		return p.literalExpr()
@@ -370,11 +369,12 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 	return &ast.IdentExpr{tok, nil}
 }
 
-func (p *Parser) fnExpr() ast.Expr {
+func (p *Parser) fnExpr(first *ast.Token) ast.Expr {
 
 	p.expect(ast.LPAREN)
 
 	params := []*ast.IdentExpr{}
+
 	switch p.cur.Kind {
 
 	case ast.IDENT:
@@ -403,13 +403,15 @@ func (p *Parser) fnExpr() ast.Expr {
 		panic(p.unexpected())
 	}
 
-	return &ast.FnExpr{params, p.block(), 0, 0, nil}
+	blk := p.block()
+	return &ast.FnExpr{first, params, blk, 0, 0, nil}
 }
 
-func (p *Parser) objExpr() ast.Expr {
+func (p *Parser) objExpr(first *ast.Token) ast.Expr {
 
 	keys := []*ast.Token{}
 	values := []ast.Expr{}
+	var last *ast.Token
 
 	p.expect(ast.LBRACE)
 
@@ -432,7 +434,7 @@ func (p *Parser) objExpr() ast.Expr {
 				values = append(values, p.expression())
 
 			case ast.RBRACE:
-				p.consume()
+				last = p.consume()
 				break loop
 
 			default:
@@ -441,13 +443,13 @@ func (p *Parser) objExpr() ast.Expr {
 		}
 
 	case ast.RBRACE:
-		p.consume()
+		last = p.consume()
 
 	default:
 		panic(p.unexpected())
 	}
 
-	return &ast.ObjExpr{keys, values, -1}
+	return &ast.ObjExpr{first, last, keys, values, -1}
 }
 
 func (p *Parser) literalExpr() ast.Expr {
@@ -465,7 +467,7 @@ func (p *Parser) literalExpr() ast.Expr {
 	}
 }
 
-func (p *Parser) actualParams() []ast.Expr {
+func (p *Parser) actualParams() ([]ast.Expr, *ast.Token) {
 
 	p.expect(ast.LPAREN)
 
@@ -473,8 +475,8 @@ func (p *Parser) actualParams() []ast.Expr {
 	switch p.cur.Kind {
 
 	case ast.RPAREN:
-		p.consume()
-		return params
+		last := p.consume()
+		return params, last
 
 	default:
 		params = append(params, p.expression())
@@ -486,8 +488,8 @@ func (p *Parser) actualParams() []ast.Expr {
 				params = append(params, p.expression())
 
 			case ast.RPAREN:
-				p.consume()
-				return params
+				last := p.consume()
+				return params, last
 
 			default:
 				panic(p.unexpected())
@@ -519,8 +521,10 @@ func (p *Parser) expect(kind ast.TokenKind) *ast.Token {
 }
 
 // consume the current token
-func (p *Parser) consume() {
+func (p *Parser) consume() *ast.Token {
+	result := p.cur
 	p.cur, p.next = p.next, p.advance()
+	return result
 }
 
 func (p *Parser) advance() *ast.Token {

@@ -16,7 +16,7 @@ package parser
 
 import (
 	//"fmt"
-	//"golem/ast"
+	"golem/ast"
 	"golem/scanner"
 	"testing"
 )
@@ -342,4 +342,60 @@ func TestPrimarySuffix(t *testing.T) {
 
 	p = newParser("a.b().c")
 	ok_expr(t, p, "a.b().c")
+}
+
+func okExprPos(t *testing.T, p *Parser, expectBegin ast.Pos, expectEnd ast.Pos) {
+
+	expr, err := p.parseExpression()
+	if err != nil {
+		t.Error(err, " != nil")
+	}
+
+	if expr.Begin() != expectBegin {
+		t.Error(expr.Begin(), " != ", expectBegin)
+	}
+
+	if expr.End() != expectEnd {
+		t.Error(expr.End(), " != ", expectEnd)
+	}
+}
+
+func TestPos(t *testing.T) {
+	p := newParser("1.23")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 4})
+
+	p = newParser("-1")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 2})
+
+	p = newParser("null + true")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 11})
+
+	p = newParser("a1")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 2})
+
+	p = newParser("a = \n3")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{2, 1})
+
+	p = newParser("a(b,c)")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 6})
+
+	p = newParser("obj{}")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 5})
+
+	p = newParser("obj { a: 1 }")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 12})
+
+	p = newParser("   this")
+	okExprPos(t, p, ast.Pos{1, 4}, ast.Pos{1, 7})
+
+	p = newParser("a.b")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 3})
+
+	p = newParser("a.b = 2")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 7})
+
+	//func (*FnExpr) exprMarker()     {}
+
+	//expr, _ := p.parseExpression()
+	//fmt.Println(expr.Begin(), expr.End())
 }
