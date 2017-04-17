@@ -415,40 +415,55 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 `)
 
 	source = `
-obj {
-    x: 1,
-    y: 2,
+let a = obj {
+    x: 8,
+    y: 5,
     plus:  fn() { return this.x + this.y; },
     minus: fn() { return this.x - this.y; }
 };
+let b = a.plus();
+let c = a.minus();
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
-	ok(t, anl, errors, `
-FnExpr(numLocals:1 numCaptures:0 parentCaptures:[])
-.   Block
-.   .   ObjExpr([x, y, plus, minus],0)
-.   .   .   BasicExpr(INT,"1")
-.   .   .   BasicExpr(INT,"2")
-.   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
-.   .   .   .   Block
-.   .   .   .   .   Return
-.   .   .   .   .   .   BinaryExpr("+")
-.   .   .   .   .   .   .   SelectExpr(x)
-.   .   .   .   .   .   .   .   ThisExpr((0,true,false))
-.   .   .   .   .   .   .   SelectExpr(y)
-.   .   .   .   .   .   .   .   ThisExpr((0,true,false))
-.   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
-.   .   .   .   Block
-.   .   .   .   .   Return
-.   .   .   .   .   .   BinaryExpr("-")
-.   .   .   .   .   .   .   SelectExpr(x)
-.   .   .   .   .   .   .   .   ThisExpr((0,true,false))
-.   .   .   .   .   .   .   SelectExpr(y)
-.   .   .   .   .   .   .   .   ThisExpr((0,true,false))
-`)
 
-	//fmt.Println(source)
-	//fmt.Println(ast.Dump(anl.Module()))
-	//fmt.Println(errors)
+	//	fmt.Println(source)
+	//	fmt.Println(ast.Dump(anl.Module()))
+	//	fmt.Println(errors)
+
+	ok(t, anl, errors, `
+FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   Let
+.   .   .   IdentExpr(a,(1,false,false))
+.   .   .   ObjExpr([x, y, plus, minus],0)
+.   .   .   .   BasicExpr(INT,"8")
+.   .   .   .   BasicExpr(INT,"5")
+.   .   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
+.   .   .   .   .   Block
+.   .   .   .   .   .   Return
+.   .   .   .   .   .   .   BinaryExpr("+")
+.   .   .   .   .   .   .   .   SelectExpr(x)
+.   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
+.   .   .   .   .   .   .   .   SelectExpr(y)
+.   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
+.   .   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
+.   .   .   .   .   Block
+.   .   .   .   .   .   Return
+.   .   .   .   .   .   .   BinaryExpr("-")
+.   .   .   .   .   .   .   .   SelectExpr(x)
+.   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
+.   .   .   .   .   .   .   .   SelectExpr(y)
+.   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
+.   .   Let
+.   .   .   IdentExpr(b,(2,false,false))
+.   .   .   InvokeExpr
+.   .   .   .   SelectExpr(plus)
+.   .   .   .   .   IdentExpr(a,(1,false,false))
+.   .   Let
+.   .   .   IdentExpr(c,(3,false,false))
+.   .   .   InvokeExpr
+.   .   .   .   SelectExpr(minus)
+.   .   .   .   .   IdentExpr(a,(1,false,false))
+`)
 }

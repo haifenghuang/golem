@@ -167,7 +167,7 @@ func (s *scope) this() *ast.Variable {
 
 	// now call get(), from the original scope, to trigger captures in
 	// any intervening functions.
-	if _, ok := s.get("this"); !ok {
+	if v, ok = s.get("this"); !ok {
 		panic("call to 'this' failed")
 	}
 

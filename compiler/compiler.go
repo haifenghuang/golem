@@ -126,13 +126,16 @@ func (c *compiler) Visit(node ast.Node) {
 		c.visitInvoke(t)
 
 	case *ast.ObjExpr:
-		c.visitObj(t)
+		c.visitObjExpr(t)
+
+	case *ast.ThisExpr:
+		c.visitThisExpr(t)
 
 	case *ast.SelectExpr:
-		c.visitSelect(t)
+		c.visitSelectExpr(t)
 
 	case *ast.PutExpr:
-		c.visitPut(t)
+		c.visitPutExpr(t)
 
 	default:
 		t.Traverse(c)
@@ -409,7 +412,7 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 	c.push(g.INVOKE, high, low)
 }
 
-func (c *compiler) visitObj(obj *ast.ObjExpr) {
+func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 
 	// create ObjDef for keys
 	def := &g.ObjDef{make([]string, len(obj.Keys), len(obj.Keys))}
@@ -422,6 +425,13 @@ func (c *compiler) visitObj(obj *ast.ObjExpr) {
 	// create un-initialized obj
 	c.push(g.NEW_OBJ)
 
+	// if the obj is referenced by a 'this', then store local
+	if obj.LocalThisIndex != -1 {
+		high, low := index(obj.LocalThisIndex)
+		c.push(g.DUP)
+		c.push(g.STORE_LOCAL, high, low)
+	}
+
 	// eval each value
 	for _, v := range obj.Values {
 		c.Visit(v)
@@ -431,14 +441,24 @@ func (c *compiler) visitObj(obj *ast.ObjExpr) {
 	c.push(g.INIT_OBJ, high, low)
 }
 
-func (c *compiler) visitSelect(s *ast.SelectExpr) {
+func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
+	v := this.Variable
+	high, low := index(v.Index)
+	if v.IsCapture {
+		c.push(g.LOAD_CAPTURE, high, low)
+	} else {
+		c.push(g.LOAD_LOCAL, high, low)
+	}
+}
+
+func (c *compiler) visitSelectExpr(s *ast.SelectExpr) {
 	c.Visit(s.Operand)
 	high, low := index(len(c.pool))
 	c.pool = append(c.pool, g.Str(s.Key.Text))
 	c.push(g.SELECT, high, low)
 }
 
-func (c *compiler) visitPut(p *ast.PutExpr) {
+func (c *compiler) visitPutExpr(p *ast.PutExpr) {
 	c.Visit(p.Operand)
 	c.Visit(p.Value)
 	high, low := index(len(c.pool))

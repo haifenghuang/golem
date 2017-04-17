@@ -420,4 +420,24 @@ x.a = 6;
 
 	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"a": g.Int(6)}))
 	ok_ref(t, mod.Locals[1], g.Int(5))
+
+	source = `
+let a = obj {
+    x: 8,
+    y: 5,
+    plus:  fn() { return this.x + this.y; },
+    minus: fn() { return this.x - this.y; }
+};
+let b = a.plus();
+let c = a.minus();
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[2], g.Int(13))
+	ok_ref(t, mod.Locals[3], g.Int(3))
 }

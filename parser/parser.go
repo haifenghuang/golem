@@ -309,26 +309,28 @@ func (p *Parser) unaryExpr() ast.Expr {
 func (p *Parser) primaryExpr() ast.Expr {
 	prm := p.primary()
 
-	// look for suffixes: Invoke, Select, Index
-	switch p.cur.Kind {
+	for {
+		// look for suffixes: Invoke, Select, Index
+		switch p.cur.Kind {
 
-	case ast.LPAREN:
-		return &ast.InvokeExpr{prm, p.actualParams()}
+		case ast.LPAREN:
+			prm = &ast.InvokeExpr{prm, p.actualParams()}
 
-	case ast.DOT:
-		p.expect(ast.DOT)
-		key := p.expect(ast.IDENT)
+		case ast.DOT:
+			p.expect(ast.DOT)
+			key := p.expect(ast.IDENT)
 
-		// TODO: is it correct to parse PutExpr here, rather than in p.expression()?
-		// Something doesn't seem quite right.
-		if p.accept(ast.EQ) {
-			return &ast.PutExpr{prm, key, p.expression()}
-		} else {
-			return &ast.SelectExpr{prm, key}
+			// TODO: is it correct to parse PutExpr here, rather than in p.expression()?
+			// Something doesn't seem quite right.
+			if p.accept(ast.EQ) {
+				prm = &ast.PutExpr{prm, key, p.expression()}
+			} else {
+				prm = &ast.SelectExpr{prm, key}
+			}
+
+		default:
+			return prm
 		}
-
-	default:
-		return prm
 	}
 }
 

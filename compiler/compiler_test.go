@@ -15,9 +15,9 @@
 package compiler
 
 import (
-	"fmt"
+	//"fmt"
 	"golem/analyzer"
-	"golem/ast"
+	//"golem/ast"
 	g "golem/core"
 	"golem/parser"
 	"golem/scanner"
@@ -757,14 +757,8 @@ let x = obj { a: 0 };
 let y = x.a;
 x.a = 3;
 `
-
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
-	fmt.Println("----------------------------")
-	fmt.Println(source)
-	fmt.Println("----------------------------")
-	fmt.Printf("%s\n", ast.Dump(anl.Module()))
-	fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
@@ -789,5 +783,81 @@ x.a = 3;
 					g.LOAD_LOCAL, 0, 0,
 					g.LOAD_CONST, 0, 2,
 					g.PUT, 0, 3,
+					g.RETURN}}}})
+
+	source = `
+let a = obj {
+    x: 8,
+    y: 5,
+    plus:  fn() { return this.x + this.y; },
+    minus: fn() { return this.x - this.y; }
+};
+let b = a.plus();
+let c = a.minus();
+`
+	anl = newAnalyzer(source)
+	mod = NewCompiler(anl).Compile()
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println("----------------------------")
+	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
+	//fmt.Println(mod)
+
+	ok(t, mod, &g.Module{
+		[]g.Value{
+			g.Int(8),
+			g.Int(5),
+			g.Str("plus"),
+			g.Str("minus"),
+			g.Str("x"),
+			g.Str("y"),
+			g.Str("x"),
+			g.Str("y")},
+		nil,
+		[]*g.ObjDef{
+			&g.ObjDef{[]string{"x", "y", "plus", "minus"}}},
+		[]*g.Template{
+			&g.Template{0, 0, 4,
+				[]byte{
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.DUP,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.NEW_FUNC, 0, 1,
+					g.FUNC_LOCAL, 0, 0,
+					g.NEW_FUNC, 0, 2,
+					g.FUNC_LOCAL, 0, 0,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 1,
+					g.SELECT, 0, 2,
+					g.INVOKE, 0, 0,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.SELECT, 0, 3,
+					g.INVOKE, 0, 0,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN}},
+			&g.Template{0, 1, 0,
+				[]byte{
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.SELECT, 0, 4,
+					g.LOAD_CAPTURE, 0, 0,
+					g.SELECT, 0, 5,
+					g.ADD,
+					g.RETURN,
+					g.RETURN}},
+			&g.Template{0, 1, 0,
+				[]byte{
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.SELECT, 0, 6,
+					g.LOAD_CAPTURE, 0, 0,
+					g.SELECT, 0, 7,
+					g.SUB,
+					g.RETURN,
 					g.RETURN}}}})
 }

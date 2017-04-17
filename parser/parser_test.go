@@ -16,6 +16,7 @@ package parser
 
 import (
 	//"fmt"
+	//"golem/ast"
 	"golem/scanner"
 	"testing"
 )
@@ -330,4 +331,15 @@ func TestObj(t *testing.T) {
 
 	p = newParser("this = b")
 	fail(t, p, "Unexpected Token '=' at (1, 6)")
+}
+
+func TestPrimarySuffix(t *testing.T) {
+	p := newParser("a.b()")
+	ok_expr(t, p, "a.b()")
+
+	p = newParser("a.b.c")
+	ok_expr(t, p, "a.b.c")
+
+	p = newParser("a.b().c")
+	ok_expr(t, p, "a.b().c")
 }
