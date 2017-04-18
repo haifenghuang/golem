@@ -103,6 +103,7 @@ type (
 
 	Assignment struct {
 		Ident *IdentExpr
+		Op    *Token
 		Val   Expr
 	}
 
@@ -146,8 +147,7 @@ type (
 	}
 
 	ObjExpr struct {
-		Token  *Token
-		RBrace *Token
+		Token *Token
 
 		Keys   []*Token
 		Values []Expr
@@ -155,6 +155,8 @@ type (
 		// '-1' means that the obj is not referenced by a 'this', and thus
 		// is not stored in the local variable array
 		LocalThisIndex int
+
+		RBrace *Token
 	}
 
 	ThisExpr struct {

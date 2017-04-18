@@ -28,6 +28,13 @@ type Template struct {
 	NumCaptures int
 	NumLocals   int
 	OpCodes     []byte
+	OpcLines    []OpcLine
+}
+
+// OpcLine tracks which sequence of opcodes are on a given line
+type OpcLine struct {
+	OpcIndex int
+	LineNum  int
 }
 
 //---------------------------------------------------------------

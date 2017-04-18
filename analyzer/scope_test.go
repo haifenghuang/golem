@@ -114,7 +114,7 @@ Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:2
 
 func TestPlainObjScope(test *testing.T) {
 
-	obj := &ast.ObjExpr{nil, nil, -1}
+	obj := &ast.ObjExpr{nil, nil, nil, -1, nil}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
@@ -133,8 +133,8 @@ Func  defs:{} captures:{} parentCaptures:{} numLocals:0
 
 func TestThisObjScope(test *testing.T) {
 
-	obj2 := &ast.ObjExpr{nil, nil, -1}
-	obj3 := &ast.ObjExpr{nil, nil, -1}
+	obj2 := &ast.ObjExpr{nil, nil, nil, -1, nil}
+	obj3 := &ast.ObjExpr{nil, nil, nil, -1, nil}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
@@ -162,7 +162,7 @@ Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:3
 
 func TestMethodScope(test *testing.T) {
 
-	obj2 := &ast.ObjExpr{nil, nil, -1}
+	obj2 := &ast.ObjExpr{nil, nil, nil, -1, nil}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)

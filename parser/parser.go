@@ -234,10 +234,10 @@ func (p *Parser) expression() ast.Expr {
 	if p.cur.Kind == ast.IDENT && p.next.Kind == ast.EQ {
 
 		sym := p.expect(ast.IDENT)
-		p.expect(ast.EQ)
+		op := p.expect(ast.EQ)
 
 		ident := &ast.IdentExpr{sym, nil}
-		return &ast.Assignment{ident, p.expression()}
+		return &ast.Assignment{ident, op, p.expression()}
 
 	} else {
 		lhs := p.andExpr()
@@ -453,7 +453,7 @@ func (p *Parser) objExpr(first *ast.Token) ast.Expr {
 		panic(p.unexpected())
 	}
 
-	return &ast.ObjExpr{first, last, keys, values, -1}
+	return &ast.ObjExpr{first, keys, values, -1, last}
 }
 
 func (p *Parser) literalExpr() ast.Expr {

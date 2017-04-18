@@ -45,7 +45,11 @@ func ok(t *testing.T, mod *g.Module, expect *g.Module) {
 		}
 
 		if !reflect.DeepEqual(mt.OpCodes, et.OpCodes) {
-			t.Error(mod, " != ", expect)
+			t.Error("OpCodes: ", mod, " != ", expect)
+		}
+
+		if !reflect.DeepEqual(mt.OpcLines, et.OpcLines) {
+			t.Error("OpcLines: ", mod, " != ", expect)
 		}
 	}
 
@@ -97,7 +101,11 @@ func TestExpression(t *testing.T) {
 					g.ADD,
 					g.LOAD_CONST, 0, 5,
 					g.ADD,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{24, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("(2 + 3) * -4 / 10;")).Compile()
 	ok(t, mod, &g.Module{
@@ -120,9 +128,13 @@ func TestExpression(t *testing.T) {
 					g.MUL,
 					g.LOAD_CONST, 0, 3,
 					g.DIV,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{16, 0}}}}})
 
-	mod = NewCompiler(newAnalyzer("null / true + false;")).Compile()
+	mod = NewCompiler(newAnalyzer("null / true + \nfalse;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
@@ -137,7 +149,13 @@ func TestExpression(t *testing.T) {
 					g.DIV,
 					g.LOAD_FALSE,
 					g.ADD,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{4, 2},
+					g.OpcLine{5, 1},
+					g.OpcLine{6, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("'a' * 1.23e4;")).Compile()
 	ok(t, mod, &g.Module{
@@ -154,7 +172,11 @@ func TestExpression(t *testing.T) {
 					g.LOAD_CONST, 0, 0,
 					g.LOAD_CONST, 0, 1,
 					g.MUL,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{8, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("'a' == true;")).Compile()
 	ok(t, mod, &g.Module{
@@ -170,7 +192,11 @@ func TestExpression(t *testing.T) {
 					g.LOAD_CONST, 0, 0,
 					g.LOAD_TRUE,
 					g.EQ,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{6, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true != false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -183,7 +209,11 @@ func TestExpression(t *testing.T) {
 				[]byte{
 					g.LOAD_NULL,
 					g.LOAD_TRUE, g.LOAD_FALSE, g.NE,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{4, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true > false; true >= false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -197,7 +227,11 @@ func TestExpression(t *testing.T) {
 					g.LOAD_NULL,
 					g.LOAD_TRUE, g.LOAD_FALSE, g.GT,
 					g.LOAD_TRUE, g.LOAD_FALSE, g.GTE,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{7, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true < false; true <= false; true <=> false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -212,7 +246,11 @@ func TestExpression(t *testing.T) {
 					g.LOAD_TRUE, g.LOAD_FALSE, g.LT,
 					g.LOAD_TRUE, g.LOAD_FALSE, g.LTE,
 					g.LOAD_TRUE, g.LOAD_FALSE, g.CMP,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{10, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 && 3;")).Compile()
 	ok(t, mod, &g.Module{
@@ -234,7 +272,11 @@ func TestExpression(t *testing.T) {
 					g.JUMP, 0, 18,
 					g.LOAD_FALSE,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{21, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 || 3;")).Compile()
 	ok(t, mod, &g.Module{
@@ -256,12 +298,16 @@ func TestExpression(t *testing.T) {
 					g.JUMP, 0, 18,
 					g.LOAD_FALSE,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{21, 0}}}}})
 }
 
 func TestAssignment(t *testing.T) {
 
-	mod := NewCompiler(newAnalyzer("let a = 1;const b = 2;a = 3;")).Compile()
+	mod := NewCompiler(newAnalyzer("let a = 1;\nconst b = \n2;a = 3;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.Int(1),
@@ -281,7 +327,14 @@ func TestAssignment(t *testing.T) {
 					g.LOAD_CONST, 0, 2,
 					g.DUP,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{7, 3},
+					g.OpcLine{10, 2},
+					g.OpcLine{13, 3},
+					g.OpcLine{20, 0}}}}})
 }
 
 func TestShift(t *testing.T) {
@@ -322,9 +375,20 @@ func TestIf(t *testing.T) {
 					g.JUMP_FALSE, 0, 17,
 					g.LOAD_CONST, 0, 2,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{17, 0}}}}})
 
-	source = "let a = 1; if (false) { let b = 2; } else { let c = 3; } let d = 4;"
+	source = `let a = 1;
+	if (false) {
+	    let b = 2;
+	} else {
+	    let c = 3;
+	}
+	let d = 4;`
+
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
 	ok(t, mod, &g.Module{
@@ -351,10 +415,20 @@ func TestIf(t *testing.T) {
 					g.STORE_LOCAL, 0, 2,
 					g.LOAD_CONST, 0, 3,
 					g.STORE_LOCAL, 0, 3,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{7, 2},
+					g.OpcLine{11, 3},
+					g.OpcLine{17, 4},
+					g.OpcLine{20, 5},
+					g.OpcLine{26, 7},
+					g.OpcLine{32, 0}}}}})
 }
 
 func TestWhile(t *testing.T) {
+
 	source := "let a = 1; while (0 < 1) { let b = 2; }"
 	mod := NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
@@ -379,18 +453,13 @@ func TestWhile(t *testing.T) {
 					g.LOAD_CONST, 0, 3,
 					g.STORE_LOCAL, 0, 1,
 					g.JUMP, 0, 7,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{26, 0}}}}})
 
-	// source = "a = 'z'; while (0 < 1) { break; continue; b = 2; } c = 3;"
-	// anl := newAnalyzer(source)
-	// mod = NewCompiler(anl).Compile()
-	// fmt.Println("----------------------------")
-	// fmt.Println(source)
-	// fmt.Println("----------------------------")
-	// fmt.Println(ast.DumpModule(anl.Module()))
-	// fmt.Println(mod)
-
-	source = "let a = 'z'; while (0 < 1) { break; continue; let b = 2; } let c = 3;"
+	source = "let a = 'z'; while (0 < 1) \n{ break; continue; let b = 2; } let c = 3;"
 	mod = NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
@@ -419,7 +488,12 @@ func TestWhile(t *testing.T) {
 					g.JUMP, 0, 7,
 					g.LOAD_CONST, 0, 4,
 					g.STORE_LOCAL, 0, 2,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{17, 2},
+					g.OpcLine{38, 0}}}}})
 }
 
 func TestReturn(t *testing.T) {
@@ -438,9 +512,13 @@ func TestReturn(t *testing.T) {
 				[]byte{
 					g.LOAD_NULL,
 					g.RETURN,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{2, 0}}}}})
 
-	source = "let a = 1; return a - 2; a = 3;"
+	source = "let a = 1; return a \n- 2; a = 3;"
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
 
@@ -465,7 +543,14 @@ func TestReturn(t *testing.T) {
 					g.LOAD_CONST, 0, 2,
 					g.DUP,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{10, 2},
+					g.OpcLine{14, 1},
+					g.OpcLine{15, 2},
+					g.OpcLine{22, 0}}}}})
 }
 
 func TestFunc(t *testing.T) {
@@ -502,12 +587,21 @@ let b = fn(x) {
 					g.STORE_LOCAL, 0, 0,
 					g.NEW_FUNC, 0, 2,
 					g.STORE_LOCAL, 0, 1,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 0}}},
 			&g.Template{0, 0, 0,
 				[]byte{
 					g.LOAD_NULL,
 					g.LOAD_CONST, 0, 0,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{4, 0}}},
 			&g.Template{1, 0, 2,
 				[]byte{
 					g.LOAD_NULL,
@@ -520,14 +614,23 @@ let b = fn(x) {
 					g.LOAD_LOCAL, 0, 0,
 					g.INVOKE, 0, 1,
 					g.ADD,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{7, 7},
+					g.OpcLine{24, 0}}},
 			&g.Template{1, 0, 1,
 				[]byte{
 					g.LOAD_NULL,
 					g.LOAD_LOCAL, 0, 0,
 					g.LOAD_CONST, 0, 1,
 					g.MUL,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{8, 0}}}}})
 
 	source = `
 let a = fn() { };
@@ -573,16 +676,34 @@ c(2, 3);
 					g.LOAD_CONST, 0, 1,
 					g.LOAD_CONST, 0, 2,
 					g.INVOKE, 0, 2,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 4},
+					g.OpcLine{19, 5},
+					g.OpcLine{25, 6},
+					g.OpcLine{34, 7},
+					g.OpcLine{46, 0}}},
+
 			&g.Template{0, 0, 0,
 				[]byte{
 					g.LOAD_NULL,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0}}},
+
 			&g.Template{1, 0, 1,
 				[]byte{
 					g.LOAD_NULL,
 					g.LOAD_LOCAL, 0, 0,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 3},
+					g.OpcLine{4, 0}}},
+
 			&g.Template{2, 0, 3,
 				[]byte{
 					g.LOAD_NULL,
@@ -593,7 +714,11 @@ c(2, 3);
 					g.MUL,
 					g.LOAD_LOCAL, 0, 2,
 					g.MUL,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{18, 0}}}}})
 }
 
 func TestCapture(t *testing.T) {
@@ -619,14 +744,22 @@ const accumGen = fn(n) {
 					g.LOAD_NULL,
 					g.NEW_FUNC, 0, 1,
 					g.STORE_LOCAL, 0, 0,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 0}}},
 			&g.Template{1, 0, 1,
 				[]byte{
 					g.LOAD_NULL,
 					g.NEW_FUNC, 0, 2,
 					g.FUNC_LOCAL, 0, 0,
 					g.RETURN,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 3},
+					g.OpcLine{8, 0}}},
 			&g.Template{1, 1, 1,
 				[]byte{
 					g.LOAD_NULL,
@@ -637,7 +770,12 @@ const accumGen = fn(n) {
 					g.STORE_CAPTURE, 0, 0,
 					g.LOAD_CAPTURE, 0, 0,
 					g.RETURN,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{12, 5},
+					g.OpcLine{16, 0}}}}})
 
 	source = `
 let z = 2;
@@ -670,7 +808,12 @@ const accumGen = fn(n) {
 					g.NEW_FUNC, 0, 1,
 					g.FUNC_LOCAL, 0, 0,
 					g.STORE_LOCAL, 0, 1,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{16, 0}}},
 			&g.Template{1, 1, 1,
 				[]byte{
 					g.LOAD_NULL,
@@ -678,7 +821,11 @@ const accumGen = fn(n) {
 					g.FUNC_LOCAL, 0, 0,
 					g.FUNC_CAPTURE, 0, 0,
 					g.RETURN,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{11, 0}}},
 			&g.Template{1, 2, 1,
 				[]byte{
 					g.LOAD_NULL,
@@ -691,7 +838,12 @@ const accumGen = fn(n) {
 					g.STORE_CAPTURE, 0, 0,
 					g.LOAD_CAPTURE, 0, 0,
 					g.RETURN,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{16, 6},
+					g.OpcLine{20, 0}}}}})
 }
 
 func TestObj(t *testing.T) {
@@ -750,7 +902,14 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 					g.INIT_OBJ, 0, 4,
 					g.INIT_OBJ, 0, 3,
 					g.STORE_LOCAL, 0, 3,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{8, 3},
+					g.OpcLine{18, 4},
+					g.OpcLine{31, 5},
+					g.OpcLine{51, 0}}}}})
 
 	source = `
 let x = obj { a: 0 };
@@ -783,7 +942,13 @@ x.a = 3;
 					g.LOAD_LOCAL, 0, 0,
 					g.LOAD_CONST, 0, 2,
 					g.PUT, 0, 3,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{11, 3},
+					g.OpcLine{20, 4},
+					g.OpcLine{29, 0}}}}})
 
 	source = `
 let a = obj {
@@ -839,7 +1004,19 @@ let c = a.minus();
 					g.SELECT, 0, 3,
 					g.INVOKE, 0, 0,
 					g.STORE_LOCAL, 0, 3,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{6, 3},
+					g.OpcLine{9, 4},
+					g.OpcLine{12, 5},
+					g.OpcLine{18, 6},
+					g.OpcLine{24, 7},
+					g.OpcLine{27, 2},
+					g.OpcLine{30, 8},
+					g.OpcLine{42, 9},
+					g.OpcLine{54, 0}}},
 			&g.Template{0, 1, 0,
 				[]byte{
 					g.LOAD_NULL,
@@ -849,7 +1026,11 @@ let c = a.minus();
 					g.SELECT, 0, 5,
 					g.ADD,
 					g.RETURN,
-					g.RETURN}},
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{15, 0}}},
 			&g.Template{0, 1, 0,
 				[]byte{
 					g.LOAD_NULL,
@@ -859,5 +1040,9 @@ let c = a.minus();
 					g.SELECT, 0, 7,
 					g.SUB,
 					g.RETURN,
-					g.RETURN}}}})
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 6},
+					g.OpcLine{15, 0}}}}})
 }

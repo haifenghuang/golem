@@ -31,6 +31,7 @@ type compiler struct {
 	anl  analyzer.Analyzer
 	pool []g.Value
 	opc  []byte
+	opln []g.OpcLine
 
 	funcs     []*ast.FnExpr
 	templates []*g.Template
@@ -43,7 +44,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
 	defs := []*g.ObjDef{}
-	return &compiler{anl, []g.Value{}, nil, funcs, templates, defs, 0}
+	return &compiler{anl, []g.Value{}, nil, nil, funcs, templates, defs, 0}
 }
 
 func (c *compiler) Compile() *g.Module {
@@ -61,17 +62,20 @@ func (c *compiler) Compile() *g.Module {
 func (c *compiler) compileFunc(fn *ast.FnExpr) *g.Template {
 
 	arity := len(fn.FormalParams)
-	tpl := &g.Template{arity, fn.NumCaptures, fn.NumLocals, nil}
+	tpl := &g.Template{arity, fn.NumCaptures, fn.NumLocals, nil, nil}
 
 	c.opc = []byte{}
+	c.opln = []g.OpcLine{}
 
 	// TODO LOAD_NULL and RETURN are workarounds for the fact that
 	// we have not yet written a Control Flow Graph
-	c.push(g.LOAD_NULL)
+	c.push(ast.Pos{}, g.LOAD_NULL)
 	c.Visit(fn.Body)
-	c.push(g.RETURN)
+	c.push(ast.Pos{}, g.RETURN)
 
 	tpl.OpCodes = c.opc
+	tpl.OpcLines = c.opln
+
 	return tpl
 }
 
@@ -89,7 +93,7 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.Assignment:
 		t.Traverse(c)
 		// TODO doesn't this have the potential to fill up the operand stack?
-		c.push(g.DUP)
+		c.push(t.Op.Position, g.DUP)
 		c.assign(t.Ident)
 
 	case *ast.If:
@@ -147,9 +151,9 @@ func (c *compiler) assign(ident *ast.IdentExpr) {
 	v := ident.Variable
 	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(g.STORE_CAPTURE, high, low)
+		c.push(ident.Begin(), g.STORE_CAPTURE, high, low)
 	} else {
-		c.push(g.STORE_LOCAL, high, low)
+		c.push(ident.Begin(), g.STORE_LOCAL, high, low)
 	}
 }
 
@@ -157,7 +161,7 @@ func (c *compiler) visitIf(f *ast.If) {
 
 	c.Visit(f.Cond)
 
-	j0 := c.push(g.JUMP_FALSE, 0xFF, 0xFF)
+	j0 := c.push(f.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
 	f.Then.Traverse(c)
 
@@ -167,7 +171,7 @@ func (c *compiler) visitIf(f *ast.If) {
 
 	} else {
 
-		j1 := c.push(g.JUMP, 0xFF, 0xFF)
+		j1 := c.push(f.Else.Begin(), g.JUMP, 0xFF, 0xFF)
 
 		c.setJump(j0, c.opcLen())
 
@@ -180,11 +184,11 @@ func (c *compiler) visitWhile(w *ast.While) {
 
 	begin := c.opcLen()
 	c.Visit(w.Cond)
-	j0 := c.push(g.JUMP_FALSE, 0xFF, 0xFF)
+	j0 := c.push(w.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
 	body := c.opcLen()
 	w.Body.Traverse(c)
-	c.push(g.JUMP, begin.high, begin.low)
+	c.push(w.Body.End(), g.JUMP, begin.high, begin.low)
 
 	end := c.opcLen()
 	c.setJump(j0, end)
@@ -205,19 +209,19 @@ func (c *compiler) visitWhile(w *ast.While) {
 	}
 }
 
-func (c *compiler) visitBreak(wh *ast.Break) {
-	c.push(g.BREAK, 0xFF, 0xFF)
+func (c *compiler) visitBreak(br *ast.Break) {
+	c.push(br.Begin(), g.BREAK, 0xFF, 0xFF)
 }
 
 func (c *compiler) visitContinue(cn *ast.Continue) {
-	c.push(g.CONTINUE, 0xFF, 0xFF)
+	c.push(cn.Begin(), g.CONTINUE, 0xFF, 0xFF)
 }
 
 func (c *compiler) visitReturn(rt *ast.Return) {
 	if rt.Val != nil {
 		c.Visit(rt.Val)
 	}
-	c.push(g.RETURN)
+	c.push(rt.Begin(), g.RETURN)
 }
 
 func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
@@ -231,39 +235,39 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 
 	case ast.DBL_EQ:
 		b.Traverse(c)
-		c.push(g.EQ)
+		c.push(b.Op.Position, g.EQ)
 	case ast.NOT_EQ:
 		b.Traverse(c)
-		c.push(g.NE)
+		c.push(b.Op.Position, g.NE)
 
 	case ast.GT:
 		b.Traverse(c)
-		c.push(g.GT)
+		c.push(b.Op.Position, g.GT)
 	case ast.GT_EQ:
 		b.Traverse(c)
-		c.push(g.GTE)
+		c.push(b.Op.Position, g.GTE)
 	case ast.LT:
 		b.Traverse(c)
-		c.push(g.LT)
+		c.push(b.Op.Position, g.LT)
 	case ast.LT_EQ:
 		b.Traverse(c)
-		c.push(g.LTE)
+		c.push(b.Op.Position, g.LTE)
 	case ast.CMP:
 		b.Traverse(c)
-		c.push(g.CMP)
+		c.push(b.Op.Position, g.CMP)
 
 	case ast.PLUS:
 		b.Traverse(c)
-		c.push(g.ADD)
+		c.push(b.Op.Position, g.ADD)
 	case ast.MINUS:
 		b.Traverse(c)
-		c.push(g.SUB)
+		c.push(b.Op.Position, g.SUB)
 	case ast.MULT:
 		b.Traverse(c)
-		c.push(g.MUL)
+		c.push(b.Op.Position, g.MUL)
 	case ast.DIV:
 		b.Traverse(c)
-		c.push(g.DIV)
+		c.push(b.Op.Position, g.DIV)
 
 	default:
 		panic("unreachable")
@@ -273,17 +277,17 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 func (c *compiler) visitOr(lhs ast.Expr, rhs ast.Expr) {
 
 	c.Visit(lhs)
-	j0 := c.push(g.JUMP_TRUE, 0xFF, 0xFF)
+	j0 := c.push(lhs.End(), g.JUMP_TRUE, 0xFF, 0xFF)
 
 	c.Visit(rhs)
-	j1 := c.push(g.JUMP_FALSE, 0xFF, 0xFF)
+	j1 := c.push(rhs.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
 	c.setJump(j0, c.opcLen())
-	c.push(g.LOAD_TRUE)
-	j2 := c.push(g.JUMP, 0xFF, 0xFF)
+	c.push(rhs.End(), g.LOAD_TRUE)
+	j2 := c.push(rhs.End(), g.JUMP, 0xFF, 0xFF)
 
 	c.setJump(j1, c.opcLen())
-	c.push(g.LOAD_FALSE)
+	c.push(rhs.End(), g.LOAD_FALSE)
 
 	c.setJump(j2, c.opcLen())
 }
@@ -291,17 +295,17 @@ func (c *compiler) visitOr(lhs ast.Expr, rhs ast.Expr) {
 func (c *compiler) visitAnd(lhs ast.Expr, rhs ast.Expr) {
 
 	c.Visit(lhs)
-	j0 := c.push(g.JUMP_FALSE, 0xFF, 0xFF)
+	j0 := c.push(lhs.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
 	c.Visit(rhs)
-	j1 := c.push(g.JUMP_FALSE, 0xFF, 0xFF)
+	j1 := c.push(rhs.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
-	c.push(g.LOAD_TRUE)
-	j2 := c.push(g.JUMP, 0xFF, 0xFF)
+	c.push(rhs.End(), g.LOAD_TRUE)
+	j2 := c.push(rhs.End(), g.JUMP, 0xFF, 0xFF)
 
 	c.setJump(j0, c.opcLen())
 	c.setJump(j1, c.opcLen())
-	c.push(g.LOAD_FALSE)
+	c.push(rhs.End(), g.LOAD_FALSE)
 
 	c.setJump(j2, c.opcLen())
 }
@@ -320,22 +324,22 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 				i := parseInt(t.Token.Text)
 				high, low := index(len(c.pool))
 				c.pool = append(c.pool, g.Int(-i))
-				c.push(g.LOAD_CONST, high, low)
+				c.push(u.Op.Position, g.LOAD_CONST, high, low)
 
 			default:
 				u.Operand.Traverse(c)
 				u.Traverse(c)
-				c.push(g.NEGATE)
+				c.push(u.Op.Position, g.NEGATE)
 			}
 		default:
 			u.Operand.Traverse(c)
 			u.Traverse(c)
-			c.push(g.NEGATE)
+			c.push(u.Op.Position, g.NEGATE)
 		}
 
 	case ast.NOT:
 		u.Traverse(c)
-		c.push(g.NOT)
+		c.push(u.Op.Position, g.NOT)
 
 	default:
 		panic("unreachable")
@@ -351,27 +355,27 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 	switch basic.Token.Kind {
 
 	case ast.NULL:
-		c.push(g.LOAD_NULL)
+		c.push(basic.Token.Position, g.LOAD_NULL)
 
 	case ast.TRUE:
-		c.push(g.LOAD_TRUE)
+		c.push(basic.Token.Position, g.LOAD_TRUE)
 
 	case ast.FALSE:
-		c.push(g.LOAD_FALSE)
+		c.push(basic.Token.Position, g.LOAD_FALSE)
 
 	case ast.STR:
 		c.pool = append(c.pool, g.Str(basic.Token.Text))
-		c.push(g.LOAD_CONST, high, low)
+		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 
 	case ast.INT:
 		i := parseInt(basic.Token.Text)
 		c.pool = append(c.pool, g.Int(i))
-		c.push(g.LOAD_CONST, high, low)
+		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
 		c.pool = append(c.pool, g.Float(f))
-		c.push(g.LOAD_CONST, high, low)
+		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 
 	default:
 		panic("unreachable")
@@ -383,22 +387,22 @@ func (c *compiler) visitIdentExpr(ident *ast.IdentExpr) {
 	v := ident.Variable
 	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(g.LOAD_CAPTURE, high, low)
+		c.push(ident.Begin(), g.LOAD_CAPTURE, high, low)
 	} else {
-		c.push(g.LOAD_LOCAL, high, low)
+		c.push(ident.Begin(), g.LOAD_LOCAL, high, low)
 	}
 }
 
 func (c *compiler) visitFunc(fn *ast.FnExpr) {
 	high, low := index(len(c.funcs))
-	c.push(g.NEW_FUNC, high, low)
+	c.push(fn.Begin(), g.NEW_FUNC, high, low)
 
 	for _, pc := range fn.ParentCaptures {
 		high, low = index(pc.Index)
 		if pc.IsCapture {
-			c.push(g.FUNC_CAPTURE, high, low)
+			c.push(fn.Begin(), g.FUNC_CAPTURE, high, low)
 		} else {
-			c.push(g.FUNC_LOCAL, high, low)
+			c.push(fn.Begin(), g.FUNC_LOCAL, high, low)
 		}
 	}
 
@@ -409,7 +413,7 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 
 	inv.Traverse(c)
 	high, low := index(len(inv.Params))
-	c.push(g.INVOKE, high, low)
+	c.push(inv.Begin(), g.INVOKE, high, low)
 }
 
 func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
@@ -423,13 +427,13 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 	c.defs = append(c.defs, def)
 
 	// create un-initialized obj
-	c.push(g.NEW_OBJ)
+	c.push(obj.Begin(), g.NEW_OBJ)
 
 	// if the obj is referenced by a 'this', then store local
 	if obj.LocalThisIndex != -1 {
 		high, low := index(obj.LocalThisIndex)
-		c.push(g.DUP)
-		c.push(g.STORE_LOCAL, high, low)
+		c.push(obj.Begin(), g.DUP)
+		c.push(obj.Begin(), g.STORE_LOCAL, high, low)
 	}
 
 	// eval each value
@@ -438,32 +442,32 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 	}
 
 	// initialize the object
-	c.push(g.INIT_OBJ, high, low)
+	c.push(obj.End(), g.INIT_OBJ, high, low)
 }
 
 func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
 	v := this.Variable
 	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(g.LOAD_CAPTURE, high, low)
+		c.push(this.Begin(), g.LOAD_CAPTURE, high, low)
 	} else {
-		c.push(g.LOAD_LOCAL, high, low)
+		c.push(this.Begin(), g.LOAD_LOCAL, high, low)
 	}
 }
 
-func (c *compiler) visitSelectExpr(s *ast.SelectExpr) {
-	c.Visit(s.Operand)
+func (c *compiler) visitSelectExpr(sl *ast.SelectExpr) {
+	c.Visit(sl.Operand)
 	high, low := index(len(c.pool))
-	c.pool = append(c.pool, g.Str(s.Key.Text))
-	c.push(g.SELECT, high, low)
+	c.pool = append(c.pool, g.Str(sl.Key.Text))
+	c.push(sl.Key.Position, g.SELECT, high, low)
 }
 
-func (c *compiler) visitPutExpr(p *ast.PutExpr) {
-	c.Visit(p.Operand)
-	c.Visit(p.Value)
+func (c *compiler) visitPutExpr(pt *ast.PutExpr) {
+	c.Visit(pt.Operand)
+	c.Visit(pt.Value)
 	high, low := index(len(c.pool))
-	c.pool = append(c.pool, g.Str(p.Key.Text))
-	c.push(g.PUT, high, low)
+	c.pool = append(c.pool, g.Str(pt.Key.Text))
+	c.push(pt.Key.Position, g.PUT, high, low)
 }
 
 func parseInt(text string) int64 {
@@ -489,11 +493,17 @@ func parseFloat(text string) float64 {
 }
 
 // returns the length of opc *before* the bytes are pushed
-func (c *compiler) push(bytes ...byte) int {
+func (c *compiler) push(pos ast.Pos, bytes ...byte) int {
 	n := len(c.opc)
 	for _, b := range bytes {
 		c.opc = append(c.opc, b)
 	}
+
+	ln := len(c.opln)
+	if (ln == 0) || (pos.Line != c.opln[ln-1].LineNum) {
+		c.opln = append(c.opln, g.OpcLine{n, pos.Line})
+	}
+
 	return n
 }
 

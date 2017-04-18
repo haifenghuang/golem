@@ -51,14 +51,23 @@ func (m *Module) String() string {
 	}
 
 	for i, t := range m.Templates {
+
 		buf.WriteString(fmt.Sprintf(
-			"    Template(%d): arity: %d, numCaptures: %d, numLocals: %d\n",
+			"    Template(%d): Arity: %d, NumCaptures: %d, NumLocals: %d\n",
 			i, t.Arity, t.NumCaptures, t.NumLocals))
+
+		buf.WriteString("        OpCodes:\n")
 		for i := 0; i < len(t.OpCodes); {
 			text := FmtOpcode(t.OpCodes, i)
-			buf.WriteString("        ")
+			buf.WriteString("            ")
 			buf.WriteString(text)
 			i += OpCodeSize(t.OpCodes[i])
+		}
+
+		buf.WriteString("        OpcLines:\n")
+		for _, opl := range t.OpcLines {
+			buf.WriteString("            ")
+			buf.WriteString(fmt.Sprintf("%v\n", opl))
 		}
 	}
 
