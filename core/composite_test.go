@@ -132,3 +132,23 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e10)
 	uninitErr(t, e11)
 }
+
+func TestLineNumber(t *testing.T) {
+
+	tp := &Template{0, 0, 0, nil,
+		[]OpcLine{
+			OpcLine{0, 0},
+			OpcLine{1, 2},
+			OpcLine{11, 3},
+			OpcLine{20, 4},
+			OpcLine{29, 0}}}
+
+	assert(t, tp.LineNumber(0) == 0)
+	assert(t, tp.LineNumber(1) == 2)
+	assert(t, tp.LineNumber(10) == 2)
+	assert(t, tp.LineNumber(11) == 3)
+	assert(t, tp.LineNumber(19) == 3)
+	assert(t, tp.LineNumber(20) == 4)
+	assert(t, tp.LineNumber(28) == 4)
+	assert(t, tp.LineNumber(29) == 0)
+}

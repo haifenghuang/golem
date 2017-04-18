@@ -29,9 +29,9 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
-	if err != nil {
-		panic(err)
+	result, errStack := intp.Init()
+	if errStack != nil {
+		panic(errStack)
 	}
 
 	v, err := result.Eq(expect)
@@ -57,9 +57,9 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
-	if err != nil {
-		panic(err)
+	result, errStack := intp.Init()
+	if errStack != nil {
+		panic(errStack)
 	}
 
 	v, err := result.Eq(expectResult)
@@ -80,12 +80,28 @@ func fail_expr(t *testing.T, source string, expect string) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
+	result, errStack := intp.Init()
 	if result != nil {
-		panic(err)
+		panic(result)
 	}
-	if err.Error() != expect {
-		t.Error(err, " != ", expect)
+
+	if errStack.Err.Error() != expect {
+		t.Error(errStack.Err.Error(), " != ", expect)
+	}
+}
+
+func fail(t *testing.T, source string, expect *ErrorStack) {
+
+	mod := newCompiler(source).Compile()
+	intp := NewInterpreter(mod)
+
+	result, errStack := intp.Init()
+	if result != nil {
+		panic(result)
+	}
+
+	if reflect.DeepEqual(errStack, expect) {
+		t.Error(errStack, " != ", expect)
 	}
 }
 
@@ -440,4 +456,19 @@ let c = a.minus();
 
 	ok_ref(t, mod.Locals[2], g.Int(13))
 	ok_ref(t, mod.Locals[3], g.Int(3))
+}
+
+func TestErrStack(t *testing.T) {
+
+	source := `
+let divide = fn(x, y) {
+    return x / y;
+};
+let a = divide(3, 0);
+`
+	fail(t, source, &ErrorStack{
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 3",
+			"    at line 5"}})
 }

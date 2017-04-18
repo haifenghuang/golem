@@ -31,10 +31,26 @@ type Template struct {
 	OpcLines    []OpcLine
 }
 
+// Return the line number for the opcode at the given instruction pointer
+func (t *Template) LineNumber(instPtr int) int {
+
+	oln := t.OpcLines
+	n := len(oln) - 1
+
+	for i := 0; i < n; i++ {
+		if (instPtr >= oln[i].Index) && (instPtr < oln[i+1].Index) {
+			return oln[i].LineNum
+		}
+	}
+	return oln[n].LineNum
+}
+
+//---------------------------------------------------------------
 // OpcLine tracks which sequence of opcodes are on a given line
+
 type OpcLine struct {
-	OpcIndex int
-	LineNum  int
+	Index   int
+	LineNum int
 }
 
 //---------------------------------------------------------------
