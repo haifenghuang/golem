@@ -259,3 +259,35 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.THIS, "this", 1, 5)
 	ok(t, s, ast.EOF, "", 1, 9)
 }
+
+func TestComments(t *testing.T) {
+
+	s := NewScanner("1 //foo\n2")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.INT, "2", 2, 1)
+	ok(t, s, ast.EOF, "", 2, 2)
+
+	s = NewScanner("1 2 //foo")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.INT, "2", 1, 3)
+	ok(t, s, ast.EOF, "", 1, 10)
+
+	s = NewScanner("1 /*foo*/2")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.INT, "2", 1, 10)
+	ok(t, s, ast.EOF, "", 1, 11)
+
+	s = NewScanner("1 2/**/")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.INT, "2", 1, 3)
+	ok(t, s, ast.EOF, "", 1, 8)
+
+	s = NewScanner("1 /*")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.UNEXPECTED_EOF, "", 1, 5)
+
+	s = NewScanner("1 /* *")
+	ok(t, s, ast.INT, "1", 1, 1)
+	ok(t, s, ast.UNEXPECTED_EOF, "", 1, 7)
+
+}

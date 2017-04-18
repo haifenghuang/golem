@@ -67,6 +67,55 @@ func (s *Scanner) Next() *ast.Token {
 		case isWhitespace(r):
 			s.consume()
 
+		case r == '/':
+			s.consume()
+			r, _ = s.cur()
+
+			switch r {
+
+			// line comment
+			case '/':
+				s.consume()
+				r, _ = s.cur()
+				for (r != '\n') && (r != eof) {
+					s.consume()
+					r, _ = s.cur()
+				}
+
+			// block comment
+			case '*':
+				s.consume()
+				r, _ = s.cur()
+
+			loop:
+				for {
+					switch r {
+					case '*':
+						s.consume()
+						r, _ = s.cur()
+
+						switch r {
+						case '/':
+							s.consume()
+							break loop
+						case eof:
+							return s.unexpectedChar(r, s.pos)
+						default:
+							s.consume()
+							r, _ = s.cur()
+						}
+					case eof:
+						return s.unexpectedChar(r, s.pos)
+					default:
+						s.consume()
+						r, _ = s.cur()
+					}
+				}
+
+			default:
+				return &ast.Token{ast.DIV, "/", pos}
+			}
+
 		case r == '+':
 			s.consume()
 			return &ast.Token{ast.PLUS, "+", pos}
@@ -76,9 +125,6 @@ func (s *Scanner) Next() *ast.Token {
 		case r == '*':
 			s.consume()
 			return &ast.Token{ast.MULT, "*", pos}
-		case r == '/':
-			s.consume()
-			return &ast.Token{ast.DIV, "/", pos}
 		case r == '(':
 			s.consume()
 			return &ast.Token{ast.LPAREN, "(", pos}
@@ -259,8 +305,8 @@ func (s *Scanner) nextStr(delim rune) *ast.Token {
 		case r == '\\':
 			// escaped character
 			s.consume()
-			e, _ := s.cur()
-			switch e {
+			r, _ = s.cur()
+			switch r {
 			case '\\':
 				buf.WriteRune('\\')
 				s.consume()
@@ -277,7 +323,7 @@ func (s *Scanner) nextStr(delim rune) *ast.Token {
 				buf.WriteRune(delim)
 				s.consume()
 			default:
-				return s.unexpectedChar(e, s.pos)
+				return s.unexpectedChar(r, s.pos)
 			}
 
 		case r == eof:
