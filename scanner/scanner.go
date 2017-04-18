@@ -244,19 +244,48 @@ func (s *Scanner) nextStr(delim rune) *ast.Token {
 
 	var buf bytes.Buffer
 
-	// TODO handle escaped characters: delim, \n, \r, \t, \u
-	// TODO disallow embedded control characters
 	// TODO multiline
+	// TODO \u
 	for {
 		r, _ := s.cur()
 
 		switch {
 
 		case r == delim:
+			// end of string
 			s.consume()
 			return &ast.Token{ast.STR, buf.String(), pos}
 
+		case r == '\\':
+			// escaped character
+			s.consume()
+			e, _ := s.cur()
+			switch e {
+			case '\\':
+				buf.WriteRune('\\')
+				s.consume()
+			case 'n':
+				buf.WriteRune('\n')
+				s.consume()
+			case 'r':
+				buf.WriteRune('\r')
+				s.consume()
+			case 't':
+				buf.WriteRune('\t')
+				s.consume()
+			case delim:
+				buf.WriteRune(delim)
+				s.consume()
+			default:
+				return s.unexpectedChar(e, s.pos)
+			}
+
 		case r == eof:
+			// unterminated string literal
+			return s.unexpectedChar(r, s.pos)
+
+		case r < ' ':
+			// disallow embedded control characters
 			return s.unexpectedChar(r, s.pos)
 
 		default:

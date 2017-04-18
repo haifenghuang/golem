@@ -210,6 +210,13 @@ func TestStr(t *testing.T) {
 
 	s = NewScanner("'ab")
 	ok(t, s, ast.UNEXPECTED_EOF, "", 1, 4)
+
+	s = NewScanner("'\n'")
+	ok(t, s, ast.UNEXPECTED_CHAR, "\n", 2, 0)
+
+	s = NewScanner("'\\'\\n\\r\\t\\\\'")
+	ok(t, s, ast.STR, "'\n\r\t\\", 1, 1)
+	ok(t, s, ast.EOF, "", 1, 13)
 }
 
 func TestIdentOrKeyword(t *testing.T) {
