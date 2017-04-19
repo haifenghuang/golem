@@ -118,13 +118,28 @@ func (s *Scanner) Next() *ast.Token {
 
 		case r == '+':
 			s.consume()
-			return &ast.Token{ast.PLUS, "+", pos}
+			r, _ = s.cur()
+			if r == '+' {
+				s.consume()
+				return &ast.Token{ast.DBL_PLUS, "++", pos}
+			} else {
+				return &ast.Token{ast.PLUS, "+", pos}
+			}
+
 		case r == '-':
 			s.consume()
-			return &ast.Token{ast.MINUS, "-", pos}
+			r, _ = s.cur()
+			if r == '-' {
+				s.consume()
+				return &ast.Token{ast.DBL_MINUS, "--", pos}
+			} else {
+				return &ast.Token{ast.MINUS, "-", pos}
+			}
+
 		case r == '*':
 			s.consume()
 			return &ast.Token{ast.MULT, "*", pos}
+
 		case r == '(':
 			s.consume()
 			return &ast.Token{ast.LPAREN, "(", pos}
@@ -149,6 +164,16 @@ func (s *Scanner) Next() *ast.Token {
 		case r == '.':
 			s.consume()
 			return &ast.Token{ast.DOT, ".", pos}
+
+		case r == '%':
+			s.consume()
+			return &ast.Token{ast.PERCENT, "%", pos}
+		case r == '^':
+			s.consume()
+			return &ast.Token{ast.CARET, "^", pos}
+		case r == '~':
+			s.consume()
+			return &ast.Token{ast.TILDE, "~", pos}
 
 		case r == '=':
 			s.consume()
@@ -175,6 +200,9 @@ func (s *Scanner) Next() *ast.Token {
 			if r == '=' {
 				s.consume()
 				return &ast.Token{ast.GT_EQ, ">=", pos}
+			} else if r == '>' {
+				s.consume()
+				return &ast.Token{ast.DBL_GT, ">>", pos}
 			} else {
 				return &ast.Token{ast.GT, ">", pos}
 			}
@@ -190,6 +218,9 @@ func (s *Scanner) Next() *ast.Token {
 				} else {
 					return &ast.Token{ast.LT_EQ, "<=", pos}
 				}
+			} else if r == '<' {
+				s.consume()
+				return &ast.Token{ast.DBL_LT, "<<", pos}
 			} else {
 				return &ast.Token{ast.LT, "<", pos}
 			}

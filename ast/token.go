@@ -43,7 +43,10 @@ const (
 	EOF
 
 	PLUS
+	DBL_PLUS
 	MINUS
+	DBL_MINUS
+
 	MULT
 	DIV
 	LPAREN
@@ -60,8 +63,10 @@ const (
 	NOT
 	NOT_EQ
 	GT
+	DBL_GT
 	GT_EQ
 	LT
+	DBL_LT
 	LT_EQ
 	CMP
 
@@ -69,6 +74,10 @@ const (
 	DBL_PIPE
 	AMP
 	DBL_AMP
+
+	PERCENT
+	CARET
+	TILDE
 
 	basicBegin
 	NULL
@@ -107,8 +116,12 @@ func (t TokenKind) String() string {
 
 	case PLUS:
 		return "PLUS"
+	case DBL_PLUS:
+		return "DBL_PLUS"
 	case MINUS:
 		return "MINUS"
+	case DBL_MINUS:
+		return "DBL_MINUS"
 	case MULT:
 		return "MULT"
 	case DIV:
@@ -133,6 +146,13 @@ func (t TokenKind) String() string {
 		return "COMMA"
 	case DOT:
 		return "DOT"
+
+	case PERCENT:
+		return "PERCENT"
+	case CARET:
+		return "CARET"
+	case TILDE:
+		return "TILDE"
 
 	case NULL:
 		return "NULL"

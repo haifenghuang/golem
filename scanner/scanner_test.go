@@ -98,6 +98,16 @@ func TestDelimiter(t *testing.T) {
 	ok(t, s, ast.PIPE, "|", 1, 6)
 	ok(t, s, ast.DBL_PIPE, "||", 1, 8)
 	ok(t, s, ast.EOF, "", 1, 10)
+
+	s = NewScanner("%^~<<>>++--")
+	ok(t, s, ast.PERCENT, "%", 1, 1)
+	ok(t, s, ast.CARET, "^", 1, 2)
+	ok(t, s, ast.TILDE, "~", 1, 3)
+	ok(t, s, ast.DBL_LT, "<<", 1, 4)
+	ok(t, s, ast.DBL_GT, ">>", 1, 6)
+	ok(t, s, ast.DBL_PLUS, "++", 1, 8)
+	ok(t, s, ast.DBL_MINUS, "--", 1, 10)
+	ok(t, s, ast.EOF, "", 1, 12)
 }
 
 func TestInt(t *testing.T) {
