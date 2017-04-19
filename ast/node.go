@@ -298,7 +298,7 @@ func (let *Let) String() string {
 }
 
 func (asn *Assignment) String() string {
-	return fmt.Sprintf("%v = %v", asn.Ident, asn.Val)
+	return fmt.Sprintf("(%v = %v)", asn.Ident, asn.Val)
 }
 
 func (ifn *If) String() string {

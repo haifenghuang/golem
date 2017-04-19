@@ -196,7 +196,7 @@ func TestAssignment(t *testing.T) {
 let a = 1;
 const B = 2;
 a = a + B;
-        `,
+`,
 		g.Int(3),
 		[]*g.Ref{
 			&g.Ref{g.Int(3)},
@@ -208,12 +208,37 @@ a = a + 41;
 const B = a / 6;
 let c = B + 3;
 c = (c + a)/13;
-            `,
+`,
 		g.Int(4),
 		[]*g.Ref{
 			&g.Ref{g.Int(42)},
 			&g.Ref{g.Int(7)},
 			&g.Ref{g.Int(4)}})
+
+	ok_mod(t, `
+let a = 1;
+let b = a += 3;
+let c = ~0;
+c -= -2;
+c <<= 4;
+b *= 2;
+`,
+		g.Int(8),
+		[]*g.Ref{
+			&g.Ref{g.Int(4)},
+			&g.Ref{g.Int(8)},
+			&g.Ref{g.Int(16)}})
+
+	ok_mod(t, `
+let a = 1;
+let b = 2;
+a = b = 11;
+b = a %= 4;
+`,
+		g.Int(3),
+		[]*g.Ref{
+			&g.Ref{g.Int(3)},
+			&g.Ref{g.Int(3)}})
 }
 
 func TestIf(t *testing.T) {

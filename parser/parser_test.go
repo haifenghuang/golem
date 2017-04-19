@@ -184,6 +184,45 @@ func TestAdditive(t *testing.T) {
 	fail_expr(t, p, "Unexpected EOF at (1, 4)")
 }
 
+func TestAssign(t *testing.T) {
+
+	p := newParser("a += 2")
+	ok_expr(t, p, "(a = (a + 2))")
+
+	p = newParser("a -= 2")
+	ok_expr(t, p, "(a = (a - 2))")
+
+	p = newParser("a *= 2")
+	ok_expr(t, p, "(a = (a * 2))")
+
+	p = newParser("a /= 2")
+	ok_expr(t, p, "(a = (a / 2))")
+
+	p = newParser("a %= 2")
+	ok_expr(t, p, "(a = (a % 2))")
+
+	p = newParser("a |= 2")
+	ok_expr(t, p, "(a = (a | 2))")
+
+	p = newParser("a &= 2")
+	ok_expr(t, p, "(a = (a & 2))")
+
+	p = newParser("a ^= 2")
+	ok_expr(t, p, "(a = (a ^ 2))")
+
+	p = newParser("a <<= 2")
+	ok_expr(t, p, "(a = (a << 2))")
+
+	p = newParser("a >>= 2")
+	ok_expr(t, p, "(a = (a >> 2))")
+
+	p = newParser("a = b = c")
+	ok_expr(t, p, "(a = (b = c))")
+
+	p = newParser("a -= b += c")
+	ok_expr(t, p, "(a = (a - (b = (b + c))))")
+}
+
 func TestComparitive(t *testing.T) {
 	p := newParser("1==3")
 	ok_expr(t, p, "(1 == 3)")
@@ -217,7 +256,7 @@ func TestAndOr(t *testing.T) {
 
 func TestModule(t *testing.T) {
 	p := newParser("let a =1==3; 2+ true; z =27;const a = 3;")
-	ok(t, p, "fn() { let a = (1 == 3); (2 + true); z = 27; const a = 3; }")
+	ok(t, p, "fn() { let a = (1 == 3); (2 + true); (z = 27); const a = 3; }")
 }
 
 func TestStatement(t *testing.T) {
@@ -240,7 +279,7 @@ func TestStatement(t *testing.T) {
 	ok(t, p, "fn() { break; continue; while a { b; continue; break; } }")
 
 	p = newParser("a = b;")
-	ok(t, p, "fn() { a = b; }")
+	ok(t, p, "fn() { (a = b); }")
 }
 
 func TestFn(t *testing.T) {
@@ -248,16 +287,16 @@ func TestFn(t *testing.T) {
 	ok_expr(t, p, "fn() {  }")
 
 	p = newParser("fn() { a = 3; }")
-	ok_expr(t, p, "fn() { a = 3; }")
+	ok_expr(t, p, "fn() { (a = 3); }")
 
 	p = newParser("fn(x) { a = 3; }")
-	ok_expr(t, p, "fn(x) { a = 3; }")
+	ok_expr(t, p, "fn(x) { (a = 3); }")
 
 	p = newParser("fn(x,y) { a = 3; }")
-	ok_expr(t, p, "fn(x, y) { a = 3; }")
+	ok_expr(t, p, "fn(x, y) { (a = 3); }")
 
 	p = newParser("fn(x,y,z) { a = 3; }")
-	ok_expr(t, p, "fn(x, y, z) { a = 3; }")
+	ok_expr(t, p, "fn(x, y, z) { (a = 3); }")
 
 	p = newParser("fn(x) { let a = fn(y) { return x + y; }; }")
 	ok_expr(t, p, "fn(x) { let a = fn(y) { return (x + y); }; }")
@@ -266,7 +305,7 @@ func TestFn(t *testing.T) {
 	ok(t, p, "fn() { return; }")
 
 	p = newParser("z = fn(x) { a = 2; return b; c = 3; };")
-	ok(t, p, "fn() { z = fn(x) { a = 2; return b; c = 3; }; }")
+	ok(t, p, "fn() { (z = fn(x) { (a = 2); return b; (c = 3); }); }")
 }
 
 func TestInvoke(t *testing.T) {
@@ -318,7 +357,7 @@ func TestObj(t *testing.T) {
 	ok_expr(t, p, "obj { a: (this + true), b: this }")
 
 	p = newParser("a = this")
-	ok_expr(t, p, "a = this")
+	ok_expr(t, p, "(a = this)")
 
 	p = newParser("obj{ a: this }")
 	ok_expr(t, p, "obj { a: this }")
@@ -333,10 +372,10 @@ func TestObj(t *testing.T) {
 	ok_expr(t, p, "obj { a: this.b = 3 }")
 
 	p = newParser("b = this")
-	ok_expr(t, p, "b = this")
+	ok_expr(t, p, "(b = this)")
 
 	p = newParser("obj { a: b = this }")
-	ok_expr(t, p, "obj { a: b = this }")
+	ok_expr(t, p, "obj { a: (b = this) }")
 
 	p = newParser("this = b")
 	fail(t, p, "Unexpected Token '=' at (1, 6)")

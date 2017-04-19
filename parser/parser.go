@@ -239,6 +239,19 @@ func (p *Parser) expression() ast.Expr {
 		ident := &ast.IdentExpr{sym, nil}
 		return &ast.Assignment{ident, op, p.expression()}
 
+	} else if p.cur.Kind == ast.IDENT && isAssignOp(p.next) {
+
+		sym := p.expect(ast.IDENT)
+		op := p.consume()
+
+		return &ast.Assignment{
+			&ast.IdentExpr{sym, nil},
+			op,
+			&ast.BinaryExpr{
+				&ast.IdentExpr{sym, nil},
+				fromAssignOp(op),
+				p.expression()}}
+
 	} else {
 		lhs := p.andExpr()
 		for p.cur.Kind == ast.DBL_PIPE {
@@ -562,25 +575,113 @@ func (p *Parser) unexpected() error {
 }
 
 func isComparative(t *ast.Token) bool {
-	return t.Kind == ast.DBL_EQ || t.Kind == ast.NOT_EQ ||
-		t.Kind == ast.GT || t.Kind == ast.GT_EQ ||
-		t.Kind == ast.LT || t.Kind == ast.LT_EQ ||
-		t.Kind == ast.CMP
+	switch t.Kind {
+	case
+		ast.DBL_EQ,
+		ast.NOT_EQ,
+		ast.GT,
+		ast.GT_EQ,
+		ast.LT,
+		ast.LT_EQ,
+		ast.CMP:
+
+		return true
+	default:
+		return false
+	}
 }
 
 func isAdditive(t *ast.Token) bool {
-	return t.Kind == ast.PLUS || t.Kind == ast.MINUS ||
-		t.Kind == ast.PIPE || t.Kind == ast.CARET
+	switch t.Kind {
+	case
+		ast.PLUS,
+		ast.MINUS,
+		ast.PIPE,
+		ast.CARET:
+
+		return true
+	default:
+		return false
+	}
 }
 
 func isMultiplicative(t *ast.Token) bool {
-	return t.Kind == ast.MULT || t.Kind == ast.DIV ||
-		t.Kind == ast.PERCENT || t.Kind == ast.AMP ||
-		t.Kind == ast.DBL_LT || t.Kind == ast.DBL_GT
+	switch t.Kind {
+	case
+		ast.STAR,
+		ast.SLASH,
+		ast.PERCENT,
+		ast.AMP,
+		ast.DBL_LT,
+		ast.DBL_GT:
+
+		return true
+	default:
+		return false
+	}
 }
 
 func isUnary(t *ast.Token) bool {
-	return t.Kind == ast.MINUS || t.Kind == ast.NOT || t.Kind == ast.TILDE
+
+	switch t.Kind {
+	case
+		ast.MINUS,
+		ast.NOT,
+		ast.TILDE:
+
+		return true
+	default:
+		return false
+	}
+}
+
+func isAssignOp(t *ast.Token) bool {
+	switch t.Kind {
+	case
+		ast.PLUS_EQ,
+		ast.MINUS_EQ,
+		ast.STAR_EQ,
+		ast.SLASH_EQ,
+		ast.PERCENT_EQ,
+		ast.CARET_EQ,
+		ast.AMP_EQ,
+		ast.PIPE_EQ,
+		ast.DBL_LT_EQ,
+		ast.DBL_GT_EQ:
+
+		return true
+	default:
+		return false
+	}
+}
+
+func fromAssignOp(t *ast.Token) *ast.Token {
+
+	switch t.Kind {
+	case ast.PLUS_EQ:
+		return &ast.Token{ast.PLUS, "+", t.Position}
+	case ast.MINUS_EQ:
+		return &ast.Token{ast.MINUS, "-", t.Position}
+	case ast.STAR_EQ:
+		return &ast.Token{ast.STAR, "*", t.Position}
+	case ast.SLASH_EQ:
+		return &ast.Token{ast.SLASH, "/", t.Position}
+	case ast.PERCENT_EQ:
+		return &ast.Token{ast.PERCENT, "%", t.Position}
+	case ast.CARET_EQ:
+		return &ast.Token{ast.CARET, "^", t.Position}
+	case ast.AMP_EQ:
+		return &ast.Token{ast.AMP, "&", t.Position}
+	case ast.PIPE_EQ:
+		return &ast.Token{ast.PIPE, "|", t.Position}
+	case ast.DBL_LT_EQ:
+		return &ast.Token{ast.DBL_LT, "<<", t.Position}
+	case ast.DBL_GT_EQ:
+		return &ast.Token{ast.DBL_GT, ">>", t.Position}
+
+	default:
+		panic("invalid op")
+	}
 }
 
 //--------------------------------------------------------------

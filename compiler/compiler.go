@@ -262,10 +262,10 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 	case ast.MINUS:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.SUB)
-	case ast.MULT:
+	case ast.STAR:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.MUL)
-	case ast.DIV:
+	case ast.SLASH:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.DIV)
 

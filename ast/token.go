@@ -47,8 +47,8 @@ const (
 	MINUS
 	DBL_MINUS
 
-	MULT
-	DIV
+	STAR
+	SLASH
 	LPAREN
 	RPAREN
 	LBRACE
@@ -78,6 +78,17 @@ const (
 	PERCENT
 	CARET
 	TILDE
+
+	PLUS_EQ
+	MINUS_EQ
+	STAR_EQ
+	SLASH_EQ
+	PERCENT_EQ
+	CARET_EQ
+	AMP_EQ
+	PIPE_EQ
+	DBL_LT_EQ
+	DBL_GT_EQ
 
 	basicBegin
 	NULL
@@ -122,10 +133,10 @@ func (t TokenKind) String() string {
 		return "MINUS"
 	case DBL_MINUS:
 		return "DBL_MINUS"
-	case MULT:
-		return "MULT"
-	case DIV:
-		return "DIV"
+	case STAR:
+		return "STAR"
+	case SLASH:
+		return "SLASH"
 	case LPAREN:
 		return "LPAREN"
 	case RPAREN:
@@ -153,6 +164,27 @@ func (t TokenKind) String() string {
 		return "CARET"
 	case TILDE:
 		return "TILDE"
+
+	case PLUS_EQ:
+		return "PLUS_EQ"
+	case MINUS_EQ:
+		return "MINUS_EQ"
+	case STAR_EQ:
+		return "STAR_EQ"
+	case SLASH_EQ:
+		return "SLASH_EQ"
+	case PERCENT_EQ:
+		return "PERCENT_EQ"
+	case CARET_EQ:
+		return "CARET_EQ"
+	case AMP_EQ:
+		return "AMP_EQ"
+	case PIPE_EQ:
+		return "PIPE_EQ"
+	case DBL_LT_EQ:
+		return "DBL_LT_EQ"
+	case DBL_GT_EQ:
+		return "DBL_GT_EQ"
 
 	case NULL:
 		return "NULL"
