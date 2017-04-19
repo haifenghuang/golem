@@ -148,13 +148,18 @@ func (f Float) Div(v Value) (Number, Error) {
 	}
 }
 
+func (f Float) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
+func (f Float) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (f Float) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
+func (f Float) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (f Float) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
+func (f Float) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+
 func (f Float) Negate() (Number, Error) {
 	return 0 - f, nil
 }
-
-func (f Float) Not() (Bool, Error) {
-	return false, ExpectedBoolError()
-}
+func (f Float) Not() (Bool, Error)       { return false, ExpectedBoolError() }
+func (f Float) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
 func (f Float) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
 func (f Float) Put(key string, val Value) Error  { return ExpectedObjError() }

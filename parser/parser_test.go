@@ -125,9 +125,6 @@ func TestUnary(t *testing.T) {
 	p = newParser("- - 2")
 	ok_expr(t, p, "--2")
 
-	p = newParser("--2")
-	ok_expr(t, p, "--2")
-
 	p = newParser("!a")
 	ok_expr(t, p, "!a")
 }

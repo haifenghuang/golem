@@ -123,36 +123,73 @@ func (o *Obj) Sub(v Value) (Number, Error) {
 	if !o.Inited {
 		return Int(0), UninitializedObjError()
 	}
-
 	return nil, ExpectedNumberError()
 }
 func (o *Obj) Mul(v Value) (Number, Error) {
 	if !o.Inited {
 		return Int(0), UninitializedObjError()
 	}
-
 	return nil, ExpectedNumberError()
 }
 func (o *Obj) Div(v Value) (Number, Error) {
 	if !o.Inited {
 		return Int(0), UninitializedObjError()
 	}
-
 	return nil, ExpectedNumberError()
+}
+func (o *Obj) Rem(v Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
+}
+func (o *Obj) BitAnd(v Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
+}
+func (o *Obj) BitOr(v Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
+}
+func (o *Obj) BitXOr(v Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
+}
+func (o *Obj) LeftShift(v Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
+}
+func (o *Obj) RightShift(Value) (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
 }
 func (o *Obj) Negate() (Number, Error) {
 	if !o.Inited {
 		return Int(0), UninitializedObjError()
 	}
-
 	return Int(0), ExpectedNumberError()
 }
 func (o *Obj) Not() (Bool, Error) {
 	if !o.Inited {
 		return Bool(false), UninitializedObjError()
 	}
-
 	return false, ExpectedBoolError()
+}
+func (o *Obj) Complement() (Int, Error) {
+	if !o.Inited {
+		return Int(0), UninitializedObjError()
+	}
+	return Int(0), ExpectedIntError()
 }
 
 func (o *Obj) Select(key string) (Value, Error) {

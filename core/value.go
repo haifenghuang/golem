@@ -70,8 +70,16 @@ type Value interface {
 	Mul(Value) (Number, Error)
 	Div(Value) (Number, Error)
 
+	Rem(Value) (Int, Error)
+	BitAnd(Value) (Int, Error)
+	BitOr(Value) (Int, Error)
+	BitXOr(Value) (Int, Error)
+	LeftShift(Value) (Int, Error)
+	RightShift(Value) (Int, Error)
+
 	Negate() (Number, Error)
 	Not() (Bool, Error)
+	Complement() (Int, Error)
 
 	Select(string) (Value, Error)
 	Put(string, Value) Error

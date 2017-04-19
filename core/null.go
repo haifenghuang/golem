@@ -44,11 +44,19 @@ func (n *Null) Add(v Value) (Value, Error) {
 	}
 }
 
-func (n *Null) Sub(v Value) (Number, Error) { return nil, NullValueError() }
-func (n *Null) Mul(v Value) (Number, Error) { return nil, NullValueError() }
-func (n *Null) Div(v Value) (Number, Error) { return nil, NullValueError() }
-func (n *Null) Negate() (Number, Error)     { return Int(0), NullValueError() }
-func (n *Null) Not() (Bool, Error)          { return false, NullValueError() }
+func (n *Null) Sub(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *Null) Mul(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *Null) Div(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *Null) Rem(v Value) (Int, Error)       { return Int(0), NullValueError() }
+func (n *Null) BitAnd(v Value) (Int, Error)    { return Int(0), NullValueError() }
+func (n *Null) BitOr(v Value) (Int, Error)     { return Int(0), NullValueError() }
+func (n *Null) BitXOr(v Value) (Int, Error)    { return Int(0), NullValueError() }
+func (n *Null) LeftShift(v Value) (Int, Error) { return Int(0), NullValueError() }
+func (n *Null) RightShift(Value) (Int, Error)  { return Int(0), NullValueError() }
+
+func (n *Null) Negate() (Number, Error)  { return Int(0), NullValueError() }
+func (n *Null) Not() (Bool, Error)       { return false, NullValueError() }
+func (n *Null) Complement() (Int, Error) { return Int(0), NullValueError() }
 
 func (n *Null) Select(key string) (Value, Error) { return nil, NullValueError() }
 func (n *Null) Put(key string, val Value) Error  { return NullValueError() }

@@ -53,6 +53,10 @@ func ExpectedFuncError() Error {
 	return &serror{"TypeMismatch", "Expected 'Func'"}
 }
 
+func ExpectedIntError() Error {
+	return &serror{"TypeMismatch", "Expected 'Int'"}
+}
+
 func ArityMismatchError(expected int, actual int) Error {
 	return &serror{
 		"ArityMismatch",
@@ -83,4 +87,8 @@ func NoSuchFieldError(field string) Error {
 	return &serror{
 		"NoSuchField",
 		fmt.Sprintf("Field %q not found.", field)}
+}
+
+func InvalidArgumentError(msg string) Error {
+	return &serror{"InvalidArgument", msg}
 }

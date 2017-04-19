@@ -55,15 +55,21 @@ func (b Bool) Add(v Value) (Value, Error) {
 	}
 }
 
-func (b Bool) Sub(v Value) (Number, Error) { return nil, ExpectedNumberError() }
-func (b Bool) Mul(v Value) (Number, Error) { return nil, ExpectedNumberError() }
-func (b Bool) Div(v Value) (Number, Error) { return nil, ExpectedNumberError() }
+func (b Bool) Sub(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (b Bool) Mul(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (b Bool) Div(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (b Bool) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
+func (b Bool) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (b Bool) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
+func (b Bool) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (b Bool) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
+func (b Bool) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
 
 func (b Bool) Negate() (Number, Error) { return Int(0), ExpectedNumberError() }
-
 func (b Bool) Not() (Bool, Error) {
 	return !b, nil
 }
+func (b Bool) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
 func (b Bool) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
 func (b Bool) Put(key string, val Value) Error  { return ExpectedObjError() }

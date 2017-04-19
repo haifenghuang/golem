@@ -56,12 +56,19 @@ func (s Str) Add(v Value) (Value, Error) {
 	return strcat([]Value{s, v})
 }
 
-func (s Str) Sub(v Value) (Number, Error) { return Int(0), ExpectedNumberError() }
-func (s Str) Mul(v Value) (Number, Error) { return Int(0), ExpectedNumberError() }
-func (s Str) Div(v Value) (Number, Error) { return Int(0), ExpectedNumberError() }
-func (s Str) Negate() (Number, Error)     { return Int(0), ExpectedNumberError() }
+func (s Str) Sub(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
+func (s Str) Mul(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
+func (s Str) Div(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
+func (s Str) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
+func (s Str) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (s Str) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
+func (s Str) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (s Str) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
+func (s Str) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
 
-func (s Str) Not() (Bool, Error) { return false, ExpectedBoolError() }
+func (s Str) Negate() (Number, Error)  { return Int(0), ExpectedNumberError() }
+func (s Str) Not() (Bool, Error)       { return false, ExpectedBoolError() }
+func (s Str) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
 //-----------------------------------
 

@@ -103,12 +103,19 @@ func (f *Func) Add(v Value) (Value, Error) {
 	}
 }
 
-func (f *Func) Sub(v Value) (Number, Error) { return nil, ExpectedNumberError() }
-func (f *Func) Mul(v Value) (Number, Error) { return nil, ExpectedNumberError() }
-func (f *Func) Div(v Value) (Number, Error) { return nil, ExpectedNumberError() }
+func (f *Func) Sub(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (f *Func) Mul(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (f *Func) Div(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
+func (f *Func) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
+func (f *Func) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (f *Func) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
+func (f *Func) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
+func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
+func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
 
-func (f *Func) Negate() (Number, Error) { return Int(0), ExpectedNumberError() }
-func (f *Func) Not() (Bool, Error)      { return false, ExpectedBoolError() }
+func (f *Func) Negate() (Number, Error)  { return Int(0), ExpectedNumberError() }
+func (f *Func) Not() (Bool, Error)       { return false, ExpectedBoolError() }
+func (f *Func) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
 func (f *Func) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
 func (f *Func) Put(key string, val Value) Error  { return ExpectedObjError() }
