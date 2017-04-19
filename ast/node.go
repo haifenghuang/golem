@@ -169,7 +169,7 @@ type (
 		Variable *Variable
 	}
 
-	SelectExpr struct {
+	FieldExpr struct {
 		Operand Expr
 		Key     *Token
 	}
@@ -203,7 +203,7 @@ func (*FnExpr) exprMarker()      {}
 func (*InvokeExpr) exprMarker()  {}
 func (*ObjExpr) exprMarker()     {}
 func (*ThisExpr) exprMarker()    {}
-func (*SelectExpr) exprMarker()  {}
+func (*FieldExpr) exprMarker()   {}
 func (*PutExpr) exprMarker()     {}
 
 //--------------------------------------------------------------
@@ -281,8 +281,8 @@ func (n *ThisExpr) End() Pos {
 		n.Token.Position.Col + len("this") - 1}
 }
 
-func (n *SelectExpr) Begin() Pos { return n.Operand.Begin() }
-func (n *SelectExpr) End() Pos   { return n.Key.Position }
+func (n *FieldExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *FieldExpr) End() Pos   { return n.Key.Position }
 
 func (n *PutExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *PutExpr) End() Pos   { return n.Value.End() }
@@ -413,11 +413,11 @@ func (this *ThisExpr) String() string {
 	return "this"
 }
 
-func (s *SelectExpr) String() string {
+func (f *FieldExpr) String() string {
 	var buf bytes.Buffer
-	buf.WriteString(s.Operand.String())
+	buf.WriteString(f.Operand.String())
 	buf.WriteString(".")
-	buf.WriteString(s.Key.Text)
+	buf.WriteString(f.Key.Text)
 	return buf.String()
 }
 

@@ -358,7 +358,7 @@ func (p *Parser) primaryExpr() ast.Expr {
 			if p.accept(ast.EQ) {
 				prm = &ast.PutExpr{prm, key, p.expression()}
 			} else {
-				prm = &ast.SelectExpr{prm, key}
+				prm = &ast.FieldExpr{prm, key}
 			}
 
 		default:

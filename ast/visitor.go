@@ -117,8 +117,8 @@ func (obj *ObjExpr) Traverse(v Visitor) {
 func (this *ThisExpr) Traverse(v Visitor) {
 }
 
-func (s *SelectExpr) Traverse(v Visitor) {
-	v.Visit(s.Operand)
+func (f *FieldExpr) Traverse(v Visitor) {
+	v.Visit(f.Operand)
 }
 
 func (p *PutExpr) Traverse(v Visitor) {
@@ -203,8 +203,8 @@ func (p *dump) Visit(node Node) {
 	case *ThisExpr:
 		p.buf.WriteString(fmt.Sprintf("ThisExpr(%v)\n", t.Variable))
 
-	case *SelectExpr:
-		p.buf.WriteString(fmt.Sprintf("SelectExpr(%v)\n", t.Key.Text))
+	case *FieldExpr:
+		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))
 	case *PutExpr:
 		p.buf.WriteString(fmt.Sprintf("PutExpr(%v)\n", t.Key.Text))
 

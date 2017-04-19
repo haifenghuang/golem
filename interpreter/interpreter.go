@@ -212,12 +212,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			// done
 			ip += 3
 
-		case g.SELECT:
+		case g.GET_FIELD:
 
 			idx := index(opc, ip)
 			key, ok := pool[idx].(g.Str)
 			if !ok {
-				panic("Invalid SELECT Key")
+				panic("Invalid GET_FIELD Key")
 			}
 
 			ks, err := key.String()
@@ -233,12 +233,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			s[n] = result
 			ip += 3
 
-		case g.PUT:
+		case g.PUT_FIELD:
 
 			idx := index(opc, ip)
 			key, ok := pool[idx].(g.Str)
 			if !ok {
-				panic("Invalid PUT Key")
+				panic("Invalid PUT_FIELD Key")
 			}
 
 			operand := s[n-1]

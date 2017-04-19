@@ -135,8 +135,8 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.ThisExpr:
 		c.visitThisExpr(t)
 
-	case *ast.SelectExpr:
-		c.visitSelectExpr(t)
+	case *ast.FieldExpr:
+		c.visitFieldExpr(t)
 
 	case *ast.PutExpr:
 		c.visitPutExpr(t)
@@ -478,11 +478,11 @@ func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
 	}
 }
 
-func (c *compiler) visitSelectExpr(sl *ast.SelectExpr) {
-	c.Visit(sl.Operand)
+func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
+	c.Visit(fe.Operand)
 	high, low := index(len(c.pool))
-	c.pool = append(c.pool, g.Str(sl.Key.Text))
-	c.push(sl.Key.Position, g.SELECT, high, low)
+	c.pool = append(c.pool, g.Str(fe.Key.Text))
+	c.push(fe.Key.Position, g.GET_FIELD, high, low)
 }
 
 func (c *compiler) visitPutExpr(pt *ast.PutExpr) {
@@ -490,7 +490,7 @@ func (c *compiler) visitPutExpr(pt *ast.PutExpr) {
 	c.Visit(pt.Value)
 	high, low := index(len(c.pool))
 	c.pool = append(c.pool, g.Str(pt.Key.Text))
-	c.push(pt.Key.Position, g.PUT, high, low)
+	c.push(pt.Key.Position, g.PUT_FIELD, high, low)
 }
 
 func parseInt(text string) int64 {

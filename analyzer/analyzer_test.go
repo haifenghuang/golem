@@ -382,7 +382,7 @@ FnExpr(numLocals:1 numCaptures:0 parentCaptures:[])
 .   .   ObjExpr([a, c],0)
 .   .   .   ObjExpr([b],-1)
 .   .   .   .   BasicExpr(INT,"1")
-.   .   .   SelectExpr(a)
+.   .   .   FieldExpr(a)
 .   .   .   .   ThisExpr((0,true,false))
 `)
 
@@ -443,27 +443,27 @@ FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 .   .   .   .   .   Block
 .   .   .   .   .   .   Return
 .   .   .   .   .   .   .   BinaryExpr("+")
-.   .   .   .   .   .   .   .   SelectExpr(x)
+.   .   .   .   .   .   .   .   FieldExpr(x)
 .   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
-.   .   .   .   .   .   .   .   SelectExpr(y)
+.   .   .   .   .   .   .   .   FieldExpr(y)
 .   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
 .   .   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
 .   .   .   .   .   Block
 .   .   .   .   .   .   Return
 .   .   .   .   .   .   .   BinaryExpr("-")
-.   .   .   .   .   .   .   .   SelectExpr(x)
+.   .   .   .   .   .   .   .   FieldExpr(x)
 .   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
-.   .   .   .   .   .   .   .   SelectExpr(y)
+.   .   .   .   .   .   .   .   FieldExpr(y)
 .   .   .   .   .   .   .   .   .   ThisExpr((0,true,true))
 .   .   Let
 .   .   .   IdentExpr(b,(2,false,false))
 .   .   .   InvokeExpr
-.   .   .   .   SelectExpr(plus)
+.   .   .   .   FieldExpr(plus)
 .   .   .   .   .   IdentExpr(a,(1,false,false))
 .   .   Let
 .   .   .   IdentExpr(c,(3,false,false))
 .   .   .   InvokeExpr
-.   .   .   .   SelectExpr(minus)
+.   .   .   .   FieldExpr(minus)
 .   .   .   .   .   IdentExpr(a,(1,false,false))
 `)
 }
