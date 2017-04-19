@@ -118,6 +118,11 @@ type (
 		Operand Expr
 	}
 
+	PostfixExpr struct {
+		Operand Expr
+		Op      *Token
+	}
+
 	BasicExpr struct {
 		Token *Token
 	}
@@ -188,17 +193,18 @@ func (*Break) stmtMarker()    {}
 func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
 
-func (*Assignment) exprMarker() {}
-func (*BinaryExpr) exprMarker() {}
-func (*UnaryExpr) exprMarker()  {}
-func (*BasicExpr) exprMarker()  {}
-func (*IdentExpr) exprMarker()  {}
-func (*FnExpr) exprMarker()     {}
-func (*InvokeExpr) exprMarker() {}
-func (*ObjExpr) exprMarker()    {}
-func (*ThisExpr) exprMarker()   {}
-func (*SelectExpr) exprMarker() {}
-func (*PutExpr) exprMarker()    {}
+func (*Assignment) exprMarker()  {}
+func (*BinaryExpr) exprMarker()  {}
+func (*UnaryExpr) exprMarker()   {}
+func (*PostfixExpr) exprMarker() {}
+func (*BasicExpr) exprMarker()   {}
+func (*IdentExpr) exprMarker()   {}
+func (*FnExpr) exprMarker()      {}
+func (*InvokeExpr) exprMarker()  {}
+func (*ObjExpr) exprMarker()     {}
+func (*ThisExpr) exprMarker()    {}
+func (*SelectExpr) exprMarker()  {}
+func (*PutExpr) exprMarker()     {}
 
 //--------------------------------------------------------------
 // Begin, End
@@ -241,6 +247,9 @@ func (n *BinaryExpr) End() Pos   { return n.Rhs.End() }
 
 func (n *UnaryExpr) Begin() Pos { return n.Op.Position }
 func (n *UnaryExpr) End() Pos   { return n.Operand.End() }
+
+func (n *PostfixExpr) Begin() Pos { return n.Operand.End() }
+func (n *PostfixExpr) End() Pos   { return n.Op.Position }
 
 func (n *BasicExpr) Begin() Pos { return n.Token.Position }
 func (n *BasicExpr) End() Pos {
@@ -335,6 +344,10 @@ func (bin *BinaryExpr) String() string {
 
 func (unary *UnaryExpr) String() string {
 	return fmt.Sprintf("%s%v", unary.Op.Text, unary.Operand)
+}
+
+func (pf *PostfixExpr) String() string {
+	return fmt.Sprintf("%v%s", pf.Operand, pf.Op.Text)
 }
 
 func (basic *BasicExpr) String() string {

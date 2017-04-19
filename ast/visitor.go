@@ -84,6 +84,10 @@ func (un *UnaryExpr) Traverse(v Visitor) {
 	v.Visit(un.Operand)
 }
 
+func (pf *PostfixExpr) Traverse(v Visitor) {
+	v.Visit(pf.Operand)
+}
+
 func (basic *BasicExpr) Traverse(v Visitor) {
 }
 
@@ -178,6 +182,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString(fmt.Sprintf("BinaryExpr(%q)\n", t.Op.Text))
 	case *UnaryExpr:
 		p.buf.WriteString(fmt.Sprintf("UnaryExpr(%q)\n", t.Op.Text))
+	case *PostfixExpr:
+		p.buf.WriteString(fmt.Sprintf("PostfixExpr(%q)\n", t.Op.Text))
 	case *BasicExpr:
 		p.buf.WriteString(fmt.Sprintf("BasicExpr(%v,%q)\n", t.Token.Kind, t.Token.Text))
 	case *IdentExpr:

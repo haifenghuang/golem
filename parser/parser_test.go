@@ -132,6 +132,14 @@ func TestUnary(t *testing.T) {
 	ok_expr(t, p, "~a")
 }
 
+func TestPostfix(t *testing.T) {
+	p := newParser("a++")
+	ok_expr(t, p, "a++")
+
+	p = newParser("a.b++")
+	ok_expr(t, p, "a.b++")
+}
+
 func TestMultiplicative(t *testing.T) {
 	p := newParser("1*2")
 	ok_expr(t, p, "(1 * 2)")

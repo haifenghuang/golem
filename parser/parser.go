@@ -320,7 +320,21 @@ func (p *Parser) unaryExpr() ast.Expr {
 		return &ast.UnaryExpr{tok, p.unaryExpr()}
 
 	} else {
-		return p.primaryExpr()
+		return p.postfixExpr()
+	}
+}
+
+func (p *Parser) postfixExpr() ast.Expr {
+
+	pe := p.primaryExpr()
+
+	if isPostfix(p.cur) {
+		tok := p.cur
+		p.consume()
+		return &ast.PostfixExpr{pe, tok}
+
+	} else {
+		return pe
 	}
 }
 
@@ -628,6 +642,19 @@ func isUnary(t *ast.Token) bool {
 		ast.MINUS,
 		ast.NOT,
 		ast.TILDE:
+
+		return true
+	default:
+		return false
+	}
+}
+
+func isPostfix(t *ast.Token) bool {
+
+	switch t.Kind {
+	case
+		ast.DBL_PLUS,
+		ast.DBL_MINUS:
 
 		return true
 	default:
