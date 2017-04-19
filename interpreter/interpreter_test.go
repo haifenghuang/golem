@@ -180,6 +180,15 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "false || false;", g.FALSE)
 	ok_expr(t, "true  || 12;", g.TRUE)
 	fail_expr(t, "12  || true;", "TypeMismatch: Expected 'Bool'")
+
+	ok_expr(t, "~0;", g.Int(-1))
+
+	//ok_expr(t, "8 % 2;", g.Int(1%2))
+	//ok_expr(t, "8 & 2;", g.Int(1&2))
+	//ok_expr(t, "8 | 2;", g.Int(1|2))
+	//ok_expr(t, "8 ^ 2;", g.Int(1^2))
+	//ok_expr(t, "8 << 2;", g.Int(1<<2))
+	//ok_expr(t, "8 >> 2;", g.Int(1>>2))
 }
 
 func TestAssignment(t *testing.T) {

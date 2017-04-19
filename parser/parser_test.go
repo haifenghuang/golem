@@ -127,6 +127,9 @@ func TestUnary(t *testing.T) {
 
 	p = newParser("!a")
 	ok_expr(t, p, "!a")
+
+	p = newParser("~a")
+	ok_expr(t, p, "~a")
 }
 
 func TestMultiplicative(t *testing.T) {
@@ -141,6 +144,9 @@ func TestMultiplicative(t *testing.T) {
 
 	p = newParser("1*2/3*4/5")
 	ok_expr(t, p, "((((1 * 2) / 3) * 4) / 5)")
+
+	p = newParser("1%2&3<<4>>5")
+	ok_expr(t, p, "((((1 % 2) & 3) << 4) >> 5)")
 }
 
 func TestAdditive(t *testing.T) {
@@ -167,6 +173,12 @@ func TestAdditive(t *testing.T) {
 
 	p = newParser("1 * (2 + 3)")
 	ok_expr(t, p, "(1 * (2 + 3))")
+
+	p = newParser("1 ^ 2 | 3")
+	ok_expr(t, p, "((1 ^ 2) | 3)")
+
+	p = newParser("1 ^ 2 % 3")
+	ok_expr(t, p, "(1 ^ (2 % 3))")
 
 	p = newParser("1 +")
 	fail_expr(t, p, "Unexpected EOF at (1, 4)")

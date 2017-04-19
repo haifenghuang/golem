@@ -150,12 +150,63 @@ func (i Int) Div(v Value) (Number, Error) {
 	}
 }
 
-func (i Int) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
-func (i Int) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (i Int) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
-func (i Int) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (i Int) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
-func (i Int) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+func (i Int) Rem(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		return i % t, nil
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
+func (i Int) BitAnd(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		return i & t, nil
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
+func (i Int) BitOr(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		return i | t, nil
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
+func (i Int) BitXOr(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		return i ^ t, nil
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
+func (i Int) LeftShift(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		if t < 0 {
+			return Int(0), InvalidArgumentError("Shift count cannot be less than zero")
+		} else {
+			return i << uint(t), nil
+		}
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
+
+func (i Int) RightShift(v Value) (Int, Error) {
+	switch t := v.(type) {
+	case Int:
+		if t < 0 {
+			return Int(0), InvalidArgumentError("Shift count cannot be less than zero")
+		} else {
+			return i >> uint(t), nil
+		}
+	default:
+		return Int(0), ExpectedIntError()
+	}
+}
 
 func (i Int) Negate() (Number, Error) {
 	return 0 - i, nil
@@ -163,7 +214,9 @@ func (i Int) Negate() (Number, Error) {
 
 func (i Int) Not() (Bool, Error) { return false, ExpectedBoolError() }
 
-func (i Int) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
+func (i Int) Complement() (Int, Error) {
+	return ^i, nil
+}
 
 func (i Int) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
 func (i Int) Put(key string, val Value) Error  { return ExpectedObjError() }

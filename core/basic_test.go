@@ -281,6 +281,30 @@ func TestInt(t *testing.T) {
 	fail(t, v2, err, "TypeMismatch: Expected 'Int' or 'Float'")
 	v2, err = Int(3).Add(NULL)
 	fail(t, v2, err, "NullValue")
+
+	v1, err = Int(7).Rem(Int(3))
+	ok(t, v1, err, Int(1))
+	v1, err = Int(8).BitAnd(Int(41))
+	ok(t, v1, err, Int(8&41))
+	v1, err = Int(8).BitOr(Int(41))
+	ok(t, v1, err, Int(8|41))
+	v1, err = Int(8).BitXOr(Int(41))
+	ok(t, v1, err, Int(8^41))
+	v1, err = Int(1).LeftShift(Int(3))
+	ok(t, v1, err, Int(8))
+	v1, err = Int(8).RightShift(Int(3))
+	ok(t, v1, err, Int(1))
+
+	v1, err = Int(8).RightShift(Str("a"))
+	fail(t, v1, err, "TypeMismatch: Expected 'Int'")
+
+	v1, err = Int(8).RightShift(Int(-1))
+	fail(t, v1, err, "InvalidArgument: Shift count cannot be less than zero")
+	v1, err = Int(8).LeftShift(Int(-1))
+	fail(t, v1, err, "InvalidArgument: Shift count cannot be less than zero")
+
+	v1, err = Int(0).Complement()
+	ok(t, v1, err, Int(-1))
 }
 
 func TestFloat(t *testing.T) {

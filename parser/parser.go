@@ -569,15 +569,18 @@ func isComparative(t *ast.Token) bool {
 }
 
 func isAdditive(t *ast.Token) bool {
-	return t.Kind == ast.PLUS || t.Kind == ast.MINUS
+	return t.Kind == ast.PLUS || t.Kind == ast.MINUS ||
+		t.Kind == ast.PIPE || t.Kind == ast.CARET
 }
 
 func isMultiplicative(t *ast.Token) bool {
-	return t.Kind == ast.MULT || t.Kind == ast.DIV
+	return t.Kind == ast.MULT || t.Kind == ast.DIV ||
+		t.Kind == ast.PERCENT || t.Kind == ast.AMP ||
+		t.Kind == ast.DBL_LT || t.Kind == ast.DBL_GT
 }
 
 func isUnary(t *ast.Token) bool {
-	return t.Kind == ast.MINUS || t.Kind == ast.NOT
+	return t.Kind == ast.MINUS || t.Kind == ast.NOT || t.Kind == ast.TILDE
 }
 
 //--------------------------------------------------------------

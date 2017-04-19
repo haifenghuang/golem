@@ -269,6 +269,25 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 		b.Traverse(c)
 		c.push(b.Op.Position, g.DIV)
 
+	case ast.PERCENT:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.REM)
+	case ast.PIPE:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.BIT_AND)
+	case ast.AMP:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.BIT_OR)
+	case ast.CARET:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.BIT_XOR)
+	case ast.DBL_LT:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.LEFT_SHIFT)
+	case ast.DBL_GT:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.RIGHT_SHIFT)
+
 	default:
 		panic("unreachable")
 	}
@@ -340,6 +359,10 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 	case ast.NOT:
 		u.Traverse(c)
 		c.push(u.Op.Position, g.NOT)
+
+	case ast.TILDE:
+		u.Traverse(c)
+		c.push(u.Op.Position, g.COMPLEMENT)
 
 	default:
 		panic("unreachable")
