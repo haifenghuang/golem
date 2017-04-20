@@ -222,5 +222,5 @@ func (i Int) Complement() (Int, Error) {
 	return ^i, nil
 }
 
-func (i Int) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
-func (i Int) Put(key string, val Value) Error  { return ExpectedObjError() }
+func (i Int) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
+func (i Int) PutField(key string, val Value) Error { return ExpectedObjError() }

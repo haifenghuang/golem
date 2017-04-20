@@ -192,7 +192,7 @@ func (o *Obj) Complement() (Int, Error) {
 	return Int(0), ExpectedIntError()
 }
 
-func (o *Obj) Select(key string) (Value, Error) {
+func (o *Obj) GetField(key string) (Value, Error) {
 	if !o.Inited {
 		return nil, UninitializedObjError()
 	}
@@ -205,7 +205,7 @@ func (o *Obj) Select(key string) (Value, Error) {
 	}
 }
 
-func (o *Obj) Put(key string, val Value) Error {
+func (o *Obj) PutField(key string, val Value) Error {
 	if !o.Inited {
 		return UninitializedObjError()
 	}

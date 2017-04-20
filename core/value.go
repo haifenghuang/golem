@@ -81,8 +81,8 @@ type Value interface {
 	Not() (Bool, Error)
 	Complement() (Int, Error)
 
-	Select(string) (Value, Error)
-	Put(string, Value) Error
+	GetField(string) (Value, Error)
+	PutField(string, Value) Error
 }
 
 //---------------------------------------------------------------

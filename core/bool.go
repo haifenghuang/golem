@@ -71,5 +71,5 @@ func (b Bool) Not() (Bool, Error) {
 }
 func (b Bool) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
-func (b Bool) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
-func (b Bool) Put(key string, val Value) Error  { return ExpectedObjError() }
+func (b Bool) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
+func (b Bool) PutField(key string, val Value) Error { return ExpectedObjError() }

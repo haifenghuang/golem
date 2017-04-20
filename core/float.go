@@ -161,5 +161,5 @@ func (f Float) Negate() (Number, Error) {
 func (f Float) Not() (Bool, Error)       { return false, ExpectedBoolError() }
 func (f Float) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
-func (f Float) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
-func (f Float) Put(key string, val Value) Error  { return ExpectedObjError() }
+func (f Float) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
+func (f Float) PutField(key string, val Value) Error { return ExpectedObjError() }

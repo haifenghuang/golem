@@ -84,5 +84,5 @@ func strcat(a []Value) (Str, Error) {
 	return Str(buf.String()), nil
 }
 
-func (s Str) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
-func (s Str) Put(key string, val Value) Error  { return ExpectedObjError() }
+func (s Str) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
+func (s Str) PutField(key string, val Value) Error { return ExpectedObjError() }

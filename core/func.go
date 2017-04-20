@@ -117,5 +117,5 @@ func (f *Func) Negate() (Number, Error)  { return Int(0), ExpectedNumberError() 
 func (f *Func) Not() (Bool, Error)       { return false, ExpectedBoolError() }
 func (f *Func) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
 
-func (f *Func) Select(key string) (Value, Error) { return nil, ExpectedObjError() }
-func (f *Func) Put(key string, val Value) Error  { return ExpectedObjError() }
+func (f *Func) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
+func (f *Func) PutField(key string, val Value) Error { return ExpectedObjError() }

@@ -58,5 +58,5 @@ func (n *Null) Negate() (Number, Error)  { return Int(0), NullValueError() }
 func (n *Null) Not() (Bool, Error)       { return false, NullValueError() }
 func (n *Null) Complement() (Int, Error) { return Int(0), NullValueError() }
 
-func (n *Null) Select(key string) (Value, Error) { return nil, NullValueError() }
-func (n *Null) Put(key string, val Value) Error  { return NullValueError() }
+func (n *Null) GetField(key string) (Value, Error)   { return nil, NullValueError() }
+func (n *Null) PutField(key string, val Value) Error { return NullValueError() }

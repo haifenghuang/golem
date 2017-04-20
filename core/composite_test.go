@@ -61,7 +61,7 @@ func TestObj(t *testing.T) {
 	val, err := o.Add(Str("a"))
 	ok(t, val, err, Str("obj { }a"))
 
-	val, err = o.Select("a")
+	val, err = o.GetField("a")
 	fail(t, val, err, "NoSuchField: Field \"a\" not found.")
 
 	//////////////////
@@ -80,18 +80,18 @@ func TestObj(t *testing.T) {
 	val, err = o.Add(Str("a"))
 	ok(t, val, err, Str("obj { a: 1 }a"))
 
-	val, err = o.Select("a")
+	val, err = o.GetField("a")
 	ok(t, val, err, Int(1))
 
-	val, err = o.Select("b")
+	val, err = o.GetField("b")
 	fail(t, val, err, "NoSuchField: Field \"b\" not found.")
 
-	err = o.Put("a", Int(123))
+	err = o.PutField("a", Int(123))
 	if err != nil {
 		panic("unexpected error")
 	}
 
-	val, err = o.Select("a")
+	val, err = o.GetField("a")
 	ok(t, val, err, Int(123))
 }
 
@@ -116,8 +116,8 @@ func TestUninitialized(t *testing.T) {
 	_, e8 := o.Negate()
 	_, e9 := o.Not()
 
-	_, e10 := o.Select("")
-	e11 := o.Put("", NULL)
+	_, e10 := o.GetField("")
+	e11 := o.PutField("", NULL)
 
 	uninitErr(t, e0)
 	uninitErr(t, e1)
