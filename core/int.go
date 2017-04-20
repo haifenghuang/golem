@@ -71,7 +71,7 @@ func (i Int) Cmp(v Value) (Int, Error) {
 		}
 
 	default:
-		return Int(0), ExpectedCmpError()
+		return Int(0), TypeMismatchError("Expected Comparable Type")
 	}
 }
 
@@ -91,7 +91,7 @@ func (i Int) Add(v Value) (Value, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -108,7 +108,7 @@ func (i Int) Sub(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -125,7 +125,7 @@ func (i Int) Mul(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -150,7 +150,7 @@ func (i Int) Div(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -159,7 +159,7 @@ func (i Int) Rem(v Value) (Int, Error) {
 	case Int:
 		return i % t, nil
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i Int) BitAnd(v Value) (Int, Error) {
@@ -167,7 +167,7 @@ func (i Int) BitAnd(v Value) (Int, Error) {
 	case Int:
 		return i & t, nil
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i Int) BitOr(v Value) (Int, Error) {
@@ -175,7 +175,7 @@ func (i Int) BitOr(v Value) (Int, Error) {
 	case Int:
 		return i | t, nil
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i Int) BitXOr(v Value) (Int, Error) {
@@ -183,7 +183,7 @@ func (i Int) BitXOr(v Value) (Int, Error) {
 	case Int:
 		return i ^ t, nil
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i Int) LeftShift(v Value) (Int, Error) {
@@ -195,7 +195,7 @@ func (i Int) LeftShift(v Value) (Int, Error) {
 			return i << uint(t), nil
 		}
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 
@@ -208,7 +208,7 @@ func (i Int) RightShift(v Value) (Int, Error) {
 			return i >> uint(t), nil
 		}
 	default:
-		return Int(0), ExpectedIntError()
+		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
 }
 
@@ -216,11 +216,11 @@ func (i Int) Negate() (Number, Error) {
 	return 0 - i, nil
 }
 
-func (i Int) Not() (Bool, Error) { return false, ExpectedBoolError() }
+func (i Int) Not() (Bool, Error) { return false, TypeMismatchError("Expected 'Bool'") }
 
 func (i Int) Complement() (Int, Error) {
 	return ^i, nil
 }
 
-func (i Int) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
-func (i Int) PutField(key string, val Value) Error { return ExpectedObjError() }
+func (i Int) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (i Int) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

@@ -65,7 +65,7 @@ func (f Float) Cmp(v Value) (Int, Error) {
 		}
 
 	default:
-		return 0, ExpectedCmpError()
+		return 0, TypeMismatchError("Expected Comparable Type")
 	}
 }
 
@@ -85,7 +85,7 @@ func (f Float) Add(v Value) (Value, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -102,7 +102,7 @@ func (f Float) Sub(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -119,7 +119,7 @@ func (f Float) Mul(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -144,22 +144,22 @@ func (f Float) Div(v Value) (Number, Error) {
 		return nil, NullValueError()
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (f Float) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
-func (f Float) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (f Float) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
-func (f Float) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (f Float) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
-func (f Float) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+func (f Float) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f Float) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f Float) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f Float) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f Float) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f Float) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f Float) Negate() (Number, Error) {
 	return 0 - f, nil
 }
-func (f Float) Not() (Bool, Error)       { return false, ExpectedBoolError() }
-func (f Float) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
+func (f Float) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
+func (f Float) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f Float) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
-func (f Float) PutField(key string, val Value) Error { return ExpectedObjError() }
+func (f Float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (f Float) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

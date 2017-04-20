@@ -62,7 +62,7 @@ func TestObj(t *testing.T) {
 	ok(t, val, err, Str("obj { }a"))
 
 	val, err = o.GetField("a")
-	fail(t, val, err, "NoSuchField: Field \"a\" not found.")
+	fail(t, val, err, "NoSuchField: Field 'a' not found.")
 
 	//////////////////
 
@@ -84,7 +84,7 @@ func TestObj(t *testing.T) {
 	ok(t, val, err, Int(1))
 
 	val, err = o.GetField("b")
-	fail(t, val, err, "NoSuchField: Field \"b\" not found.")
+	fail(t, val, err, "NoSuchField: Field 'b' not found.")
 
 	err = o.PutField("a", Int(123))
 	if err != nil {

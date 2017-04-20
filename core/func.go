@@ -90,7 +90,7 @@ func (f *Func) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (f *Func) Cmp(v Value) (Int, Error) { return Int(0), ExpectedCmpError() }
+func (f *Func) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
 
 func (f *Func) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
@@ -99,23 +99,23 @@ func (f *Func) Add(v Value) (Value, Error) {
 		return strcat([]Value{f, t})
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (f *Func) Sub(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (f *Func) Mul(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (f *Func) Div(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (f *Func) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
-func (f *Func) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (f *Func) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
-func (f *Func) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
-func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+func (f *Func) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (f *Func) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (f *Func) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (f *Func) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f *Func) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f *Func) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f *Func) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f *Func) Negate() (Number, Error)  { return Int(0), ExpectedNumberError() }
-func (f *Func) Not() (Bool, Error)       { return false, ExpectedBoolError() }
-func (f *Func) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
+func (f *Func) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
+func (f *Func) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
+func (f *Func) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f *Func) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
-func (f *Func) PutField(key string, val Value) Error { return ExpectedObjError() }
+func (f *Func) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (f *Func) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

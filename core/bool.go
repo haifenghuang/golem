@@ -42,7 +42,7 @@ func (b Bool) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (b Bool) Cmp(v Value) (Int, Error) { return Int(0), ExpectedCmpError() }
+func (b Bool) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
 
 func (b Bool) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
@@ -51,25 +51,25 @@ func (b Bool) Add(v Value) (Value, Error) {
 		return strcat([]Value{b, t})
 
 	default:
-		return nil, ExpectedNumberError()
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (b Bool) Sub(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (b Bool) Mul(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (b Bool) Div(v Value) (Number, Error)    { return nil, ExpectedNumberError() }
-func (b Bool) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
-func (b Bool) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (b Bool) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
-func (b Bool) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (b Bool) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
-func (b Bool) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+func (b Bool) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b Bool) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b Bool) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b Bool) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b Bool) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b Bool) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b Bool) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b Bool) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b Bool) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (b Bool) Negate() (Number, Error) { return Int(0), ExpectedNumberError() }
+func (b Bool) Negate() (Number, Error) { return Int(0), TypeMismatchError("Expected Number Type") }
 func (b Bool) Not() (Bool, Error) {
 	return !b, nil
 }
-func (b Bool) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
+func (b Bool) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (b Bool) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
-func (b Bool) PutField(key string, val Value) Error { return ExpectedObjError() }
+func (b Bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (b Bool) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

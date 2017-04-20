@@ -45,34 +45,14 @@ func NullValueError() Error {
 	return &serror{"NullValue", ""}
 }
 
-func ExpectedBoolError() Error {
-	return &serror{"TypeMismatch", "Expected 'Bool'"}
-}
-
-func ExpectedFuncError() Error {
-	return &serror{"TypeMismatch", "Expected 'Func'"}
-}
-
-func ExpectedIntError() Error {
-	return &serror{"TypeMismatch", "Expected 'Int'"}
+func TypeMismatchError(msg string) Error {
+	return &serror{"TypeMismatch", msg}
 }
 
 func ArityMismatchError(expected int, actual int) Error {
 	return &serror{
 		"ArityMismatch",
 		fmt.Sprintf("Expected %d params, got %d", expected, actual)}
-}
-
-func ExpectedCmpError() Error {
-	return &serror{"TypeMismatch", "Expected Comparable Type"}
-}
-
-func ExpectedNumberError() Error {
-	return &serror{"TypeMismatch", "Expected 'Int' or 'Float'"}
-}
-
-func ExpectedObjError() Error {
-	return &serror{"TypeMismatch", "Expected 'Obj'"}
 }
 
 func UninitializedObjError() Error {
@@ -86,7 +66,7 @@ func DivideByZeroError() Error {
 func NoSuchFieldError(field string) Error {
 	return &serror{
 		"NoSuchField",
-		fmt.Sprintf("Field %q not found.", field)}
+		fmt.Sprintf("Field '%s' not found.", field)}
 }
 
 func InvalidArgumentError(msg string) Error {

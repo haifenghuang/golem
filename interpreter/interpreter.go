@@ -94,7 +94,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand, ok := s[n-idx].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
-					g.ExpectedFuncError(),
+					g.TypeMismatchError("Expected 'Func'"),
 					inp.stringFrames(fn, locals, s, ip)}
 			}
 			if operand.Template.Arity != idx {
@@ -162,7 +162,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand, ok := s[n].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
-					g.ExpectedFuncError(),
+					g.TypeMismatchError("Expected 'Func'"),
 					inp.stringFrames(fn, locals, s, ip)}
 			}
 
@@ -177,7 +177,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand, ok := s[n].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
-					g.ExpectedFuncError(),
+					g.TypeMismatchError("Expected 'Func'"),
 					inp.stringFrames(fn, locals, s, ip)}
 			}
 
@@ -331,7 +331,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			b, ok := s[n].(g.Bool)
 			if !ok {
 				return nil, &ErrorStack{
-					g.ExpectedBoolError(),
+					g.TypeMismatchError("Expected 'Bool'"),
 					inp.stringFrames(fn, locals, s, ip)}
 			}
 
@@ -346,7 +346,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			b, ok := s[n].(g.Bool)
 			if !ok {
 				return nil, &ErrorStack{
-					g.ExpectedBoolError(),
+					g.TypeMismatchError("Expected 'Bool'"),
 					inp.stringFrames(fn, locals, s, ip)}
 			}
 

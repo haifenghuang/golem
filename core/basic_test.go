@@ -112,7 +112,7 @@ func TestBool(t *testing.T) {
 	fail(t, i, err, "TypeMismatch: Expected Comparable Type")
 
 	n, err := TRUE.Negate()
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	val, err := TRUE.Not()
 	ok(t, val, err, FALSE)
@@ -120,16 +120,16 @@ func TestBool(t *testing.T) {
 	ok(t, val, err, TRUE)
 
 	n, err = TRUE.Sub(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	n, err = TRUE.Mul(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	n, err = TRUE.Div(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	v, err := TRUE.Add(Int(1))
-	fail(t, v, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, v, err, "TypeMismatch: Expected Number Type")
 
 	v, err = TRUE.Add(Str("a"))
 	ok(t, v, err, Str("truea"))
@@ -164,19 +164,19 @@ func TestStr(t *testing.T) {
 	ok(t, i, err, Int(1))
 
 	n, err := a.Negate()
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	val, err := a.Not()
 	fail(t, val, err, "TypeMismatch: Expected 'Bool'")
 
 	n, err = a.Sub(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	n, err = a.Mul(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	n, err = a.Div(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	v, err := a.Add(Int(1))
 	ok(t, v, err, Str("a1"))
@@ -238,9 +238,9 @@ func TestInt(t *testing.T) {
 	val, err = Int(3).Sub(Float(2.0))
 	ok(t, val, err, Float(1.0))
 	val, err = Int(3).Sub(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Sub(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Sub(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -249,9 +249,9 @@ func TestInt(t *testing.T) {
 	val, err = Int(3).Mul(Float(2.0))
 	ok(t, val, err, Float(6.0))
 	val, err = Int(3).Mul(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Mul(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Mul(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -260,9 +260,9 @@ func TestInt(t *testing.T) {
 	val, err = Int(3).Div(Float(2.0))
 	ok(t, val, err, Float(1.5))
 	val, err = Int(3).Div(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Div(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Int(3).Div(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -278,7 +278,7 @@ func TestInt(t *testing.T) {
 	v1, err = Int(3).Add(Str("a"))
 	ok(t, v1, err, Str("3a"))
 	v2, err := Int(3).Add(FALSE)
-	fail(t, v2, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, v2, err, "TypeMismatch: Expected Number Type")
 	v2, err = Int(3).Add(NULL)
 	fail(t, v2, err, "NullValue")
 
@@ -359,9 +359,9 @@ func TestFloat(t *testing.T) {
 	val, err = Float(3.3).Sub(Float(2.0))
 	ok(t, val, err, Float(float64(3.3)-float64(2.0)))
 	val, err = Float(3.3).Sub(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Sub(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Sub(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -370,9 +370,9 @@ func TestFloat(t *testing.T) {
 	val, err = Float(3.3).Mul(Float(2.0))
 	ok(t, val, err, Float(float64(3.3)*float64(2.0)))
 	val, err = Float(3.3).Mul(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Mul(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Mul(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -381,9 +381,9 @@ func TestFloat(t *testing.T) {
 	val, err = Float(3.3).Div(Float(2.0))
 	ok(t, val, err, Float(float64(3.3)/float64(2.0)))
 	val, err = Float(3.3).Div(Str("a"))
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Div(FALSE)
-	fail(t, val, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, val, err, "TypeMismatch: Expected Number Type")
 	val, err = Float(3.3).Div(NULL)
 	fail(t, val, err, "NullValue")
 
@@ -399,7 +399,7 @@ func TestFloat(t *testing.T) {
 	v1, err = Float(3.3).Add(Str("a"))
 	ok(t, v1, err, Str("3.3a"))
 	v1, err = Float(3.3).Add(FALSE)
-	fail(t, v1, err, "TypeMismatch: Expected 'Int' or 'Float'")
+	fail(t, v1, err, "TypeMismatch: Expected Number Type")
 	v1, err = Float(3.3).Add(NULL)
 	fail(t, v1, err, "NullValue")
 }

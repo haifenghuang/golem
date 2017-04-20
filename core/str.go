@@ -48,7 +48,7 @@ func (s Str) Cmp(v Value) (Int, Error) {
 		}
 
 	default:
-		return 0, ExpectedCmpError()
+		return 0, TypeMismatchError("Expected Comparable Type")
 	}
 }
 
@@ -56,19 +56,19 @@ func (s Str) Add(v Value) (Value, Error) {
 	return strcat([]Value{s, v})
 }
 
-func (s Str) Sub(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
-func (s Str) Mul(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
-func (s Str) Div(v Value) (Number, Error)    { return Int(0), ExpectedNumberError() }
-func (s Str) Rem(v Value) (Int, Error)       { return Int(0), ExpectedIntError() }
-func (s Str) BitAnd(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (s Str) BitOr(v Value) (Int, Error)     { return Int(0), ExpectedIntError() }
-func (s Str) BitXOr(v Value) (Int, Error)    { return Int(0), ExpectedIntError() }
-func (s Str) LeftShift(v Value) (Int, Error) { return Int(0), ExpectedIntError() }
-func (s Str) RightShift(Value) (Int, Error)  { return Int(0), ExpectedIntError() }
+func (s Str) Sub(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s Str) Mul(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s Str) Div(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s Str) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s Str) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s Str) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s Str) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s Str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s Str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (s Str) Negate() (Number, Error)  { return Int(0), ExpectedNumberError() }
-func (s Str) Not() (Bool, Error)       { return false, ExpectedBoolError() }
-func (s Str) Complement() (Int, Error) { return Int(0), ExpectedIntError() }
+func (s Str) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s Str) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
+func (s Str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 //-----------------------------------
 
@@ -84,5 +84,5 @@ func strcat(a []Value) (Str, Error) {
 	return Str(buf.String()), nil
 }
 
-func (s Str) GetField(key string) (Value, Error)   { return nil, ExpectedObjError() }
-func (s Str) PutField(key string, val Value) Error { return ExpectedObjError() }
+func (s Str) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (s Str) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }
