@@ -18,16 +18,24 @@ import (
 	"bytes"
 )
 
-type Str string
+type _str string
 
-func (s Str) TypeOf() (Type, Error) { return TSTR, nil }
+func (s _str) StrVal() string {
+	return string(s)
+}
 
-func (s Str) String() (Str, Error) { return s, nil }
+func MakeStr(str string) Str {
+	return _str(str)
+}
 
-func (s Str) Eq(v Value) (Bool, Error) {
+func (s _str) TypeOf() (Type, Error) { return TSTR, nil }
+
+func (s _str) String() (Str, Error) { return s, nil }
+
+func (s _str) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 
-	case Str:
+	case _str:
 		return MakeBool(s == t), nil
 
 	default:
@@ -35,10 +43,10 @@ func (s Str) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (s Str) Cmp(v Value) (Int, Error) {
+func (s _str) Cmp(v Value) (Int, Error) {
 	switch t := v.(type) {
 
-	case Str:
+	case _str:
 		if s < t {
 			return -1, nil
 		} else if s > t {
@@ -52,36 +60,36 @@ func (s Str) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (s Str) Add(v Value) (Value, Error) {
+func (s _str) Add(v Value) (Value, Error) {
 	return strcat([]Value{s, v})
 }
 
-func (s Str) Sub(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s Str) Mul(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s Str) Div(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s Str) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s Str) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s Str) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s Str) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s Str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s Str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) Sub(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s _str) Mul(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s _str) Div(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s _str) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (s Str) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s Str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (s _str) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
+func (s _str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 //-----------------------------------
 
-func strcat(a []Value) (Str, Error) {
+func strcat(a []Value) (_str, Error) {
 	var buf bytes.Buffer
 	for _, v := range a {
 		s, err := v.String()
 		if err != nil {
-			return Str(""), err
+			return _str(""), err
 		}
-		buf.WriteString(string(s))
+		buf.WriteString(s.StrVal())
 	}
-	return Str(buf.String()), nil
+	return _str(buf.String()), nil
 }
 
-func (s Str) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (s Str) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }
+func (s _str) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (s _str) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

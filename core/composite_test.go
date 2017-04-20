@@ -51,15 +51,15 @@ func TestObj(t *testing.T) {
 	okType(t, o, TOBJ)
 
 	s, err := o.String()
-	ok(t, s, err, Str("obj { }"))
+	ok(t, s, err, MakeStr("obj { }"))
 
 	z, err := o.Eq(newObj(map[string]Value{}))
 	ok(t, z, err, TRUE)
 	z, err = o.Eq(newObj(map[string]Value{"a": Int(1)}))
 	ok(t, z, err, FALSE)
 
-	val, err := o.Add(Str("a"))
-	ok(t, val, err, Str("obj { }a"))
+	val, err := o.Add(MakeStr("a"))
+	ok(t, val, err, MakeStr("obj { }a"))
 
 	val, err = o.GetField("a")
 	fail(t, val, err, "NoSuchField: Field 'a' not found.")
@@ -70,15 +70,15 @@ func TestObj(t *testing.T) {
 	okType(t, o, TOBJ)
 
 	s, err = o.String()
-	ok(t, s, err, Str("obj { a: 1 }"))
+	ok(t, s, err, MakeStr("obj { a: 1 }"))
 
 	z, err = o.Eq(newObj(map[string]Value{}))
 	ok(t, z, err, FALSE)
 	z, err = o.Eq(newObj(map[string]Value{"a": Int(1)}))
 	ok(t, z, err, TRUE)
 
-	val, err = o.Add(Str("a"))
-	ok(t, val, err, Str("obj { a: 1 }a"))
+	val, err = o.Add(MakeStr("a"))
+	ok(t, val, err, MakeStr("obj { a: 1 }a"))
 
 	val, err = o.GetField("a")
 	ok(t, val, err, Int(1))

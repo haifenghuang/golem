@@ -58,7 +58,7 @@ func (o *Obj) TypeOf() (Type, Error) {
 
 func (o *Obj) String() (Str, Error) {
 	if !o.Inited {
-		return Str(""), UninitializedObjError()
+		return nil, UninitializedObjError()
 	}
 
 	var buf bytes.Buffer
@@ -75,12 +75,12 @@ func (o *Obj) String() (Str, Error) {
 
 		s, err := v.String()
 		if err != nil {
-			return Str(""), err
+			return nil, err
 		}
-		buf.WriteString(string(s))
+		buf.WriteString(s.StrVal())
 	}
 	buf.WriteString(" }")
-	return Str(buf.String()), nil
+	return MakeStr(buf.String()), nil
 }
 
 func (o *Obj) Eq(v Value) (Bool, Error) {

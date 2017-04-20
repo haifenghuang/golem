@@ -96,7 +96,16 @@ type Null interface {
 type Bool interface {
 	Value
 	BoolVal() bool
+
 	Not() Bool
+}
+
+//---------------------------------------------------------------
+// Str
+
+type Str interface {
+	Value
+	StrVal() string
 }
 
 //---------------------------------------------------------------

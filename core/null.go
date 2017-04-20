@@ -20,7 +20,7 @@ var NULL Null = &null{}
 
 func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
 
-func (n *null) String() (Str, Error) { return Str("null"), nil }
+func (n *null) String() (Str, Error) { return MakeStr("null"), nil }
 
 func (n *null) Eq(v Value) (Bool, Error) {
 	switch v.(type) {

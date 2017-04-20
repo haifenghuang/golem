@@ -70,7 +70,7 @@ func NewFunc(template *Template) *Func {
 func (f *Func) TypeOf() (Type, Error) { return TFUNC, nil }
 
 func (f *Func) String() (Str, Error) {
-	return Str(f.doStr()), nil
+	return MakeStr(f.doStr()), nil
 }
 
 func (f *Func) doStr() string {

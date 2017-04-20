@@ -25,7 +25,7 @@ func (f Float) TypeOf() (Type, Error) { return TFLOAT, nil }
 func (f Float) number() {}
 
 func (f Float) String() (Str, Error) {
-	return Str(fmt.Sprintf("%g", f)), nil
+	return MakeStr(fmt.Sprintf("%g", f)), nil
 }
 
 func (f Float) Eq(v Value) (Bool, Error) {

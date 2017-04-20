@@ -156,7 +156,7 @@ func TestExpression(t *testing.T) {
 	mod = NewCompiler(newAnalyzer("'a' * 1.23e4;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Str("a"),
+			g.MakeStr("a"),
 			g.Float(float64(12300))},
 		nil,
 		[]*g.ObjDef{},
@@ -177,7 +177,7 @@ func TestExpression(t *testing.T) {
 	mod = NewCompiler(newAnalyzer("'a' == true;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Str("a")},
+			g.MakeStr("a")},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -454,7 +454,7 @@ func TestWhile(t *testing.T) {
 	mod = NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Str("z"),
+			g.MakeStr("z"),
 			g.Int(2),
 			g.Int(3)},
 		nil,
@@ -906,9 +906,9 @@ x.a = 3;
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Str("a"),
+			g.MakeStr("a"),
 			g.Int(3),
-			g.Str("a")},
+			g.MakeStr("a")},
 		nil,
 		[]*g.ObjDef{
 			&g.ObjDef{[]string{"a"}}},
@@ -956,12 +956,12 @@ let c = a.minus();
 		[]g.Value{
 			g.Int(8),
 			g.Int(5),
-			g.Str("plus"),
-			g.Str("minus"),
-			g.Str("x"),
-			g.Str("y"),
-			g.Str("x"),
-			g.Str("y")},
+			g.MakeStr("plus"),
+			g.MakeStr("minus"),
+			g.MakeStr("x"),
+			g.MakeStr("y"),
+			g.MakeStr("x"),
+			g.MakeStr("y")},
 		nil,
 		[]*g.ObjDef{
 			&g.ObjDef{[]string{"x", "y", "plus", "minus"}}},
@@ -1101,8 +1101,8 @@ let d = b.y--;
 		[]g.Value{
 			g.Int(10),
 			g.Int(20),
-			g.Str("x"),
-			g.Str("y")},
+			g.MakeStr("x"),
+			g.MakeStr("y")},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{

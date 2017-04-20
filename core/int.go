@@ -30,7 +30,7 @@ func (i Int) TypeOf() (Type, Error) { return TINT, nil }
 func (i Int) number() {}
 
 func (i Int) String() (Str, Error) {
-	return Str(fmt.Sprintf("%d", i)), nil
+	return MakeStr(fmt.Sprintf("%d", i)), nil
 }
 
 func (i Int) Eq(v Value) (Bool, Error) {

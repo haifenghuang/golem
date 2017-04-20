@@ -175,7 +175,7 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 		c.Visit(asn.Val)
 
 		high, low := index(len(c.pool))
-		c.pool = append(c.pool, g.Str(t.Key.Text))
+		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
 		c.push(t.Key.Position, g.PUT_FIELD, high, low)
 
 	default:
@@ -218,7 +218,7 @@ func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
 		}
 
 		high, low := index(len(c.pool))
-		c.pool = append(c.pool, g.Str(t.Key.Text))
+		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
 		c.push(t.Key.Position, g.INC_FIELD, high, low)
 
 	default:
@@ -474,7 +474,7 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 		c.push(basic.Token.Position, g.LOAD_FALSE)
 
 	case ast.STR:
-		c.pool = append(c.pool, g.Str(basic.Token.Text))
+		c.pool = append(c.pool, g.MakeStr(basic.Token.Text))
 		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 
 	case ast.INT:
@@ -575,7 +575,7 @@ func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
 func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	c.Visit(fe.Operand)
 	high, low := index(len(c.pool))
-	c.pool = append(c.pool, g.Str(fe.Key.Text))
+	c.pool = append(c.pool, g.MakeStr(fe.Key.Text))
 	c.push(fe.Key.Position, g.GET_FIELD, high, low)
 }
 

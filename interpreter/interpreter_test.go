@@ -135,8 +135,8 @@ func TestExpressions(t *testing.T) {
 
 	ok_expr(t, "(2*2*2*2 + 2*3*(8 - 1) + 2) / (17 - 2*2*2 - -1);", g.Int(6))
 
-	ok_expr(t, "true + 'a';", g.Str("truea"))
-	ok_expr(t, "'a' + true;", g.Str("atrue"))
+	ok_expr(t, "true + 'a';", g.MakeStr("truea"))
+	ok_expr(t, "'a' + true;", g.MakeStr("atrue"))
 
 	fail_expr(t, "true + null;", "TypeMismatch: Expected Number Type")
 	fail_expr(t, "1 + null;", "TypeMismatch: Expected Number Type")

@@ -220,7 +220,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				panic("Invalid GET_FIELD Key")
 			}
 
-			result, err := s[n].GetField(string(key))
+			result, err := s[n].GetField(key.StrVal())
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -239,7 +239,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand := s[n-1]
 			value := s[n]
 
-			err := operand.PutField(string(key), value)
+			err := operand.PutField(key.StrVal(), value)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -259,7 +259,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand := s[n-1]
 			value := s[n]
 
-			before, err := operand.GetField(string(key))
+			before, err := operand.GetField(key.StrVal())
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -269,7 +269,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 
-			err = operand.PutField(string(key), after)
+			err = operand.PutField(key.StrVal(), after)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}

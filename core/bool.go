@@ -27,13 +27,17 @@ func MakeBool(b bool) Bool {
 	}
 }
 
+func (b _bool) BoolVal() bool {
+	return bool(b)
+}
+
 func (b _bool) TypeOf() (Type, Error) { return TBOOL, nil }
 
 func (b _bool) String() (Str, Error) {
 	if b {
-		return Str("true"), nil
+		return MakeStr("true"), nil
 	} else {
-		return Str("false"), nil
+		return MakeStr("false"), nil
 	}
 }
 
@@ -61,10 +65,6 @@ func (b _bool) Add(v Value) (Value, Error) {
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
-}
-
-func (b _bool) BoolVal() bool {
-	return bool(b)
 }
 
 func (b _bool) Not() Bool {
