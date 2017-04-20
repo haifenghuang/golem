@@ -21,6 +21,10 @@ import (
 
 type Int int64
 
+var ZERO Int = Int(0)
+var ONE Int = Int(1)
+var NEG_ONE Int = Int(-1)
+
 func (i Int) TypeOf() (Type, Error) { return TINT, nil }
 
 func (i Int) number() {}

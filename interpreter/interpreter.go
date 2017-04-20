@@ -267,6 +267,15 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.LOAD_FALSE:
 			s = append(s, g.FALSE)
 			ip++
+		case g.LOAD_ZERO:
+			s = append(s, g.ZERO)
+			ip++
+		case g.LOAD_ONE:
+			s = append(s, g.ONE)
+			ip++
+		case g.LOAD_NEG_ONE:
+			s = append(s, g.NEG_ONE)
+			ip++
 
 		case g.LOAD_CONST:
 			idx := index(opc, ip)

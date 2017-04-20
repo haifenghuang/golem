@@ -22,8 +22,11 @@ const (
 	LOAD_NULL byte = iota
 	LOAD_TRUE
 	LOAD_FALSE
-	LOAD_CONST
+	LOAD_ZERO
+	LOAD_ONE
+	LOAD_NEG_ONE
 
+	LOAD_CONST
 	LOAD_LOCAL
 	STORE_LOCAL
 	LOAD_CAPTURE
@@ -103,6 +106,12 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmt.Sprintf("%d: LOAD_TRUE\n", i)
 	case LOAD_FALSE:
 		return fmt.Sprintf("%d: LOAD_FALSE\n", i)
+	case LOAD_ZERO:
+		return fmt.Sprintf("%d: LOAD_ZERO\n", i)
+	case LOAD_ONE:
+		return fmt.Sprintf("%d: LOAD_ONE\n", i)
+	case LOAD_NEG_ONE:
+		return fmt.Sprintf("%d: LOAD_NEG_ONE\n", i)
 
 	case LOAD_CONST:
 		return fmtIndex(opcodes, i, "LOAD_CONST")

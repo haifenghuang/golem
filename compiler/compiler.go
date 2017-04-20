@@ -392,9 +392,16 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 
 			case ast.INT:
 				i := parseInt(t.Token.Text)
-				high, low := index(len(c.pool))
-				c.pool = append(c.pool, g.Int(-i))
-				c.push(u.Op.Position, g.LOAD_CONST, high, low)
+				switch i {
+				case 0:
+					c.push(u.Op.Position, g.LOAD_ZERO)
+				case 1:
+					c.push(u.Op.Position, g.LOAD_NEG_ONE)
+				default:
+					high, low := index(len(c.pool))
+					c.pool = append(c.pool, g.Int(-i))
+					c.push(u.Op.Position, g.LOAD_CONST, high, low)
+				}
 
 			default:
 				u.Operand.Traverse(c)
@@ -443,8 +450,15 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
 	case ast.INT:
 		i := parseInt(basic.Token.Text)
-		c.pool = append(c.pool, g.Int(i))
-		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+		switch i {
+		case 0:
+			c.push(basic.Token.Position, g.LOAD_ZERO)
+		case 1:
+			c.push(basic.Token.Position, g.LOAD_ONE)
+		default:
+			c.pool = append(c.pool, g.Int(i))
+			c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+		}
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
