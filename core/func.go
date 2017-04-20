@@ -104,6 +104,3 @@ func (f *Func) Add(v Value) (Value, Error) {
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
-
-func (f *Func) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (f *Func) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

@@ -34,7 +34,7 @@ func TestFunc(t *testing.T) {
 	ok(t, z, err, TRUE)
 }
 
-func newObj(fields map[string]Value) *Obj {
+func newObj(fields map[string]Value) Obj {
 	o := NewObj()
 	def := &ObjDef{[]string{}}
 	values := []Value{}
@@ -61,7 +61,7 @@ func TestObj(t *testing.T) {
 	val, err := o.Add(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj { }a"))
 
-	val, err = o.GetField("a")
+	val, err = o.GetField(MakeStr("a"))
 	fail(t, val, err, "NoSuchField: Field 'a' not found.")
 
 	//////////////////
@@ -80,18 +80,18 @@ func TestObj(t *testing.T) {
 	val, err = o.Add(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj { a: 1 }a"))
 
-	val, err = o.GetField("a")
+	val, err = o.GetField(MakeStr("a"))
 	ok(t, val, err, MakeInt(1))
 
-	val, err = o.GetField("b")
+	val, err = o.GetField(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found.")
 
-	err = o.PutField("a", MakeInt(123))
+	err = o.PutField(MakeStr("a"), MakeInt(123))
 	if err != nil {
 		panic("unexpected error")
 	}
 
-	val, err = o.GetField("a")
+	val, err = o.GetField(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
 }
 
@@ -109,8 +109,8 @@ func TestUninitialized(t *testing.T) {
 	_, e3 := o.Cmp(NULL)
 	_, e4 := o.Add(NULL)
 
-	_, e5 := o.GetField("")
-	e6 := o.PutField("", NULL)
+	_, e5 := o.GetField(MakeStr(""))
+	e6 := o.PutField(MakeStr(""), NULL)
 
 	uninitErr(t, e0)
 	uninitErr(t, e1)

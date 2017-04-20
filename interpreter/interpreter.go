@@ -64,17 +64,17 @@ func (inp *Interpreter) Init() (g.Value, *ErrorStack) {
 	inp.mod.Locals = locals
 
 	// make func
-	fn := g.NewFunc(tpl)
+	curFunc := g.NewFunc(tpl)
 
 	// go
-	return inp.invoke(fn, locals)
+	return inp.invoke(curFunc, locals)
 }
 
-func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStack) {
+func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *ErrorStack) {
 
 	pool := inp.mod.Pool
 	defs := inp.mod.ObjDefs
-	opc := fn.Template.OpCodes
+	opc := curFunc.Template.OpCodes
 
 	// stack and instruction pointer
 	s := []g.Value{}
@@ -91,16 +91,16 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			idx := index(opc, ip)
 
 			// get function from stack
-			operand, ok := s[n-idx].(*g.Func)
+			fn, ok := s[n-idx].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
-			if operand.Template.Arity != idx {
+			if fn.Template.Arity != idx {
 				return nil, &ErrorStack{
-					g.ArityMismatchError(operand.Template.Arity, idx),
-					inp.stringFrames(fn, locals, s, ip)}
+					g.ArityMismatchError(fn.Template.Arity, idx),
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			// get params from stack
@@ -113,12 +113,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip += 3
 
 			// save the execution environment
-			inp.frames = append(inp.frames, &frame{fn, locals, s, ip})
+			inp.frames = append(inp.frames, &frame{curFunc, locals, s, ip})
 
 			// create a new execution environment
-			fn = operand
-			locals = newLocals(fn.Template.NumLocals, params)
-			opc = fn.Template.OpCodes
+			curFunc = fn
+			locals = newLocals(curFunc.Template.NumLocals, params)
+			opc = curFunc.Template.OpCodes
 			s = []g.Value{}
 			ip = 0
 
@@ -138,9 +138,9 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			inp.frames = inp.frames[:lf]
 
 			// restore the execution environment
-			fn = fr.function
+			curFunc = fr.function
 			locals = fr.locals
-			opc = fn.Template.OpCodes
+			opc = curFunc.Template.OpCodes
 			s = fr.stack
 			ip = fr.instPtr
 
@@ -159,31 +159,31 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.FUNC_LOCAL:
 
 			// get function from stack
-			operand, ok := s[n].(*g.Func)
+			fn, ok := s[n].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			// push a local onto the captures of the function
 			idx := index(opc, ip)
-			operand.Captures = append(operand.Captures, locals[idx])
+			fn.Captures = append(fn.Captures, locals[idx])
 			ip += 3
 
 		case g.FUNC_CAPTURE:
 
 			// get function from stack
-			operand, ok := s[n].(*g.Func)
+			fn, ok := s[n].(*g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			// push a capture onto the captures of the function
 			idx := index(opc, ip)
-			operand.Captures = append(operand.Captures, fn.Captures[idx])
+			fn.Captures = append(fn.Captures, curFunc.Captures[idx])
 			ip += 3
 
 		case g.NEW_OBJ:
@@ -197,7 +197,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			size := len(def.Keys)
 
 			// get obj and values
-			obj, ok := s[n-size].(*g.Obj)
+			obj, ok := s[n-size].(g.Obj)
 			if !ok {
 				panic("Invalid INIT_OBJ")
 			}
@@ -220,9 +220,17 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				panic("Invalid GET_FIELD Key")
 			}
 
-			result, err := s[n].GetField(key.StrVal())
+			// get obj from stack
+			obj, ok := s[n].(g.Obj)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Obj'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			result, err := obj.GetField(key)
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s[n] = result
@@ -236,12 +244,20 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				panic("Invalid PUT_FIELD Key")
 			}
 
-			operand := s[n-1]
+			// get obj from stack
+			obj, ok := s[n-1].(g.Obj)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Obj'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get value from stack
 			value := s[n]
 
-			err := operand.PutField(key.StrVal(), value)
+			err := obj.PutField(key, value)
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s[n-1] = value
@@ -256,22 +272,30 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				panic("Invalid GET_FIELD Key")
 			}
 
-			operand := s[n-1]
+			// get obj from stack
+			obj, ok := s[n-1].(g.Obj)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Obj'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get value from stack
 			value := s[n]
 
-			before, err := operand.GetField(key.StrVal())
+			before, err := obj.GetField(key)
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			after, err := before.Add(value)
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			err = operand.PutField(key.StrVal(), after)
+			err = obj.PutField(key, after)
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s[n-1] = before
@@ -309,7 +333,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 
 		case g.LOAD_CAPTURE:
 			idx := index(opc, ip)
-			s = append(s, fn.Captures[idx].Val)
+			s = append(s, curFunc.Captures[idx].Val)
 			ip += 3
 
 		case g.STORE_LOCAL:
@@ -320,7 +344,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 
 		case g.STORE_CAPTURE:
 			idx := index(opc, ip)
-			fn.Captures[idx].Val = s[n]
+			curFunc.Captures[idx].Val = s[n]
 			s = s[:n]
 			ip += 3
 
@@ -332,7 +356,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Bool'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s = s[:n]
@@ -347,7 +371,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Bool'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s = s[:n]
@@ -360,7 +384,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.EQ:
 			b, err := s[n-1].Eq(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = b
@@ -369,7 +393,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.NE:
 			b, err := s[n-1].Eq(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = b.Not()
@@ -378,7 +402,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.LT:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = g.MakeBool(val.IntVal() < 0)
@@ -387,7 +411,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.LTE:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = g.MakeBool(val.IntVal() <= 0)
@@ -396,7 +420,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.GT:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = g.MakeBool(val.IntVal() > 0)
@@ -405,7 +429,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.GTE:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = g.MakeBool(val.IntVal() >= 0)
@@ -414,7 +438,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.CMP:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -423,7 +447,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 		case g.ADD:
 			val, err := s[n-1].Add(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -434,7 +458,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Bool'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			s[n] = b.Not()
@@ -445,12 +469,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected Number Type"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Sub(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -461,12 +485,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected Number Type"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Mul(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -477,12 +501,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected Number Type"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Div(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -493,12 +517,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected Number Type"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Negate()
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s[n] = val
 			ip++
@@ -508,12 +532,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Rem(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -524,12 +548,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.BitAnd(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -540,12 +564,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.BitOr(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -556,12 +580,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.BitXOr(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -572,12 +596,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.LeftShift(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -588,12 +612,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.RightShift(s[n])
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
@@ -604,12 +628,12 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Int'"),
-					inp.stringFrames(fn, locals, s, ip)}
+					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			val, err := z.Complement()
 			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 			s[n] = val
 			ip++
@@ -626,7 +650,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 
 // Create a stack of string-representations from the current stack of execution frames
 func (inp *Interpreter) stringFrames(
-	fn *g.Func,
+	curFunc *g.Func,
 	locals []*g.Ref,
 	valueStack []g.Value,
 	instPtr int) []string {
@@ -634,7 +658,7 @@ func (inp *Interpreter) stringFrames(
 	n := len(inp.frames)
 	stack := make([]string, n+1)
 
-	lineNum := fn.Template.LineNumber(instPtr)
+	lineNum := curFunc.Template.LineNumber(instPtr)
 	stack = append(stack, fmt.Sprintf("    at line %d", lineNum))
 
 	for i := n - 1; i >= 0; i-- {

@@ -149,6 +149,3 @@ func (f _float) Div(v Value) (Number, Error) {
 func (f _float) Negate() (Number, Error) {
 	return 0 - f, nil
 }
-
-func (f _float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (f _float) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

@@ -227,6 +227,3 @@ func (i _int) RightShift(v Value) (Int, Error) {
 func (i _int) Complement() (Int, Error) {
 	return ^i, nil
 }
-
-func (i _int) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (i _int) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

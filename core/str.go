@@ -75,6 +75,3 @@ func strcat(a []Value) (_str, Error) {
 	}
 	return _str(buf.String()), nil
 }
-
-func (s _str) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (s _str) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

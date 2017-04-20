@@ -20,7 +20,7 @@ import (
 )
 
 //---------------------------------------------------------------
-// ObjDef represents the information needed to instantiate an obj
+// An ObjDef contains the information needed to instantiate an Obj
 // instance.  ObjDefs are created at compile time, and
 // are immutable at run time.
 
@@ -29,42 +29,42 @@ type ObjDef struct {
 }
 
 //---------------------------------------------------------------
-// Obj
+// _obj
 
-type Obj struct {
-	Fields map[string]Value
-	Inited bool
+type _obj struct {
+	fields map[string]Value
+	inited bool
 }
 
-func NewObj() *Obj {
-	return &Obj{nil, false}
+func NewObj() Obj {
+	return &_obj{nil, false}
 }
 
-func (o *Obj) Init(def *ObjDef, vals []Value) {
-	o.Fields = make(map[string]Value)
+func (o *_obj) Init(def *ObjDef, vals []Value) {
+	o.fields = make(map[string]Value)
 	for i, k := range def.Keys {
-		o.Fields[k] = vals[i]
+		o.fields[k] = vals[i]
 	}
-	o.Inited = true
+	o.inited = true
 }
 
-func (o *Obj) TypeOf() (Type, Error) {
-	if !o.Inited {
+func (o *_obj) TypeOf() (Type, Error) {
+	if !o.inited {
 		return TOBJ, UninitializedObjError()
 	}
 
 	return TOBJ, nil
 }
 
-func (o *Obj) String() (Str, Error) {
-	if !o.Inited {
+func (o *_obj) String() (Str, Error) {
+	if !o.inited {
 		return nil, UninitializedObjError()
 	}
 
 	var buf bytes.Buffer
 	buf.WriteString("obj {")
 	idx := 0
-	for k, v := range o.Fields {
+	for k, v := range o.fields {
 		if idx > 0 {
 			buf.WriteString(",")
 		}
@@ -83,29 +83,29 @@ func (o *Obj) String() (Str, Error) {
 	return MakeStr(buf.String()), nil
 }
 
-func (o *Obj) Eq(v Value) (Bool, Error) {
-	if !o.Inited {
+func (o *_obj) Eq(v Value) (Bool, Error) {
+	if !o.inited {
 		return FALSE, UninitializedObjError()
 	}
 
 	switch t := v.(type) {
-	case *Obj:
-		return MakeBool(reflect.DeepEqual(o.Fields, t.Fields)), nil
+	case *_obj:
+		return MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (o *Obj) Cmp(v Value) (Int, Error) {
-	if !o.Inited {
+func (o *_obj) Cmp(v Value) (Int, Error) {
+	if !o.inited {
 		return nil, UninitializedObjError()
 	}
 
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (o *Obj) Add(v Value) (Value, Error) {
-	if !o.Inited {
+func (o *_obj) Add(v Value) (Value, Error) {
+	if !o.inited {
 		return nil, UninitializedObjError()
 	}
 
@@ -119,29 +119,29 @@ func (o *Obj) Add(v Value) (Value, Error) {
 	}
 }
 
-func (o *Obj) GetField(key string) (Value, Error) {
-	if !o.Inited {
+func (o *_obj) GetField(key Str) (Value, Error) {
+	if !o.inited {
 		return nil, UninitializedObjError()
 	}
 
-	v, ok := o.Fields[key]
+	v, ok := o.fields[key.StrVal()]
 	if ok {
 		return v, nil
 	} else {
-		return nil, NoSuchFieldError(key)
+		return nil, NoSuchFieldError(key.StrVal())
 	}
 }
 
-func (o *Obj) PutField(key string, val Value) Error {
-	if !o.Inited {
+func (o *_obj) PutField(key Str, val Value) Error {
+	if !o.inited {
 		return UninitializedObjError()
 	}
 
-	_, ok := o.Fields[key]
+	_, ok := o.fields[key.StrVal()]
 	if ok {
-		o.Fields[key] = val
+		o.fields[key.StrVal()] = val
 		return nil
 	} else {
-		return NoSuchFieldError(key)
+		return NoSuchFieldError(key.StrVal())
 	}
 }

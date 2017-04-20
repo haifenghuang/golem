@@ -65,9 +65,6 @@ type Value interface {
 	String() (Str, Error)
 	Cmp(Value) (Int, Error)
 	Add(Value) (Value, Error)
-
-	GetField(string) (Value, Error)
-	PutField(string, Value) Error
 }
 
 //---------------------------------------------------------------
@@ -129,6 +126,17 @@ type Int interface {
 	LeftShift(Value) (Int, Error)
 	RightShift(Value) (Int, Error)
 	Complement() (Int, Error)
+}
+
+//---------------------------------------------------------------
+// Obj
+
+type Obj interface {
+	Value
+	Init(*ObjDef, []Value)
+
+	GetField(Str) (Value, Error)
+	PutField(Str, Value) Error
 }
 
 //---------------------------------------------------------------

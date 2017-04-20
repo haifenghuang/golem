@@ -43,6 +43,3 @@ func (n *null) Add(v Value) (Value, Error) {
 		return nil, NullValueError()
 	}
 }
-
-func (n *null) GetField(key string) (Value, Error)   { return nil, NullValueError() }
-func (n *null) PutField(key string, val Value) Error { return NullValueError() }

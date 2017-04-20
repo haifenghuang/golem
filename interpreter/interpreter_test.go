@@ -428,7 +428,7 @@ let y = a(1);
 
 }
 
-func newObj(fields map[string]g.Value) *g.Obj {
+func newObj(fields map[string]g.Value) g.Obj {
 	o := g.NewObj()
 	def := &g.ObjDef{[]string{}}
 	values := []g.Value{}

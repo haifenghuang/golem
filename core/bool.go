@@ -72,6 +72,3 @@ func (b _bool) Add(v Value) (Value, Error) {
 func (b _bool) Not() Bool {
 	return !b
 }
-
-func (b _bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (b _bool) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }
