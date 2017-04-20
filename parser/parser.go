@@ -231,37 +231,43 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 
 func (p *Parser) expression() ast.Expr {
 
-	if p.cur.Kind == ast.IDENT && p.next.Kind == ast.EQ {
+	exp := p.orExpr()
 
-		sym := p.expect(ast.IDENT)
-		op := p.expect(ast.EQ)
+	if asn, ok := exp.(ast.Assignable); ok {
 
-		ident := &ast.IdentExpr{sym, nil}
-		return &ast.Assignment{ident, op, p.expression()}
+		if p.cur.Kind == ast.EQ {
 
-	} else if p.cur.Kind == ast.IDENT && isAssignOp(p.next) {
+			// assignemt
+			eq := p.expect(ast.EQ)
+			exp = &ast.Assignment{asn, eq, p.expression()}
 
-		sym := p.expect(ast.IDENT)
-		op := p.consume()
+		} else if isAssignOp(p.cur) {
 
-		return &ast.Assignment{
-			&ast.IdentExpr{sym, nil},
-			op,
-			&ast.BinaryExpr{
-				&ast.IdentExpr{sym, nil},
-				fromAssignOp(op),
-				p.expression()}}
+			// assign operation
+			op := p.consume()
 
-	} else {
-		lhs := p.andExpr()
-		for p.cur.Kind == ast.DBL_PIPE {
-			tok := p.cur
-			p.consume()
-			lhs = &ast.BinaryExpr{lhs, tok, p.andExpr()}
+			exp = &ast.Assignment{
+				asn,
+				op,
+				&ast.BinaryExpr{
+					asn,
+					fromAssignOp(op),
+					p.expression()}}
 		}
-		return lhs
-
 	}
+
+	return exp
+}
+
+func (p *Parser) orExpr() ast.Expr {
+
+	lhs := p.andExpr()
+	for p.cur.Kind == ast.DBL_PIPE {
+		tok := p.cur
+		p.consume()
+		lhs = &ast.BinaryExpr{lhs, tok, p.andExpr()}
+	}
+	return lhs
 }
 
 func (p *Parser) andExpr() ast.Expr {
@@ -272,7 +278,6 @@ func (p *Parser) andExpr() ast.Expr {
 		p.consume()
 		lhs = &ast.BinaryExpr{lhs, tok, p.comparativeExpr()}
 	}
-
 	return lhs
 }
 
@@ -284,7 +289,6 @@ func (p *Parser) comparativeExpr() ast.Expr {
 		p.consume()
 		lhs = &ast.BinaryExpr{lhs, tok, p.additiveExpr()}
 	}
-
 	return lhs
 }
 
@@ -296,7 +300,6 @@ func (p *Parser) additiveExpr() ast.Expr {
 		p.consume()
 		lhs = &ast.BinaryExpr{lhs, tok, p.multiplicativeExpr()}
 	}
-
 	return lhs
 }
 
@@ -308,7 +311,6 @@ func (p *Parser) multiplicativeExpr() ast.Expr {
 		p.consume()
 		lhs = &ast.BinaryExpr{lhs, tok, p.unaryExpr()}
 	}
-
 	return lhs
 }
 
@@ -352,14 +354,7 @@ func (p *Parser) primaryExpr() ast.Expr {
 		case ast.DOT:
 			p.expect(ast.DOT)
 			key := p.expect(ast.IDENT)
-
-			// TODO: is it correct to parse PutExpr here, rather than in p.expression()?
-			// Something doesn't seem quite right.
-			if p.accept(ast.EQ) {
-				prm = &ast.PutExpr{prm, key, p.expression()}
-			} else {
-				prm = &ast.FieldExpr{prm, key}
-			}
+			prm = &ast.FieldExpr{prm, key}
 
 		default:
 			return prm

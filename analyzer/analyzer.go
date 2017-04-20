@@ -68,15 +68,14 @@ func (a *analyzer) Visit(node ast.Node) {
 		a.visitFunc(t)
 
 	case *ast.Const:
-		t.Traverse(a)
+		a.Visit(t.Val)
 		a.visitConst(t)
 
 	case *ast.Let:
-		t.Traverse(a)
+		a.Visit(t.Val)
 		a.visitLet(t)
 
 	case *ast.Assignment:
-		t.Traverse(a)
 		a.visitAssignment(t)
 
 	case *ast.IdentExpr:
@@ -180,17 +179,31 @@ func (a *analyzer) visitLet(let *ast.Let) {
 
 func (a *analyzer) visitAssignment(asn *ast.Assignment) {
 
-	sym := asn.Ident.Symbol.Text
+	switch t := asn.Assignee.(type) {
 
-	if v, ok := a.curScope.get(sym); ok {
-		if v.IsConst {
+	case *ast.IdentExpr:
+
+		a.Visit(asn.Val)
+
+		sym := t.Symbol.Text
+		if v, ok := a.curScope.get(sym); ok {
+			if v.IsConst {
+				a.errors = append(a.errors,
+					&aerror{fmt.Sprintf("Symbol '%s' is constant", sym)})
+			}
+			t.Variable = v
+		} else {
 			a.errors = append(a.errors,
-				&aerror{fmt.Sprintf("Symbol '%s' is constant", sym)})
+				&aerror{fmt.Sprintf("Symbol '%s' is not defined", sym)})
 		}
-		asn.Ident.Variable = v
-	} else {
-		a.errors = append(a.errors,
-			&aerror{fmt.Sprintf("Symbol '%s' is not defined", sym)})
+
+	case *ast.FieldExpr:
+
+		a.Visit(t.Operand)
+		a.Visit(asn.Val)
+
+	default:
+		panic("invalid assignee type")
 	}
 }
 

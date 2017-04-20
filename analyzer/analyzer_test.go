@@ -427,10 +427,6 @@ let c = a.minus();
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 
-	//	fmt.Println(source)
-	//	fmt.Println(ast.Dump(anl.Module()))
-	//	fmt.Println(errors)
-
 	ok(t, anl, errors, `
 FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 .   Block
@@ -465,5 +461,37 @@ FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 .   .   .   InvokeExpr
 .   .   .   .   FieldExpr(minus)
 .   .   .   .   .   IdentExpr(a,(1,false,false))
+`)
+}
+
+func TestField(t *testing.T) {
+
+	source := `
+let x = obj { a: 0 };
+let y = x.a;
+x.a = 3;
+`
+	anl := newAnalyzer(source)
+	errors := anl.Analyze()
+
+	//fmt.Println(source)
+	//fmt.Println(ast.Dump(anl.Module()))
+	//fmt.Println(errors)
+
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   Let
+.   .   .   IdentExpr(x,(0,false,false))
+.   .   .   ObjExpr([a],-1)
+.   .   .   .   BasicExpr(INT,"0")
+.   .   Let
+.   .   .   IdentExpr(y,(1,false,false))
+.   .   .   FieldExpr(a)
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   Assignment
+.   .   .   FieldExpr(a)
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   .   BasicExpr(INT,"3")
 `)
 }

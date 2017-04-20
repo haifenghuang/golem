@@ -484,12 +484,22 @@ let c = a.minus();
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
+	ok_ref(t, mod.Locals[2], g.Int(13))
+	ok_ref(t, mod.Locals[3], g.Int(3))
+
+	source = `
+let a = null;
+a = obj { x: 8 }.x = 5;
+`
+	mod = newCompiler(source).Compile()
+
+	interpret(mod)
+
 	//fmt.Println("----------------------------")
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[2], g.Int(13))
-	ok_ref(t, mod.Locals[3], g.Int(3))
+	ok_ref(t, mod.Locals[0], g.Int(5))
 }
 
 func TestErrStack(t *testing.T) {

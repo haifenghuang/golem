@@ -41,6 +41,11 @@ type (
 		Node
 		exprMarker()
 	}
+
+	Assignable interface {
+		Expr
+		assignableMarker()
+	}
 )
 
 // structs
@@ -102,9 +107,9 @@ type (
 	// expression
 
 	Assignment struct {
-		Ident *IdentExpr
-		Op    *Token
-		Val   Expr
+		Assignee Assignable
+		Eq       *Token
+		Val      Expr
 	}
 
 	BinaryExpr struct {
@@ -173,12 +178,6 @@ type (
 		Operand Expr
 		Key     *Token
 	}
-
-	PutExpr struct {
-		Operand Expr
-		Key     *Token
-		Value   Expr
-	}
 )
 
 //--------------------------------------------------------------
@@ -204,7 +203,9 @@ func (*InvokeExpr) exprMarker()  {}
 func (*ObjExpr) exprMarker()     {}
 func (*ThisExpr) exprMarker()    {}
 func (*FieldExpr) exprMarker()   {}
-func (*PutExpr) exprMarker()     {}
+
+func (*IdentExpr) assignableMarker() {}
+func (*FieldExpr) assignableMarker() {}
 
 //--------------------------------------------------------------
 // Begin, End
@@ -239,7 +240,7 @@ func (n *Continue) End() Pos   { return n.Semicolon.Position }
 func (n *Return) Begin() Pos { return n.Token.Position }
 func (n *Return) End() Pos   { return n.Semicolon.Position }
 
-func (n *Assignment) Begin() Pos { return n.Ident.Begin() }
+func (n *Assignment) Begin() Pos { return n.Assignee.Begin() }
 func (n *Assignment) End() Pos   { return n.Val.End() }
 
 func (n *BinaryExpr) Begin() Pos { return n.Lhs.Begin() }
@@ -284,9 +285,6 @@ func (n *ThisExpr) End() Pos {
 func (n *FieldExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *FieldExpr) End() Pos   { return n.Key.Position }
 
-func (n *PutExpr) Begin() Pos { return n.Operand.Begin() }
-func (n *PutExpr) End() Pos   { return n.Value.End() }
-
 //--------------------------------------------------------------
 // string
 
@@ -307,7 +305,7 @@ func (let *Let) String() string {
 }
 
 func (asn *Assignment) String() string {
-	return fmt.Sprintf("(%v = %v)", asn.Ident, asn.Val)
+	return fmt.Sprintf("(%v = %v)", asn.Assignee, asn.Val)
 }
 
 func (ifn *If) String() string {
@@ -418,16 +416,6 @@ func (f *FieldExpr) String() string {
 	buf.WriteString(f.Operand.String())
 	buf.WriteString(".")
 	buf.WriteString(f.Key.Text)
-	return buf.String()
-}
-
-func (p *PutExpr) String() string {
-	var buf bytes.Buffer
-	buf.WriteString(p.Operand.String())
-	buf.WriteString(".")
-	buf.WriteString(p.Key.Text)
-	buf.WriteString(" = ")
-	buf.WriteString(p.Value.String())
 	return buf.String()
 }
 

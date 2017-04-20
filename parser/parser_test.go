@@ -353,7 +353,7 @@ func TestObj(t *testing.T) {
 	ok_expr(t, p, "a.b")
 
 	p = newParser("a.b = 3")
-	ok_expr(t, p, "a.b = 3")
+	ok_expr(t, p, "(a.b = 3)")
 
 	p = newParser("let a.b = 3;")
 	fail(t, p, "Unexpected Token '.' at (1, 6)")
@@ -373,17 +373,20 @@ func TestObj(t *testing.T) {
 	p = newParser("obj{ a: this == 2 }")
 	ok_expr(t, p, "obj { a: (this == 2) }")
 
-	p = newParser("this.b = 3")
-	ok_expr(t, p, "this.b = 3")
+	p = newParser("a = this.b = 3")
+	ok_expr(t, p, "(a = (this.b = 3))")
 
 	p = newParser("obj { a: this.b = 3 }")
-	ok_expr(t, p, "obj { a: this.b = 3 }")
+	ok_expr(t, p, "obj { a: (this.b = 3) }")
 
 	p = newParser("b = this")
 	ok_expr(t, p, "(b = this)")
 
 	p = newParser("obj { a: b = this }")
 	ok_expr(t, p, "obj { a: (b = this) }")
+
+	p = newParser("a = obj { x: 8 }.x = 5")
+	ok_expr(t, p, "(a = (obj { x: 8 }.x = 5))")
 
 	p = newParser("this = b")
 	fail(t, p, "Unexpected Token '=' at (1, 6)")

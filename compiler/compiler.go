@@ -83,18 +83,15 @@ func (c *compiler) Visit(node ast.Node) {
 	switch t := node.(type) {
 
 	case *ast.Const:
-		t.Traverse(c)
-		c.assign(t.Ident)
+		c.Visit(t.Val)
+		c.assignIdent(t.Ident)
 
 	case *ast.Let:
-		t.Traverse(c)
-		c.assign(t.Ident)
+		c.Visit(t.Val)
+		c.assignIdent(t.Ident)
 
 	case *ast.Assignment:
-		t.Traverse(c)
-		// TODO doesn't this have the potential to fill up the operand stack?
-		c.push(t.Op.Position, g.DUP)
-		c.assign(t.Ident)
+		c.visitAssignment(t)
 
 	case *ast.If:
 		c.visitIf(t)
@@ -138,15 +135,12 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.FieldExpr:
 		c.visitFieldExpr(t)
 
-	case *ast.PutExpr:
-		c.visitPutExpr(t)
-
 	default:
 		t.Traverse(c)
 	}
 }
 
-func (c *compiler) assign(ident *ast.IdentExpr) {
+func (c *compiler) assignIdent(ident *ast.IdentExpr) {
 
 	v := ident.Variable
 	high, low := index(v.Index)
@@ -154,6 +148,32 @@ func (c *compiler) assign(ident *ast.IdentExpr) {
 		c.push(ident.Begin(), g.STORE_CAPTURE, high, low)
 	} else {
 		c.push(ident.Begin(), g.STORE_LOCAL, high, low)
+	}
+}
+
+func (c *compiler) visitAssignment(asn *ast.Assignment) {
+
+	switch t := asn.Assignee.(type) {
+
+	case *ast.IdentExpr:
+
+		c.Visit(asn.Val)
+
+		// TODO doesn't DUP-ing have the potential to fill up the operand stack?
+		c.push(asn.Eq.Position, g.DUP)
+		c.assignIdent(t)
+
+	case *ast.FieldExpr:
+
+		c.Visit(t.Operand)
+		c.Visit(asn.Val)
+
+		high, low := index(len(c.pool))
+		c.pool = append(c.pool, g.Str(t.Key.Text))
+		c.push(t.Key.Position, g.PUT_FIELD, high, low)
+
+	default:
+		panic("invalid assignee type")
 	}
 }
 
@@ -483,14 +503,6 @@ func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	high, low := index(len(c.pool))
 	c.pool = append(c.pool, g.Str(fe.Key.Text))
 	c.push(fe.Key.Position, g.GET_FIELD, high, low)
-}
-
-func (c *compiler) visitPutExpr(pt *ast.PutExpr) {
-	c.Visit(pt.Operand)
-	c.Visit(pt.Value)
-	high, low := index(len(c.pool))
-	c.pool = append(c.pool, g.Str(pt.Key.Text))
-	c.push(pt.Key.Position, g.PUT_FIELD, high, low)
 }
 
 func parseInt(text string) int64 {

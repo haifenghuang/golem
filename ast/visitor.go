@@ -39,7 +39,7 @@ func (let *Let) Traverse(v Visitor) {
 }
 
 func (asn *Assignment) Traverse(v Visitor) {
-	// Do not traverse asn.Ident!!!
+	// Do not traverse asn.Assignee!!!
 	// It will confuse the Analyzer.
 	v.Visit(asn.Val)
 }
@@ -121,11 +121,6 @@ func (f *FieldExpr) Traverse(v Visitor) {
 	v.Visit(f.Operand)
 }
 
-func (p *PutExpr) Traverse(v Visitor) {
-	v.Visit(p.Operand)
-	v.Visit(p.Value)
-}
-
 //--------------------------------------------------------------
 // ast debug
 
@@ -164,7 +159,7 @@ func (p *dump) Visit(node Node) {
 	case *Assignment:
 		p.buf.WriteString("Assignment\n")
 		p.indent++
-		p.Visit(t.Ident)
+		p.Visit(t.Assignee)
 		p.indent--
 
 	case *If:
@@ -205,8 +200,6 @@ func (p *dump) Visit(node Node) {
 
 	case *FieldExpr:
 		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))
-	case *PutExpr:
-		p.buf.WriteString(fmt.Sprintf("PutExpr(%v)\n", t.Key.Text))
 
 	default:
 		panic("cannot visit")
