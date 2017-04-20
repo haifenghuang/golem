@@ -143,6 +143,23 @@ func TestPostfix(t *testing.T) {
 	fail_expr(t, p, "Invalid Postfix Expression at (1, 2)")
 }
 
+func TestTernary(t *testing.T) {
+	p := newParser("a ? b : c")
+	ok_expr(t, p, "(a ? b : c)")
+
+	p = newParser("a || b ? b = c : d ? e : f")
+	ok_expr(t, p, "((a || b) ? (b = c) : (d ? e : f))")
+
+	p = newParser("a ?")
+	fail_expr(t, p, "Unexpected EOF at (1, 4)")
+
+	p = newParser("a ? b")
+	fail_expr(t, p, "Unexpected EOF at (1, 6)")
+
+	p = newParser("a ? b :")
+	fail_expr(t, p, "Unexpected EOF at (1, 8)")
+}
+
 func TestMultiplicative(t *testing.T) {
 	p := newParser("1*2")
 	ok_expr(t, p, "(1 * 2)")

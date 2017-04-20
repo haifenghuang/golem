@@ -57,6 +57,7 @@ const (
 	COLON
 	COMMA
 	DOT
+	HOOK
 
 	EQ
 	DBL_EQ
@@ -157,6 +158,8 @@ func (t TokenKind) String() string {
 		return "COMMA"
 	case DOT:
 		return "DOT"
+	case HOOK:
+		return "HOOK"
 
 	case PERCENT:
 		return "PERCENT"

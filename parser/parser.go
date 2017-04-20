@@ -231,21 +231,20 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 
 func (p *Parser) expression() ast.Expr {
 
-	exp := p.orExpr()
+	exp := p.ternaryExpr()
 
 	if asn, ok := exp.(ast.Assignable); ok {
 
 		if p.cur.Kind == ast.EQ {
 
-			// assignemt
+			// assignment
 			eq := p.expect(ast.EQ)
 			exp = &ast.Assignment{asn, eq, p.expression()}
 
 		} else if isAssignOp(p.cur) {
 
-			// assign operation
+			// assignment operation
 			op := p.consume()
-
 			exp = &ast.Assignment{
 				asn,
 				op,
@@ -257,6 +256,23 @@ func (p *Parser) expression() ast.Expr {
 	}
 
 	return exp
+}
+
+func (p *Parser) ternaryExpr() ast.Expr {
+
+	lhs := p.orExpr()
+
+	if p.cur.Kind == ast.HOOK {
+
+		p.consume()
+		then := p.expression()
+		p.expect(ast.COLON)
+		_else := p.ternaryExpr()
+		return &ast.TernaryExpr{lhs, then, _else}
+
+	} else {
+		return lhs
+	}
 }
 
 func (p *Parser) orExpr() ast.Expr {

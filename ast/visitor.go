@@ -75,6 +75,12 @@ func (blk *Block) Traverse(v Visitor) {
 	}
 }
 
+func (trn *TernaryExpr) Traverse(v Visitor) {
+	v.Visit(trn.Cond)
+	v.Visit(trn.Then)
+	v.Visit(trn.Else)
+}
+
 func (bin *BinaryExpr) Traverse(v Visitor) {
 	v.Visit(bin.Lhs)
 	v.Visit(bin.Rhs)

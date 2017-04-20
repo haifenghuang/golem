@@ -180,6 +180,9 @@ func (s *Scanner) Next() *ast.Token {
 		case r == '.':
 			s.consume()
 			return &ast.Token{ast.DOT, ".", pos}
+		case r == '?':
+			s.consume()
+			return &ast.Token{ast.HOOK, "?", pos}
 
 		case r == '%':
 			s.consume()

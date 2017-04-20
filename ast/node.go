@@ -112,6 +112,12 @@ type (
 		Val      Expr
 	}
 
+	TernaryExpr struct {
+		Cond Expr
+		Then Expr
+		Else Expr
+	}
+
 	BinaryExpr struct {
 		Lhs Expr
 		Op  *Token
@@ -193,6 +199,7 @@ func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
 
 func (*Assignment) exprMarker()  {}
+func (*TernaryExpr) exprMarker() {}
 func (*BinaryExpr) exprMarker()  {}
 func (*UnaryExpr) exprMarker()   {}
 func (*PostfixExpr) exprMarker() {}
@@ -242,6 +249,9 @@ func (n *Return) End() Pos   { return n.Semicolon.Position }
 
 func (n *Assignment) Begin() Pos { return n.Assignee.Begin() }
 func (n *Assignment) End() Pos   { return n.Val.End() }
+
+func (n *TernaryExpr) Begin() Pos { return n.Cond.Begin() }
+func (n *TernaryExpr) End() Pos   { return n.Else.End() }
 
 func (n *BinaryExpr) Begin() Pos { return n.Lhs.Begin() }
 func (n *BinaryExpr) End() Pos   { return n.Rhs.End() }
@@ -334,6 +344,10 @@ func (rt *Return) String() string {
 	} else {
 		return fmt.Sprintf("return %v;", rt.Val)
 	}
+}
+
+func (trn *TernaryExpr) String() string {
+	return fmt.Sprintf("(%v ? %v : %v)", trn.Cond, trn.Then, trn.Else)
 }
 
 func (bin *BinaryExpr) String() string {
