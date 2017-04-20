@@ -18,32 +18,40 @@ import (
 	"fmt"
 )
 
-type Float float64
+type _float float64
 
-func (f Float) TypeOf() (Type, Error) { return TFLOAT, nil }
+func (f _float) FloatVal() float64 {
+	return float64(f)
+}
 
-func (f Float) String() (Str, Error) {
+func MakeFloat(f float64) Float {
+	return _float(f)
+}
+
+func (f _float) TypeOf() (Type, Error) { return TFLOAT, nil }
+
+func (f _float) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%g", f)), nil
 }
 
-func (f Float) Eq(v Value) (Bool, Error) {
+func (f _float) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 
-	case Float:
+	case _float:
 		return MakeBool(f == t), nil
 
 	case Int:
-		return MakeBool(f == Float(t)), nil
+		return MakeBool(f == _float(t)), nil
 
 	default:
 		return FALSE, nil
 	}
 }
 
-func (f Float) Cmp(v Value) (Int, Error) {
+func (f _float) Cmp(v Value) (Int, Error) {
 	switch t := v.(type) {
 
-	case Float:
+	case _float:
 		if f < t {
 			return -1, nil
 		} else if f > t {
@@ -53,7 +61,7 @@ func (f Float) Cmp(v Value) (Int, Error) {
 		}
 
 	case Int:
-		g := Float(t)
+		g := _float(t)
 		if f < g {
 			return -1, nil
 		} else if f > g {
@@ -67,16 +75,16 @@ func (f Float) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (f Float) Add(v Value) (Value, Error) {
+func (f _float) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
 		return strcat([]Value{f, t})
 
 	case Int:
-		return f + Float(t), nil
+		return f + _float(t), nil
 
-	case Float:
+	case _float:
 		return f + t, nil
 
 	default:
@@ -84,13 +92,13 @@ func (f Float) Add(v Value) (Value, Error) {
 	}
 }
 
-func (f Float) Sub(v Value) (Number, Error) {
+func (f _float) Sub(v Value) (Number, Error) {
 	switch t := v.(type) {
 
 	case Int:
-		return f - Float(t), nil
+		return f - _float(t), nil
 
-	case Float:
+	case _float:
 		return f - t, nil
 
 	default:
@@ -98,13 +106,13 @@ func (f Float) Sub(v Value) (Number, Error) {
 	}
 }
 
-func (f Float) Mul(v Value) (Number, Error) {
+func (f _float) Mul(v Value) (Number, Error) {
 	switch t := v.(type) {
 
 	case Int:
-		return f * Float(t), nil
+		return f * _float(t), nil
 
-	case Float:
+	case _float:
 		return f * t, nil
 
 	default:
@@ -112,17 +120,17 @@ func (f Float) Mul(v Value) (Number, Error) {
 	}
 }
 
-func (f Float) Div(v Value) (Number, Error) {
+func (f _float) Div(v Value) (Number, Error) {
 	switch t := v.(type) {
 
 	case Int:
 		if t == 0 {
 			return nil, DivideByZeroError()
 		} else {
-			return f / Float(t), nil
+			return f / _float(t), nil
 		}
 
-	case Float:
+	case _float:
 		if t == 0.0 {
 			return nil, DivideByZeroError()
 		} else {
@@ -134,18 +142,18 @@ func (f Float) Div(v Value) (Number, Error) {
 	}
 }
 
-func (f Float) Negate() (Number, Error) {
+func (f _float) Negate() (Number, Error) {
 	return 0 - f, nil
 }
 
-func (f Float) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f Float) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f Float) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f Float) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f Float) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f Float) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f Float) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (f _float) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f Float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (f Float) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }
+func (f _float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (f _float) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

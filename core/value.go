@@ -116,6 +116,14 @@ type Number interface {
 }
 
 //---------------------------------------------------------------
+// Float
+
+type Float interface {
+	Number
+	FloatVal() float64
+}
+
+//---------------------------------------------------------------
 // Ref
 
 type Ref struct {

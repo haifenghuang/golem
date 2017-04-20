@@ -491,7 +491,7 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
-		c.pool = append(c.pool, g.Float(f))
+		c.pool = append(c.pool, g.MakeFloat(f))
 		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 
 	default:

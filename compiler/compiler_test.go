@@ -157,7 +157,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("a"),
-			g.Float(float64(12300))},
+			g.MakeFloat(float64(12300))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{

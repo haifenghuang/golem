@@ -38,8 +38,9 @@ func (i Int) Eq(v Value) (Bool, Error) {
 		return MakeBool(i == t), nil
 
 	case Float:
-		j := Int(t)
-		return MakeBool(i == j), nil
+		a := float64(i)
+		b := t.FloatVal()
+		return MakeBool(a == b), nil
 
 	default:
 		return FALSE, nil
@@ -59,10 +60,11 @@ func (i Int) Cmp(v Value) (Int, Error) {
 		}
 
 	case Float:
-		j := Int(t)
-		if i < j {
+		a := float64(i)
+		b := t.FloatVal()
+		if a < b {
 			return -1, nil
-		} else if i > j {
+		} else if a > b {
 			return 1, nil
 		} else {
 			return 0, nil
@@ -83,7 +85,9 @@ func (i Int) Add(v Value) (Value, Error) {
 		return i + t, nil
 
 	case Float:
-		return Float(i) + t, nil
+		a := float64(i)
+		b := t.FloatVal()
+		return MakeFloat(a + b), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -97,7 +101,9 @@ func (i Int) Sub(v Value) (Number, Error) {
 		return i - t, nil
 
 	case Float:
-		return Float(i) - t, nil
+		a := float64(i)
+		b := t.FloatVal()
+		return MakeFloat(a - b), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -111,7 +117,9 @@ func (i Int) Mul(v Value) (Number, Error) {
 		return i * t, nil
 
 	case Float:
-		return Float(i) * t, nil
+		a := float64(i)
+		b := t.FloatVal()
+		return MakeFloat(a * b), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -129,10 +137,12 @@ func (i Int) Div(v Value) (Number, Error) {
 		}
 
 	case Float:
-		if t == 0.0 {
+		a := float64(i)
+		b := t.FloatVal()
+		if b == 0.0 {
 			return nil, DivideByZeroError()
 		} else {
-			return Float(i) / t, nil
+			return MakeFloat(a / b), nil
 		}
 
 	default:
