@@ -139,7 +139,8 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "'a' + true;", g.Str("atrue"))
 
 	fail_expr(t, "true + null;", "TypeMismatch: Expected Number Type")
-	fail_expr(t, "1 + null;", "NullValue")
+	fail_expr(t, "1 + null;", "TypeMismatch: Expected Number Type")
+	fail_expr(t, "null + 1;", "NullValue")
 
 	ok_expr(t, "true == 'a';", g.FALSE)
 	ok_expr(t, "3 * 7 + 4 == 5 * 5;", g.TRUE)

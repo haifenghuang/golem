@@ -81,9 +81,6 @@ func (f Float) Add(v Value) (Value, Error) {
 	case Float:
 		return f + t, nil
 
-	case *Null:
-		return nil, NullValueError()
-
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
@@ -98,9 +95,6 @@ func (f Float) Sub(v Value) (Number, Error) {
 	case Float:
 		return f - t, nil
 
-	case *Null:
-		return nil, NullValueError()
-
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
@@ -114,9 +108,6 @@ func (f Float) Mul(v Value) (Number, Error) {
 
 	case Float:
 		return f * t, nil
-
-	case *Null:
-		return nil, NullValueError()
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -139,9 +130,6 @@ func (f Float) Div(v Value) (Number, Error) {
 		} else {
 			return f / t, nil
 		}
-
-	case *Null:
-		return nil, NullValueError()
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

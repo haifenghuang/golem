@@ -14,26 +14,26 @@
 
 package core
 
-type Null struct{}
+type null struct{}
 
-var NULL *Null = &Null{}
+var NULL Null = &null{}
 
-func (n *Null) TypeOf() (Type, Error) { return TNULL, nil }
+func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
 
-func (n *Null) String() (Str, Error) { return Str("null"), nil }
+func (n *null) String() (Str, Error) { return Str("null"), nil }
 
-func (n *Null) Eq(v Value) (Bool, Error) {
+func (n *null) Eq(v Value) (Bool, Error) {
 	switch v.(type) {
-	case *Null:
+	case *null:
 		return TRUE, nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (n *Null) Cmp(v Value) (Int, Error) { return 0, NullValueError() }
+func (n *null) Cmp(v Value) (Int, Error) { return 0, NullValueError() }
 
-func (n *Null) Add(v Value) (Value, Error) {
+func (n *null) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -44,18 +44,18 @@ func (n *Null) Add(v Value) (Value, Error) {
 	}
 }
 
-func (n *Null) Sub(v Value) (Number, Error)    { return nil, NullValueError() }
-func (n *Null) Mul(v Value) (Number, Error)    { return nil, NullValueError() }
-func (n *Null) Div(v Value) (Number, Error)    { return nil, NullValueError() }
-func (n *Null) Rem(v Value) (Int, Error)       { return Int(0), NullValueError() }
-func (n *Null) BitAnd(v Value) (Int, Error)    { return Int(0), NullValueError() }
-func (n *Null) BitOr(v Value) (Int, Error)     { return Int(0), NullValueError() }
-func (n *Null) BitXOr(v Value) (Int, Error)    { return Int(0), NullValueError() }
-func (n *Null) LeftShift(v Value) (Int, Error) { return Int(0), NullValueError() }
-func (n *Null) RightShift(Value) (Int, Error)  { return Int(0), NullValueError() }
+func (n *null) Sub(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *null) Mul(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *null) Div(v Value) (Number, Error)    { return nil, NullValueError() }
+func (n *null) Rem(v Value) (Int, Error)       { return Int(0), NullValueError() }
+func (n *null) BitAnd(v Value) (Int, Error)    { return Int(0), NullValueError() }
+func (n *null) BitOr(v Value) (Int, Error)     { return Int(0), NullValueError() }
+func (n *null) BitXOr(v Value) (Int, Error)    { return Int(0), NullValueError() }
+func (n *null) LeftShift(v Value) (Int, Error) { return Int(0), NullValueError() }
+func (n *null) RightShift(Value) (Int, Error)  { return Int(0), NullValueError() }
 
-func (n *Null) Negate() (Number, Error)  { return Int(0), NullValueError() }
-func (n *Null) Complement() (Int, Error) { return Int(0), NullValueError() }
+func (n *null) Negate() (Number, Error)  { return Int(0), NullValueError() }
+func (n *null) Complement() (Int, Error) { return Int(0), NullValueError() }
 
-func (n *Null) GetField(key string) (Value, Error)   { return nil, NullValueError() }
-func (n *Null) PutField(key string, val Value) Error { return NullValueError() }
+func (n *null) GetField(key string) (Value, Error)   { return nil, NullValueError() }
+func (n *null) PutField(key string, val Value) Error { return NullValueError() }
