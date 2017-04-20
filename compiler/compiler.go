@@ -108,6 +108,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.Return:
 		c.visitReturn(t)
 
+	case *ast.TernaryExpr:
+		c.visitTernaryExpr(t)
+
 	case *ast.BinaryExpr:
 		c.visitBinaryExpr(t)
 
@@ -228,7 +231,6 @@ func (c *compiler) visitIf(f *ast.If) {
 	c.Visit(f.Cond)
 
 	j0 := c.push(f.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
-
 	f.Then.Traverse(c)
 
 	if f.Else == nil {
@@ -238,12 +240,24 @@ func (c *compiler) visitIf(f *ast.If) {
 	} else {
 
 		j1 := c.push(f.Else.Begin(), g.JUMP, 0xFF, 0xFF)
-
 		c.setJump(j0, c.opcLen())
 
 		f.Else.Traverse(c)
 		c.setJump(j1, c.opcLen())
 	}
+}
+
+func (c *compiler) visitTernaryExpr(f *ast.TernaryExpr) {
+
+	c.Visit(f.Cond)
+	j0 := c.push(f.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
+
+	c.Visit(f.Then)
+	j1 := c.push(f.Else.Begin(), g.JUMP, 0xFF, 0xFF)
+	c.setJump(j0, c.opcLen())
+
+	c.Visit(f.Else)
+	c.setJump(j1, c.opcLen())
 }
 
 func (c *compiler) visitWhile(w *ast.While) {

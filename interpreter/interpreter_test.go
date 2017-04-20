@@ -550,3 +550,20 @@ let d = b.y--;
 	ok_ref(t, mod.Locals[2], g.Int(10))
 	ok_ref(t, mod.Locals[3], g.Int(20))
 }
+
+func TestTernaryIf(t *testing.T) {
+
+	source := `
+let a = true ? 3 : 4;
+let b = false ? 5 : 6;
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], g.Int(3))
+	ok_ref(t, mod.Locals[1], g.Int(6))
+}
