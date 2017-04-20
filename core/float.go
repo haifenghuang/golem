@@ -32,13 +32,13 @@ func (f Float) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 
 	case Float:
-		return f == t, nil
+		return MakeBool(f == t), nil
 
 	case Int:
-		return f == Float(t), nil
+		return MakeBool(f == Float(t)), nil
 
 	default:
-		return false, nil
+		return FALSE, nil
 	}
 }
 
@@ -158,7 +158,6 @@ func (f Float) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchErro
 func (f Float) Negate() (Number, Error) {
 	return 0 - f, nil
 }
-func (f Float) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
 func (f Float) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f Float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }

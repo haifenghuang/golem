@@ -336,7 +336,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			}
 
 			s = s[:n]
-			if b {
+			if b.BoolVal() {
 				ip = index(opc, ip)
 			} else {
 				ip += 3
@@ -351,28 +351,28 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			}
 
 			s = s[:n]
-			if b {
+			if b.BoolVal() {
 				ip += 3
 			} else {
 				ip = index(opc, ip)
 			}
 
 		case g.EQ:
-			val, err := s[n-1].Eq(s[n])
+			b, err := s[n-1].Eq(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = val
+			s[n-1] = b
 			ip++
 
 		case g.NE:
-			val, err := s[n-1].Eq(s[n])
+			b, err := s[n-1].Eq(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = !val
+			s[n-1] = b.Not()
 			ip++
 
 		case g.LT:
@@ -381,7 +381,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.Bool(val < 0)
+			s[n-1] = g.MakeBool(val < 0)
 			ip++
 
 		case g.LTE:
@@ -390,7 +390,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.Bool(val <= 0)
+			s[n-1] = g.MakeBool(val <= 0)
 			ip++
 
 		case g.GT:
@@ -399,7 +399,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.Bool(val > 0)
+			s[n-1] = g.MakeBool(val > 0)
 			ip++
 
 		case g.GTE:
@@ -408,7 +408,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.Bool(val >= 0)
+			s[n-1] = g.MakeBool(val >= 0)
 			ip++
 
 		case g.CMP:
@@ -519,11 +519,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.NOT:
-			val, err := s[n].Not()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+			b, ok := s[n].(g.Bool)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Bool'"),
+					inp.stringFrames(fn, locals, s, ip)}
 			}
-			s[n] = val
+
+			s[n] = b.Not()
 			ip++
 
 		case g.COMPLEMENT:

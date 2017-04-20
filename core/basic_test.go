@@ -20,7 +20,7 @@ import (
 	"testing"
 )
 
-func assert(t *testing.T, flag Bool) {
+func assert(t *testing.T, flag bool) {
 	if !flag {
 		t.Error("assertion failure")
 	}
@@ -65,9 +65,6 @@ func TestNull(t *testing.T) {
 	n, err := NULL.Negate()
 	fail(t, n, err, "NullValue")
 
-	val, err := NULL.Not()
-	fail(t, val, err, "NullValue")
-
 	num, err := NULL.Sub(Int(1))
 	fail(t, num, err, "NullValue")
 
@@ -94,8 +91,8 @@ func TestBool(t *testing.T) {
 	okType(t, TRUE, TBOOL)
 	okType(t, FALSE, TBOOL)
 
-	assert(t, TRUE)
-	assert(t, !FALSE)
+	assert(t, TRUE.BoolVal())
+	assert(t, !FALSE.BoolVal())
 
 	b, err := TRUE.Eq(TRUE)
 	ok(t, b, err, TRUE)
@@ -114,10 +111,10 @@ func TestBool(t *testing.T) {
 	n, err := TRUE.Negate()
 	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
-	val, err := TRUE.Not()
-	ok(t, val, err, FALSE)
-	val, err = FALSE.Not()
-	ok(t, val, err, TRUE)
+	val := TRUE.Not()
+	ok(t, val, nil, FALSE)
+	val = FALSE.Not()
+	ok(t, val, nil, TRUE)
 
 	n, err = TRUE.Sub(Int(1))
 	fail(t, n, err, "TypeMismatch: Expected Number Type")
@@ -165,9 +162,6 @@ func TestStr(t *testing.T) {
 
 	n, err := a.Negate()
 	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	val, err := a.Not()
-	fail(t, val, err, "TypeMismatch: Expected 'Bool'")
 
 	n, err = a.Sub(Int(1))
 	fail(t, n, err, "TypeMismatch: Expected Number Type")
@@ -229,9 +223,6 @@ func TestInt(t *testing.T) {
 
 	val, err = b.Negate()
 	ok(t, val, err, Int(-1))
-
-	nv, err := a.Not()
-	fail(t, nv, err, "TypeMismatch: Expected 'Bool'")
 
 	val, err = Int(3).Sub(Int(2))
 	ok(t, val, err, Int(1))
@@ -350,9 +341,6 @@ func TestFloat(t *testing.T) {
 
 	val, err := a.Negate()
 	ok(t, val, err, Float(-0.1))
-
-	nv, err := a.Not()
-	fail(t, nv, err, "TypeMismatch: Expected 'Bool'")
 
 	val, err = Float(3.3).Sub(Int(2))
 	ok(t, val, err, Float(float64(3.3)-float64(int64(2))))

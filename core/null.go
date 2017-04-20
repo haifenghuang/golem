@@ -25,9 +25,9 @@ func (n *Null) String() (Str, Error) { return Str("null"), nil }
 func (n *Null) Eq(v Value) (Bool, Error) {
 	switch v.(type) {
 	case *Null:
-		return true, nil
+		return TRUE, nil
 	default:
-		return false, nil
+		return FALSE, nil
 	}
 }
 
@@ -55,7 +55,6 @@ func (n *Null) LeftShift(v Value) (Int, Error) { return Int(0), NullValueError()
 func (n *Null) RightShift(Value) (Int, Error)  { return Int(0), NullValueError() }
 
 func (n *Null) Negate() (Number, Error)  { return Int(0), NullValueError() }
-func (n *Null) Not() (Bool, Error)       { return false, NullValueError() }
 func (n *Null) Complement() (Int, Error) { return Int(0), NullValueError() }
 
 func (n *Null) GetField(key string) (Value, Error)   { return nil, NullValueError() }

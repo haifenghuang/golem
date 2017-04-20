@@ -28,10 +28,10 @@ func (s Str) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return s == t, nil
+		return MakeBool(s == t), nil
 
 	default:
-		return false, nil
+		return FALSE, nil
 	}
 }
 
@@ -67,7 +67,6 @@ func (s Str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError(
 func (s Str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (s Str) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s Str) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
 func (s Str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 //-----------------------------------

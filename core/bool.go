@@ -14,14 +14,22 @@
 
 package core
 
-type Bool bool
+type _bool bool
 
-var TRUE Bool = Bool(true)
-var FALSE Bool = Bool(false)
+var TRUE Bool = _bool(true)
+var FALSE Bool = _bool(false)
 
-func (b Bool) TypeOf() (Type, Error) { return TBOOL, nil }
+func MakeBool(b bool) Bool {
+	if b {
+		return TRUE
+	} else {
+		return FALSE
+	}
+}
 
-func (b Bool) String() (Str, Error) {
+func (b _bool) TypeOf() (Type, Error) { return TBOOL, nil }
+
+func (b _bool) String() (Str, Error) {
 	if b {
 		return Str("true"), nil
 	} else {
@@ -29,22 +37,22 @@ func (b Bool) String() (Str, Error) {
 	}
 }
 
-func (b Bool) Eq(v Value) (Bool, Error) {
+func (b _bool) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case Bool:
+	case _bool:
 		if b == t {
-			return Bool(true), nil
+			return _bool(true), nil
 		} else {
-			return Bool(false), nil
+			return _bool(false), nil
 		}
 	default:
-		return Bool(false), nil
+		return _bool(false), nil
 	}
 }
 
-func (b Bool) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
+func (b _bool) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
 
-func (b Bool) Add(v Value) (Value, Error) {
+func (b _bool) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -55,21 +63,26 @@ func (b Bool) Add(v Value) (Value, Error) {
 	}
 }
 
-func (b Bool) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (b Bool) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (b Bool) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (b Bool) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b Bool) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b Bool) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b Bool) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b Bool) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b Bool) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
-
-func (b Bool) Negate() (Number, Error) { return Int(0), TypeMismatchError("Expected Number Type") }
-func (b Bool) Not() (Bool, Error) {
-	return !b, nil
+func (b _bool) BoolVal() bool {
+	return bool(b)
 }
-func (b Bool) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (b Bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
-func (b Bool) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }
+func (b _bool) Not() Bool {
+	return !b
+}
+
+func (b _bool) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b _bool) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b _bool) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
+func (b _bool) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b _bool) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b _bool) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b _bool) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b _bool) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+func (b _bool) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
+
+func (b _bool) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
+func (b _bool) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
+
+func (b _bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
+func (b _bool) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

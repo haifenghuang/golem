@@ -81,12 +81,12 @@ func (f *Func) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *Func:
 		if f.doStr() == t.doStr() {
-			return Bool(true), nil
+			return TRUE, nil
 		} else {
-			return Bool(false), nil
+			return FALSE, nil
 		}
 	default:
-		return Bool(false), nil
+		return FALSE, nil
 	}
 }
 
@@ -114,7 +114,6 @@ func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchErro
 func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f *Func) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
-func (f *Func) Not() (Bool, Error)       { return false, TypeMismatchError("Expected 'Bool'") }
 func (f *Func) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f *Func) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }

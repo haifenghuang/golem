@@ -114,7 +114,6 @@ func TestUninitialized(t *testing.T) {
 	_, e7 := o.Div(NULL)
 
 	_, e8 := o.Negate()
-	_, e9 := o.Not()
 
 	_, e10 := o.GetField("")
 	e11 := o.PutField("", NULL)
@@ -128,7 +127,6 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e6)
 	uninitErr(t, e7)
 	uninitErr(t, e8)
-	uninitErr(t, e9)
 	uninitErr(t, e10)
 	uninitErr(t, e11)
 }

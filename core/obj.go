@@ -85,14 +85,14 @@ func (o *Obj) String() (Str, Error) {
 
 func (o *Obj) Eq(v Value) (Bool, Error) {
 	if !o.Inited {
-		return Bool(false), UninitializedObjError()
+		return FALSE, UninitializedObjError()
 	}
 
 	switch t := v.(type) {
 	case *Obj:
-		return Bool(reflect.DeepEqual(o.Fields, t.Fields)), nil
+		return MakeBool(reflect.DeepEqual(o.Fields, t.Fields)), nil
 	default:
-		return Bool(false), nil
+		return FALSE, nil
 	}
 }
 
@@ -178,12 +178,6 @@ func (o *Obj) Negate() (Number, Error) {
 		return Int(0), UninitializedObjError()
 	}
 	return Int(0), TypeMismatchError("Expected Number Type")
-}
-func (o *Obj) Not() (Bool, Error) {
-	if !o.Inited {
-		return Bool(false), UninitializedObjError()
-	}
-	return false, TypeMismatchError("Expected 'Bool'")
 }
 func (o *Obj) Complement() (Int, Error) {
 	if !o.Inited {

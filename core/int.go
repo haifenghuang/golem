@@ -37,14 +37,14 @@ func (i Int) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 
 	case Int:
-		return i == t, nil
+		return MakeBool(i == t), nil
 
 	case Float:
 		j := Int(t)
-		return i == j, nil
+		return MakeBool(i == j), nil
 
 	default:
-		return false, nil
+		return FALSE, nil
 	}
 }
 
@@ -215,8 +215,6 @@ func (i Int) RightShift(v Value) (Int, Error) {
 func (i Int) Negate() (Number, Error) {
 	return 0 - i, nil
 }
-
-func (i Int) Not() (Bool, Error) { return false, TypeMismatchError("Expected 'Bool'") }
 
 func (i Int) Complement() (Int, Error) {
 	return ^i, nil

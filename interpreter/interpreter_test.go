@@ -34,21 +34,21 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 		panic(errStack)
 	}
 
-	v, err := result.Eq(expect)
+	b, err := result.Eq(expect)
 	if err != nil {
 		panic(err)
 	}
-	if !v {
+	if !b.BoolVal() {
 		t.Error(result, " != ", expect)
 	}
 }
 
 func ok_ref(t *testing.T, ref *g.Ref, expect g.Value) {
-	v, err := ref.Val.Eq(expect)
+	b, err := ref.Val.Eq(expect)
 	if err != nil {
 		panic(err)
 	}
-	if !v {
+	if !b.BoolVal() {
 		t.Error(ref.Val, " != ", expect)
 	}
 }
@@ -62,11 +62,11 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 		panic(errStack)
 	}
 
-	v, err := result.Eq(expectResult)
+	b, err := result.Eq(expectResult)
 	if err != nil {
 		panic(err)
 	}
-	if !v {
+	if !b.BoolVal() {
 		t.Error(result, " != ", expectResult)
 	}
 
@@ -148,7 +148,7 @@ func TestExpressions(t *testing.T) {
 
 	ok_expr(t, "!false;", g.TRUE)
 	ok_expr(t, "!true;", g.FALSE)
-	fail_expr(t, "!null;", "NullValue")
+	fail_expr(t, "!null;", "TypeMismatch: Expected 'Bool'")
 
 	fail_expr(t, "!'a';", "TypeMismatch: Expected 'Bool'")
 	fail_expr(t, "!1;", "TypeMismatch: Expected 'Bool'")

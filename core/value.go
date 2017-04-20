@@ -64,11 +64,12 @@ type Value interface {
 	Eq(Value) (Bool, Error)
 	String() (Str, Error)
 	Cmp(Value) (Int, Error)
-
 	Add(Value) (Value, Error)
+
 	Sub(Value) (Number, Error)
 	Mul(Value) (Number, Error)
 	Div(Value) (Number, Error)
+	Negate() (Number, Error)
 
 	Rem(Value) (Int, Error)
 	BitAnd(Value) (Int, Error)
@@ -76,13 +77,19 @@ type Value interface {
 	BitXOr(Value) (Int, Error)
 	LeftShift(Value) (Int, Error)
 	RightShift(Value) (Int, Error)
-
-	Negate() (Number, Error)
-	Not() (Bool, Error)
 	Complement() (Int, Error)
 
 	GetField(string) (Value, Error)
 	PutField(string, Value) Error
+}
+
+//---------------------------------------------------------------
+// Bool
+
+type Bool interface {
+	Value
+	BoolVal() bool
+	Not() Bool
 }
 
 //---------------------------------------------------------------
