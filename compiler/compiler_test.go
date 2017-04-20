@@ -77,8 +77,8 @@ func TestExpression(t *testing.T) {
 	mod := NewCompiler(newAnalyzer("-2 + -1 + -0 + 0 + 1 + 2;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(int64(-2)),
-			g.Int(int64(2))},
+			g.MakeInt(int64(-2)),
+			g.MakeInt(int64(2))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -106,10 +106,10 @@ func TestExpression(t *testing.T) {
 	mod = NewCompiler(newAnalyzer("(2 + 3) * -4 / 10;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(int64(2)),
-			g.Int(int64(3)),
-			g.Int(int64(-4)),
-			g.Int(int64(10))},
+			g.MakeInt(int64(2)),
+			g.MakeInt(int64(3)),
+			g.MakeInt(int64(-4)),
+			g.MakeInt(int64(10))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -251,8 +251,8 @@ func TestExpression(t *testing.T) {
 	mod = NewCompiler(newAnalyzer("let a = 2 && 3;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(int64(2)),
-			g.Int(int64(3))},
+			g.MakeInt(int64(2)),
+			g.MakeInt(int64(3))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -277,8 +277,8 @@ func TestExpression(t *testing.T) {
 	mod = NewCompiler(newAnalyzer("let a = 2 || 3;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(int64(2)),
-			g.Int(int64(3))},
+			g.MakeInt(int64(2)),
+			g.MakeInt(int64(3))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -306,8 +306,8 @@ func TestAssignment(t *testing.T) {
 	mod := NewCompiler(newAnalyzer("let a = 1;\nconst b = \n2;a = 3;")).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2),
-			g.Int(3)},
+			g.MakeInt(2),
+			g.MakeInt(3)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -354,9 +354,9 @@ func TestIf(t *testing.T) {
 	mod := NewCompiler(anl).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(3),
-			g.Int(2),
-			g.Int(42)},
+			g.MakeInt(3),
+			g.MakeInt(2),
+			g.MakeInt(42)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -388,9 +388,9 @@ func TestIf(t *testing.T) {
 	mod = NewCompiler(anl).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2),
-			g.Int(3),
-			g.Int(4)},
+			g.MakeInt(2),
+			g.MakeInt(3),
+			g.MakeInt(4)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -427,7 +427,7 @@ func TestWhile(t *testing.T) {
 	mod := NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2)},
+			g.MakeInt(2)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -455,8 +455,8 @@ func TestWhile(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("z"),
-			g.Int(2),
-			g.Int(3)},
+			g.MakeInt(2),
+			g.MakeInt(3)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -513,8 +513,8 @@ func TestReturn(t *testing.T) {
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2),
-			g.Int(3)},
+			g.MakeInt(2),
+			g.MakeInt(3)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -563,8 +563,8 @@ let b = fn(x) {
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(42),
-			g.Int(7)},
+			g.MakeInt(42),
+			g.MakeInt(7)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -639,9 +639,9 @@ c(2, 3);
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2),
-			g.Int(3),
-			g.Int(4)},
+			g.MakeInt(2),
+			g.MakeInt(3),
+			g.MakeInt(4)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -783,7 +783,7 @@ const accumGen = fn(n) {
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2)},
+			g.MakeInt(2)},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -852,10 +852,10 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(2),
-			g.Int(3),
-			g.Int(4),
-			g.Int(5)},
+			g.MakeInt(2),
+			g.MakeInt(3),
+			g.MakeInt(4),
+			g.MakeInt(5)},
 		nil,
 		[]*g.ObjDef{
 			&g.ObjDef{[]string{}},
@@ -907,7 +907,7 @@ x.a = 3;
 	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("a"),
-			g.Int(3),
+			g.MakeInt(3),
 			g.MakeStr("a")},
 		nil,
 		[]*g.ObjDef{
@@ -954,8 +954,8 @@ let c = a.minus();
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(8),
-			g.Int(5),
+			g.MakeInt(8),
+			g.MakeInt(5),
 			g.MakeStr("plus"),
 			g.MakeStr("minus"),
 			g.MakeStr("x"),
@@ -1049,8 +1049,8 @@ let d = b--;
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(int64(10)),
-			g.Int(int64(20))},
+			g.MakeInt(int64(10)),
+			g.MakeInt(int64(20))},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -1099,8 +1099,8 @@ let d = b.y--;
 
 	ok(t, mod, &g.Module{
 		[]g.Value{
-			g.Int(10),
-			g.Int(20),
+			g.MakeInt(10),
+			g.MakeInt(20),
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,

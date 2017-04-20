@@ -98,10 +98,10 @@ func (o *Obj) Eq(v Value) (Bool, Error) {
 
 func (o *Obj) Cmp(v Value) (Int, Error) {
 	if !o.Inited {
-		return Int(0), UninitializedObjError()
+		return nil, UninitializedObjError()
 	}
 
-	return Int(0), TypeMismatchError("Expected Comparable Type")
+	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
 func (o *Obj) Add(v Value) (Value, Error) {
@@ -117,49 +117,6 @@ func (o *Obj) Add(v Value) (Value, Error) {
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
-}
-
-func (o *Obj) Rem(v Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) BitAnd(v Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) BitOr(v Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) BitXOr(v Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) LeftShift(v Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) RightShift(Value) (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) Complement() (Int, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected 'Int'")
 }
 
 func (o *Obj) GetField(key string) (Value, Error) {

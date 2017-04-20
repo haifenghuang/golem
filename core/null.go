@@ -31,7 +31,7 @@ func (n *null) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (n *null) Cmp(v Value) (Int, Error) { return 0, NullValueError() }
+func (n *null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
 
 func (n *null) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
@@ -43,15 +43,6 @@ func (n *null) Add(v Value) (Value, Error) {
 		return nil, NullValueError()
 	}
 }
-
-func (n *null) Rem(v Value) (Int, Error)       { return Int(0), NullValueError() }
-func (n *null) BitAnd(v Value) (Int, Error)    { return Int(0), NullValueError() }
-func (n *null) BitOr(v Value) (Int, Error)     { return Int(0), NullValueError() }
-func (n *null) BitXOr(v Value) (Int, Error)    { return Int(0), NullValueError() }
-func (n *null) LeftShift(v Value) (Int, Error) { return Int(0), NullValueError() }
-func (n *null) RightShift(Value) (Int, Error)  { return Int(0), NullValueError() }
-
-func (n *null) Complement() (Int, Error) { return Int(0), NullValueError() }
 
 func (n *null) GetField(key string) (Value, Error)   { return nil, NullValueError() }
 func (n *null) PutField(key string, val Value) Error { return NullValueError() }

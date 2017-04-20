@@ -66,14 +66,6 @@ type Value interface {
 	Cmp(Value) (Int, Error)
 	Add(Value) (Value, Error)
 
-	Rem(Value) (Int, Error)
-	BitAnd(Value) (Int, Error)
-	BitOr(Value) (Int, Error)
-	BitXOr(Value) (Int, Error)
-	LeftShift(Value) (Int, Error)
-	RightShift(Value) (Int, Error)
-	Complement() (Int, Error)
-
 	GetField(string) (Value, Error)
 	PutField(string, Value) Error
 }
@@ -108,6 +100,8 @@ type Str interface {
 
 type Number interface {
 	Value
+	FloatVal() float64
+	IntVal() int64
 
 	Sub(Value) (Number, Error)
 	Mul(Value) (Number, Error)
@@ -120,7 +114,21 @@ type Number interface {
 
 type Float interface {
 	Number
-	FloatVal() float64
+}
+
+//---------------------------------------------------------------
+// Int
+
+type Int interface {
+	Number
+
+	Rem(Value) (Int, Error)
+	BitAnd(Value) (Int, Error)
+	BitOr(Value) (Int, Error)
+	BitXOr(Value) (Int, Error)
+	LeftShift(Value) (Int, Error)
+	RightShift(Value) (Int, Error)
+	Complement() (Int, Error)
 }
 
 //---------------------------------------------------------------

@@ -428,7 +428,7 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 					c.push(u.Op.Position, g.LOAD_NEG_ONE)
 				default:
 					high, low := index(len(c.pool))
-					c.pool = append(c.pool, g.Int(-i))
+					c.pool = append(c.pool, g.MakeInt(-i))
 					c.push(u.Op.Position, g.LOAD_CONST, high, low)
 				}
 
@@ -485,7 +485,7 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 		case 1:
 			c.push(basic.Token.Position, g.LOAD_ONE)
 		default:
-			c.pool = append(c.pool, g.Int(i))
+			c.pool = append(c.pool, g.MakeInt(i))
 			c.push(basic.Token.Position, g.LOAD_CONST, high, low)
 		}
 

@@ -90,7 +90,9 @@ func (f *Func) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (f *Func) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
+func (f *Func) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
+}
 
 func (f *Func) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
@@ -102,15 +104,6 @@ func (f *Func) Add(v Value) (Value, Error) {
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
-
-func (f *Func) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f *Func) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f *Func) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f *Func) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
-
-func (f *Func) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f *Func) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
 func (f *Func) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

@@ -381,7 +381,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.MakeBool(val < 0)
+			s[n-1] = g.MakeBool(val.IntVal() < 0)
 			ip++
 
 		case g.LTE:
@@ -390,7 +390,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.MakeBool(val <= 0)
+			s[n-1] = g.MakeBool(val.IntVal() <= 0)
 			ip++
 
 		case g.GT:
@@ -399,7 +399,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.MakeBool(val > 0)
+			s[n-1] = g.MakeBool(val.IntVal() > 0)
 			ip++
 
 		case g.GTE:
@@ -408,7 +408,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
-			s[n-1] = g.MakeBool(val >= 0)
+			s[n-1] = g.MakeBool(val.IntVal() >= 0)
 			ip++
 
 		case g.CMP:
@@ -504,7 +504,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.REM:
-			val, err := s[n-1].Rem(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Rem(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -513,7 +520,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.BIT_AND:
-			val, err := s[n-1].BitAnd(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.BitAnd(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -522,7 +536,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.BIT_OR:
-			val, err := s[n-1].BitOr(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.BitOr(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -531,7 +552,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.BIT_XOR:
-			val, err := s[n-1].BitXOr(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.BitXOr(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -540,7 +568,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.LEFT_SHIFT:
-			val, err := s[n-1].LeftShift(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.LeftShift(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -549,7 +584,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.RIGHT_SHIFT:
-			val, err := s[n-1].RightShift(s[n])
+			z, ok := s[n-1].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.RightShift(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -558,7 +600,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.COMPLEMENT:
-			val, err := s[n].Complement()
+			z, ok := s[n].(g.Int)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Int'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Complement()
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}

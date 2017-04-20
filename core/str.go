@@ -48,32 +48,21 @@ func (s _str) Cmp(v Value) (Int, Error) {
 
 	case _str:
 		if s < t {
-			return -1, nil
+			return NEG_ONE, nil
 		} else if s > t {
-			return 1, nil
+			return ONE, nil
 		} else {
-			return 0, nil
+			return ZERO, nil
 		}
 
 	default:
-		return 0, TypeMismatchError("Expected Comparable Type")
+		return nil, TypeMismatchError("Expected Comparable Type")
 	}
 }
 
 func (s _str) Add(v Value) (Value, Error) {
 	return strcat([]Value{s, v})
 }
-
-func (s _str) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s _str) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s _str) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s _str) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s _str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (s _str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
-
-func (s _str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-
-//-----------------------------------
 
 func strcat(a []Value) (_str, Error) {
 	var buf bytes.Buffer

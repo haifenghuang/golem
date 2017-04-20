@@ -54,7 +54,9 @@ func (b _bool) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (b _bool) Cmp(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected Comparable Type") }
+func (b _bool) Cmp(v Value) (Int, Error) {
+	return MakeInt(0), TypeMismatchError("Expected Comparable Type")
+}
 
 func (b _bool) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
@@ -70,15 +72,6 @@ func (b _bool) Add(v Value) (Value, Error) {
 func (b _bool) Not() Bool {
 	return !b
 }
-
-func (b _bool) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b _bool) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b _bool) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b _bool) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b _bool) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
-func (b _bool) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
-
-func (b _bool) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (b _bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }
 func (b _bool) PutField(key string, val Value) Error { return TypeMismatchError("Expected 'Obj'") }

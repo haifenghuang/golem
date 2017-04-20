@@ -131,9 +131,9 @@ func interpret(mod *g.Module) {
 
 func TestExpressions(t *testing.T) {
 
-	ok_expr(t, "(2 + 3) * -4 / 10;", g.Int(-2))
+	ok_expr(t, "(2 + 3) * -4 / 10;", g.MakeInt(-2))
 
-	ok_expr(t, "(2*2*2*2 + 2*3*(8 - 1) + 2) / (17 - 2*2*2 - -1);", g.Int(6))
+	ok_expr(t, "(2*2*2*2 + 2*3*(8 - 1) + 2) / (17 - 2*2*2 - -1);", g.MakeInt(6))
 
 	ok_expr(t, "true + 'a';", g.MakeStr("truea"))
 	ok_expr(t, "'a' + true;", g.MakeStr("atrue"))
@@ -165,9 +165,9 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "2 > 2;", g.FALSE)
 	ok_expr(t, "2 >= 2;", g.TRUE)
 
-	ok_expr(t, "1 <=> 2;", g.Int(-1))
-	ok_expr(t, "2 <=> 2;", g.Int(0))
-	ok_expr(t, "2 <=> 1;", g.Int(1))
+	ok_expr(t, "1 <=> 2;", g.MakeInt(-1))
+	ok_expr(t, "2 <=> 2;", g.MakeInt(0))
+	ok_expr(t, "2 <=> 1;", g.MakeInt(1))
 
 	ok_expr(t, "true  && true;", g.TRUE)
 	ok_expr(t, "true  && false;", g.FALSE)
@@ -182,14 +182,14 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "true  || 12;", g.TRUE)
 	fail_expr(t, "12  || true;", "TypeMismatch: Expected 'Bool'")
 
-	ok_expr(t, "~0;", g.Int(-1))
+	ok_expr(t, "~0;", g.MakeInt(-1))
 
-	//ok_expr(t, "8 % 2;", g.Int(1%2))
-	//ok_expr(t, "8 & 2;", g.Int(1&2))
-	//ok_expr(t, "8 | 2;", g.Int(1|2))
-	//ok_expr(t, "8 ^ 2;", g.Int(1^2))
-	//ok_expr(t, "8 << 2;", g.Int(1<<2))
-	//ok_expr(t, "8 >> 2;", g.Int(1>>2))
+	//ok_expr(t, "8 % 2;", g.MakeInt(1%2))
+	//ok_expr(t, "8 & 2;", g.MakeInt(1&2))
+	//ok_expr(t, "8 | 2;", g.MakeInt(1|2))
+	//ok_expr(t, "8 ^ 2;", g.MakeInt(1^2))
+	//ok_expr(t, "8 << 2;", g.MakeInt(1<<2))
+	//ok_expr(t, "8 >> 2;", g.MakeInt(1>>2))
 }
 
 func TestAssignment(t *testing.T) {
@@ -198,10 +198,10 @@ let a = 1;
 const B = 2;
 a = a + B;
 `,
-		g.Int(3),
+		g.MakeInt(3),
 		[]*g.Ref{
-			&g.Ref{g.Int(3)},
-			&g.Ref{g.Int(2)}})
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(2)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -210,11 +210,11 @@ const B = a / 6;
 let c = B + 3;
 c = (c + a)/13;
 `,
-		g.Int(4),
+		g.MakeInt(4),
 		[]*g.Ref{
-			&g.Ref{g.Int(42)},
-			&g.Ref{g.Int(7)},
-			&g.Ref{g.Int(4)}})
+			&g.Ref{g.MakeInt(42)},
+			&g.Ref{g.MakeInt(7)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -224,11 +224,11 @@ c -= -2;
 c <<= 4;
 b *= 2;
 `,
-		g.Int(8),
+		g.MakeInt(8),
 		[]*g.Ref{
-			&g.Ref{g.Int(4)},
-			&g.Ref{g.Int(8)},
-			&g.Ref{g.Int(16)}})
+			&g.Ref{g.MakeInt(4)},
+			&g.Ref{g.MakeInt(8)},
+			&g.Ref{g.MakeInt(16)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -236,33 +236,33 @@ let b = 2;
 a = b = 11;
 b = a %= 4;
 `,
-		g.Int(3),
+		g.MakeInt(3),
 		[]*g.Ref{
-			&g.Ref{g.Int(3)},
-			&g.Ref{g.Int(3)}})
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(3)}})
 }
 
 func TestIf(t *testing.T) {
 
 	ok_mod(t, "let a = 1; if (true) { a = 2; }",
-		g.Int(2),
-		[]*g.Ref{&g.Ref{g.Int(2)}})
+		g.MakeInt(2),
+		[]*g.Ref{&g.Ref{g.MakeInt(2)}})
 
 	ok_mod(t, "let a = 1; if (false) { a = 2; }",
 		g.NULL,
-		[]*g.Ref{&g.Ref{g.Int(1)}})
+		[]*g.Ref{&g.Ref{g.MakeInt(1)}})
 
 	ok_mod(t, "let a = 1; if (1 == 1) { a = 2; } else { a = 3; } let b = 4;",
-		g.Int(2),
+		g.MakeInt(2),
 		[]*g.Ref{
-			&g.Ref{g.Int(2)},
-			&g.Ref{g.Int(4)}})
+			&g.Ref{g.MakeInt(2)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, "let a = 1; if (1 == 2) { a = 2; } else { a = 3; } const b = 4;",
-		g.Int(3),
+		g.MakeInt(3),
 		[]*g.Ref{
-			&g.Ref{g.Int(3)},
-			&g.Ref{g.Int(4)}})
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(4)}})
 }
 
 func TestWhile(t *testing.T) {
@@ -283,8 +283,8 @@ let a = 1;
 while (a < 3) {
     a = a + 1;
 }`,
-		g.Int(3),
-		[]*g.Ref{&g.Ref{g.Int(3)}})
+		g.MakeInt(3),
+		[]*g.Ref{&g.Ref{g.MakeInt(3)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -292,8 +292,8 @@ while (a < 11) {
     if (a == 4) { a = a + 2; break; }
     a = a + 1;
 }`,
-		g.Int(6),
-		[]*g.Ref{&g.Ref{g.Int(6)}})
+		g.MakeInt(6),
+		[]*g.Ref{&g.Ref{g.MakeInt(6)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -303,18 +303,18 @@ while (a < 11) {
     if (a > 5) { continue; }
     b = b + 1;
 }`,
-		g.Int(11),
+		g.MakeInt(11),
 		[]*g.Ref{
-			&g.Ref{g.Int(11)},
-			&g.Ref{g.Int(4)}})
+			&g.Ref{g.MakeInt(11)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, `
 let a = 1;
 return a + 2;
 let b = 5;`,
-		g.Int(3),
+		g.MakeInt(3),
 		[]*g.Ref{
-			&g.Ref{g.Int(1)},
+			&g.Ref{g.MakeInt(1)},
 			&g.Ref{g.NULL}})
 }
 
@@ -331,8 +331,8 @@ let f = c(b(2), 3);
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 	ok_ref(t, mod.Locals[3], g.NULL)
-	ok_ref(t, mod.Locals[4], g.Int(1))
-	ok_ref(t, mod.Locals[5], g.Int(24))
+	ok_ref(t, mod.Locals[4], g.MakeInt(1))
+	ok_ref(t, mod.Locals[5], g.MakeInt(24))
 
 	source = `
 let fibonacci = fn(n) {
@@ -356,12 +356,12 @@ let f = fibonacci(6);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.Int(1))
-	ok_ref(t, mod.Locals[2], g.Int(1))
-	ok_ref(t, mod.Locals[3], g.Int(2))
-	ok_ref(t, mod.Locals[4], g.Int(3))
-	ok_ref(t, mod.Locals[5], g.Int(5))
-	ok_ref(t, mod.Locals[6], g.Int(8))
+	ok_ref(t, mod.Locals[1], g.MakeInt(1))
+	ok_ref(t, mod.Locals[2], g.MakeInt(1))
+	ok_ref(t, mod.Locals[3], g.MakeInt(2))
+	ok_ref(t, mod.Locals[4], g.MakeInt(3))
+	ok_ref(t, mod.Locals[5], g.MakeInt(5))
+	ok_ref(t, mod.Locals[6], g.MakeInt(8))
 
 	source = `
 let foo = fn(n) {
@@ -374,7 +374,7 @@ let a = foo(5);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.Int(32))
+	ok_ref(t, mod.Locals[1], g.MakeInt(32))
 }
 
 func TestCapture(t *testing.T) {
@@ -397,8 +397,8 @@ let y = a(7);
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[2], g.Int(5))
-	ok_ref(t, mod.Locals[3], g.Int(12))
+	ok_ref(t, mod.Locals[2], g.MakeInt(5))
+	ok_ref(t, mod.Locals[3], g.MakeInt(12))
 
 	source = `
 let z = 2;
@@ -418,9 +418,9 @@ let y = a(1);
 
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.Int(0))
-	ok_ref(t, mod.Locals[3], g.Int(7))
-	ok_ref(t, mod.Locals[4], g.Int(8))
+	ok_ref(t, mod.Locals[0], g.MakeInt(0))
+	ok_ref(t, mod.Locals[3], g.MakeInt(7))
+	ok_ref(t, mod.Locals[4], g.MakeInt(8))
 
 	//fmt.Println("----------------------------")
 	//fmt.Println(source)
@@ -452,10 +452,10 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 	interpret(mod)
 
 	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{}))
-	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"a": g.Int(0)}))
-	ok_ref(t, mod.Locals[2], newObj(map[string]g.Value{"a": g.Int(1), "b": g.Int(2)}))
+	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"a": g.MakeInt(0)}))
+	ok_ref(t, mod.Locals[2], newObj(map[string]g.Value{"a": g.MakeInt(1), "b": g.MakeInt(2)}))
 	ok_ref(t, mod.Locals[3],
-		newObj(map[string]g.Value{"a": g.Int(3), "b": g.Int(4), "c": newObj(map[string]g.Value{"d": g.Int(5)})}))
+		newObj(map[string]g.Value{"a": g.MakeInt(3), "b": g.MakeInt(4), "c": newObj(map[string]g.Value{"d": g.MakeInt(5)})}))
 
 	source = `
 let x = obj { a: 5 };
@@ -469,8 +469,8 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"a": g.Int(6)}))
-	ok_ref(t, mod.Locals[1], g.Int(5))
+	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"a": g.MakeInt(6)}))
+	ok_ref(t, mod.Locals[1], g.MakeInt(5))
 
 	source = `
 let a = obj {
@@ -485,8 +485,8 @@ let c = a.minus();
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[2], g.Int(13))
-	ok_ref(t, mod.Locals[3], g.Int(3))
+	ok_ref(t, mod.Locals[2], g.MakeInt(13))
+	ok_ref(t, mod.Locals[3], g.MakeInt(3))
 
 	source = `
 let a = null;
@@ -499,7 +499,7 @@ a = obj { x: 8 }.x = 5;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.Int(5))
+	ok_ref(t, mod.Locals[0], g.MakeInt(5))
 }
 
 func TestErrStack(t *testing.T) {
@@ -528,10 +528,10 @@ let d = b--;
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.Int(11))
-	ok_ref(t, mod.Locals[1], g.Int(19))
-	ok_ref(t, mod.Locals[2], g.Int(10))
-	ok_ref(t, mod.Locals[3], g.Int(20))
+	ok_ref(t, mod.Locals[0], g.MakeInt(11))
+	ok_ref(t, mod.Locals[1], g.MakeInt(19))
+	ok_ref(t, mod.Locals[2], g.MakeInt(10))
+	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 
 	source = `
 let a = obj { x: 10 };
@@ -546,10 +546,10 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.Int(11)}))
-	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"y": g.Int(19)}))
-	ok_ref(t, mod.Locals[2], g.Int(10))
-	ok_ref(t, mod.Locals[3], g.Int(20))
+	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.MakeInt(11)}))
+	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"y": g.MakeInt(19)}))
+	ok_ref(t, mod.Locals[2], g.MakeInt(10))
+	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 }
 
 func TestTernaryIf(t *testing.T) {
@@ -565,6 +565,6 @@ let b = false ? 5 : 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.Int(3))
-	ok_ref(t, mod.Locals[1], g.Int(6))
+	ok_ref(t, mod.Locals[0], g.MakeInt(3))
+	ok_ref(t, mod.Locals[1], g.MakeInt(6))
 }
