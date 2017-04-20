@@ -66,11 +66,6 @@ type Value interface {
 	Cmp(Value) (Int, Error)
 	Add(Value) (Value, Error)
 
-	Sub(Value) (Number, Error)
-	Mul(Value) (Number, Error)
-	Div(Value) (Number, Error)
-	Negate() (Number, Error)
-
 	Rem(Value) (Int, Error)
 	BitAnd(Value) (Int, Error)
 	BitOr(Value) (Int, Error)
@@ -113,7 +108,11 @@ type Str interface {
 
 type Number interface {
 	Value
-	number()
+
+	Sub(Value) (Number, Error)
+	Mul(Value) (Number, Error)
+	Div(Value) (Number, Error)
+	Negate() (Number, Error)
 }
 
 //---------------------------------------------------------------

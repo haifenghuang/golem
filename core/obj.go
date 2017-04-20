@@ -119,24 +119,6 @@ func (o *Obj) Add(v Value) (Value, Error) {
 	}
 }
 
-func (o *Obj) Sub(v Value) (Number, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return nil, TypeMismatchError("Expected Number Type")
-}
-func (o *Obj) Mul(v Value) (Number, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return nil, TypeMismatchError("Expected Number Type")
-}
-func (o *Obj) Div(v Value) (Number, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return nil, TypeMismatchError("Expected Number Type")
-}
 func (o *Obj) Rem(v Value) (Int, Error) {
 	if !o.Inited {
 		return Int(0), UninitializedObjError()
@@ -172,12 +154,6 @@ func (o *Obj) RightShift(Value) (Int, Error) {
 		return Int(0), UninitializedObjError()
 	}
 	return Int(0), TypeMismatchError("Expected 'Int'")
-}
-func (o *Obj) Negate() (Number, Error) {
-	if !o.Inited {
-		return Int(0), UninitializedObjError()
-	}
-	return Int(0), TypeMismatchError("Expected Number Type")
 }
 func (o *Obj) Complement() (Int, Error) {
 	if !o.Inited {

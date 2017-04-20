@@ -103,9 +103,6 @@ func (f *Func) Add(v Value) (Value, Error) {
 	}
 }
 
-func (f *Func) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (f *Func) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (f *Func) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
 func (f *Func) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f *Func) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f *Func) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
@@ -113,7 +110,6 @@ func (f *Func) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchErro
 func (f *Func) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f *Func) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f *Func) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
 func (f *Func) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f *Func) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }

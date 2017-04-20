@@ -27,8 +27,6 @@ var NEG_ONE Int = Int(-1)
 
 func (i Int) TypeOf() (Type, Error) { return TINT, nil }
 
-func (i Int) number() {}
-
 func (i Int) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%d", i)), nil
 }
@@ -142,6 +140,10 @@ func (i Int) Div(v Value) (Number, Error) {
 	}
 }
 
+func (i Int) Negate() (Number, Error) {
+	return 0 - i, nil
+}
+
 func (i Int) Rem(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case Int:
@@ -198,10 +200,6 @@ func (i Int) RightShift(v Value) (Int, Error) {
 	default:
 		return Int(0), TypeMismatchError("Expected 'Int'")
 	}
-}
-
-func (i Int) Negate() (Number, Error) {
-	return 0 - i, nil
 }
 
 func (i Int) Complement() (Int, Error) {

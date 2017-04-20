@@ -429,8 +429,26 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			s[n-1] = val
 			ip++
 
+		case g.NOT:
+			b, ok := s[n].(g.Bool)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Bool'"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			s[n] = b.Not()
+			ip++
+
 		case g.SUB:
-			val, err := s[n-1].Sub(s[n])
+			z, ok := s[n-1].(g.Number)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected Number Type"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Sub(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -439,7 +457,14 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.MUL:
-			val, err := s[n-1].Mul(s[n])
+			z, ok := s[n-1].(g.Number)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected Number Type"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Mul(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -448,12 +473,34 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			ip++
 
 		case g.DIV:
-			val, err := s[n-1].Div(s[n])
+			z, ok := s[n-1].(g.Number)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected Number Type"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Div(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 			s = s[:n]
 			s[n-1] = val
+			ip++
+
+		case g.NEGATE:
+			z, ok := s[n-1].(g.Number)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected Number Type"),
+					inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			val, err := z.Negate()
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+			}
+			s[n] = val
 			ip++
 
 		case g.REM:
@@ -508,25 +555,6 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			}
 			s = s[:n]
 			s[n-1] = val
-			ip++
-
-		case g.NEGATE:
-			val, err := s[n].Negate()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
-			}
-			s[n] = val
-			ip++
-
-		case g.NOT:
-			b, ok := s[n].(g.Bool)
-			if !ok {
-				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Bool'"),
-					inp.stringFrames(fn, locals, s, ip)}
-			}
-
-			s[n] = b.Not()
 			ip++
 
 		case g.COMPLEMENT:

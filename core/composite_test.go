@@ -107,16 +107,10 @@ func TestUninitialized(t *testing.T) {
 	_, e1 := o.Eq(NULL)
 	_, e2 := o.String()
 	_, e3 := o.Cmp(NULL)
-
 	_, e4 := o.Add(NULL)
-	_, e5 := o.Sub(NULL)
-	_, e6 := o.Mul(NULL)
-	_, e7 := o.Div(NULL)
 
-	_, e8 := o.Negate()
-
-	_, e10 := o.GetField("")
-	e11 := o.PutField("", NULL)
+	_, e5 := o.GetField("")
+	e6 := o.PutField("", NULL)
 
 	uninitErr(t, e0)
 	uninitErr(t, e1)
@@ -125,10 +119,6 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e4)
 	uninitErr(t, e5)
 	uninitErr(t, e6)
-	uninitErr(t, e7)
-	uninitErr(t, e8)
-	uninitErr(t, e10)
-	uninitErr(t, e11)
 }
 
 func TestLineNumber(t *testing.T) {

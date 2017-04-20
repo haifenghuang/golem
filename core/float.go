@@ -22,8 +22,6 @@ type Float float64
 
 func (f Float) TypeOf() (Type, Error) { return TFLOAT, nil }
 
-func (f Float) number() {}
-
 func (f Float) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%g", f)), nil
 }
@@ -136,6 +134,10 @@ func (f Float) Div(v Value) (Number, Error) {
 	}
 }
 
+func (f Float) Negate() (Number, Error) {
+	return 0 - f, nil
+}
+
 func (f Float) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f Float) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f Float) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
@@ -143,9 +145,6 @@ func (f Float) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchErro
 func (f Float) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (f Float) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (f Float) Negate() (Number, Error) {
-	return 0 - f, nil
-}
 func (f Float) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (f Float) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }

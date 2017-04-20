@@ -92,22 +92,10 @@ func TestBool(t *testing.T) {
 	i, err := TRUE.Cmp(Int(1))
 	fail(t, i, err, "TypeMismatch: Expected Comparable Type")
 
-	n, err := TRUE.Negate()
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
 	val := TRUE.Not()
 	ok(t, val, nil, FALSE)
 	val = FALSE.Not()
 	ok(t, val, nil, TRUE)
-
-	n, err = TRUE.Sub(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	n, err = TRUE.Mul(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	n, err = TRUE.Div(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	v, err := TRUE.Add(Int(1))
 	fail(t, v, err, "TypeMismatch: Expected Number Type")
@@ -143,18 +131,6 @@ func TestStr(t *testing.T) {
 	ok(t, i, err, Int(-1))
 	i, err = b.Cmp(a)
 	ok(t, i, err, Int(1))
-
-	n, err := a.Negate()
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	n, err = a.Sub(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	n, err = a.Mul(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
-
-	n, err = a.Div(Int(1))
-	fail(t, n, err, "TypeMismatch: Expected Number Type")
 
 	v, err := a.Add(Int(1))
 	ok(t, v, err, MakeStr("a1"))

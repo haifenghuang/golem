@@ -71,9 +71,6 @@ func (b _bool) Not() Bool {
 	return !b
 }
 
-func (b _bool) Sub(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (b _bool) Mul(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
-func (b _bool) Div(v Value) (Number, Error)    { return nil, TypeMismatchError("Expected Number Type") }
 func (b _bool) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (b _bool) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (b _bool) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
@@ -81,7 +78,6 @@ func (b _bool) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchErro
 func (b _bool) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (b _bool) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (b _bool) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
 func (b _bool) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 func (b _bool) GetField(key string) (Value, Error)   { return nil, TypeMismatchError("Expected 'Obj'") }

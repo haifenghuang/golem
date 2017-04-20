@@ -64,9 +64,6 @@ func (s _str) Add(v Value) (Value, Error) {
 	return strcat([]Value{s, v})
 }
 
-func (s _str) Sub(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s _str) Mul(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
-func (s _str) Div(v Value) (Number, Error)    { return Int(0), TypeMismatchError("Expected Number Type") }
 func (s _str) Rem(v Value) (Int, Error)       { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (s _str) BitAnd(v Value) (Int, Error)    { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (s _str) BitOr(v Value) (Int, Error)     { return Int(0), TypeMismatchError("Expected 'Int'") }
@@ -74,7 +71,6 @@ func (s _str) BitXOr(v Value) (Int, Error)    { return Int(0), TypeMismatchError
 func (s _str) LeftShift(v Value) (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 func (s _str) RightShift(Value) (Int, Error)  { return Int(0), TypeMismatchError("Expected 'Int'") }
 
-func (s _str) Negate() (Number, Error)  { return Int(0), TypeMismatchError("Expected Number Type") }
 func (s _str) Complement() (Int, Error) { return Int(0), TypeMismatchError("Expected 'Int'") }
 
 //-----------------------------------
