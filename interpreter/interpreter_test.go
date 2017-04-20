@@ -492,7 +492,6 @@ let a = null;
 a = obj { x: 8 }.x = 5;
 `
 	mod = newCompiler(source).Compile()
-
 	interpret(mod)
 
 	//fmt.Println("----------------------------")
@@ -515,4 +514,39 @@ let a = divide(3, 0);
 		[]string{
 			"    at line 3",
 			"    at line 5"}})
+}
+
+func TestPostfix(t *testing.T) {
+
+	source := `
+let a = 10;
+let b = 20;
+let c = a++;
+let d = b--;
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	ok_ref(t, mod.Locals[0], g.Int(11))
+	ok_ref(t, mod.Locals[1], g.Int(19))
+	ok_ref(t, mod.Locals[2], g.Int(10))
+	ok_ref(t, mod.Locals[3], g.Int(20))
+
+	source = `
+let a = obj { x: 10 };
+let b = obj { y: 20 };
+let c = a.x++;
+let d = b.y--;
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.Int(11)}))
+	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"y": g.Int(19)}))
+	ok_ref(t, mod.Locals[2], g.Int(10))
+	ok_ref(t, mod.Locals[3], g.Int(20))
 }

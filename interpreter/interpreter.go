@@ -220,12 +220,7 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 				panic("Invalid GET_FIELD Key")
 			}
 
-			ks, err := key.String()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
-			}
-
-			result, err := s[n].Select(string(ks))
+			result, err := s[n].Select(string(key))
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
@@ -244,17 +239,42 @@ func (inp *Interpreter) invoke(fn *g.Func, locals []*g.Ref) (g.Value, *ErrorStac
 			operand := s[n-1]
 			value := s[n]
 
-			ks, err := key.String()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
-			}
-
-			err = operand.Put(string(ks), value)
+			err := operand.Put(string(key), value)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
 			}
 
 			s[n-1] = value
+			s = s[:n]
+			ip += 3
+
+		case g.INC_FIELD:
+
+			idx := index(opc, ip)
+			key, ok := pool[idx].(g.Str)
+			if !ok {
+				panic("Invalid GET_FIELD Key")
+			}
+
+			operand := s[n-1]
+			value := s[n]
+
+			before, err := operand.Select(string(key))
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			after, err := before.Add(value)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			err = operand.Put(string(key), after)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(fn, locals, s, ip)}
+			}
+
+			s[n-1] = before
 			s = s[:n]
 			ip += 3
 

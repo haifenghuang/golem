@@ -1031,20 +1031,107 @@ let c = a.minus();
 					g.OpcLine{15, 0}}}}})
 }
 
-////func TestPostfix(t *testing.T) {
-////
-////	source := `
-////let a = 3;
-////a = a + 1;
-////let b = obj {x:4};
-////b.x = b.x + 1;
-////`
-////
-////	anl := newAnalyzer(source)
-////	mod := NewCompiler(anl).Compile()
-////	fmt.Println("----------------------------")
-////	fmt.Println(source)
-////	//fmt.Println("----------------------------")
-////	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
-////	fmt.Println(mod)
-////}
+func TestPostfix(t *testing.T) {
+
+	source := `
+let a = 10;
+let b = 20;
+let c = a++;
+let d = b--;
+`
+	anl := newAnalyzer(source)
+	mod := NewCompiler(anl).Compile()
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println("----------------------------")
+	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
+	//fmt.Println(mod)
+
+	ok(t, mod, &g.Module{
+		[]g.Value{
+			g.Int(int64(10)),
+			g.Int(int64(20))},
+		nil,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
+				0, 0, 4,
+				[]byte{
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.DUP,
+					g.LOAD_ONE,
+					g.ADD,
+					g.STORE_LOCAL, 0, 0,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.DUP,
+					g.LOAD_NEG_ONE,
+					g.ADD,
+					g.STORE_LOCAL, 0, 1,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 4},
+					g.OpcLine{25, 5},
+					g.OpcLine{37, 0}}}}})
+
+	source = `
+let a = obj { x: 10 };
+let b = obj { y: 20 };
+let c = a.x++;
+let d = b.y--;
+`
+	anl = newAnalyzer(source)
+	mod = NewCompiler(anl).Compile()
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	////fmt.Println("----------------------------")
+	////fmt.Printf("%s\n", ast.Dump(anl.Module()))
+	//fmt.Println(mod)
+
+	ok(t, mod, &g.Module{
+		[]g.Value{
+			g.Int(10),
+			g.Int(20),
+			g.Str("x"),
+			g.Str("y")},
+		nil,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
+				0, 0, 4,
+				[]byte{
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 0,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 1,
+					g.INIT_OBJ, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_ONE,
+					g.INC_FIELD, 0, 2,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.LOAD_NEG_ONE,
+					g.INC_FIELD, 0, 3,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{11, 3},
+					g.OpcLine{21, 4},
+					g.OpcLine{31, 5},
+					g.OpcLine{41, 0}}}}})
+}

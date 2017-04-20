@@ -71,6 +71,7 @@ const (
 	INIT_OBJ
 	GET_FIELD
 	PUT_FIELD
+	INC_FIELD
 
 	DUP
 
@@ -87,7 +88,7 @@ func OpCodeSize(opc byte) int {
 	case LOAD_CONST, LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
-		INIT_OBJ, GET_FIELD, PUT_FIELD:
+		INIT_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD:
 
 		return 3
 
@@ -180,6 +181,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmtIndex(opcodes, i, "GET_FIELD")
 	case PUT_FIELD:
 		return fmtIndex(opcodes, i, "PUT_FIELD")
+	case INC_FIELD:
+		return fmtIndex(opcodes, i, "INC_FIELD")
 
 	case BREAK:
 		return fmtIndex(opcodes, i, "BREAK")
