@@ -23,7 +23,7 @@ import (
 // An execution environment, a.k.a 'stack frame'.
 
 type frame struct {
-	function *g.Func
+	function g.Func
 	locals   []*g.Ref
 	stack    []g.Value
 	instPtr  int
@@ -70,11 +70,11 @@ func (inp *Interpreter) Init() (g.Value, *ErrorStack) {
 	return inp.invoke(curFunc, locals)
 }
 
-func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *ErrorStack) {
+func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *ErrorStack) {
 
 	pool := inp.mod.Pool
 	defs := inp.mod.ObjDefs
-	opc := curFunc.Template.OpCodes
+	opc := curFunc.Template().OpCodes
 
 	// stack and instruction pointer
 	s := []g.Value{}
@@ -91,15 +91,15 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 			idx := index(opc, ip)
 
 			// get function from stack
-			fn, ok := s[n-idx].(*g.Func)
+			fn, ok := s[n-idx].(g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
-			if fn.Template.Arity != idx {
+			if fn.Template().Arity != idx {
 				return nil, &ErrorStack{
-					g.ArityMismatchError(fn.Template.Arity, idx),
+					g.ArityMismatchError(fn.Template().Arity, idx),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
@@ -117,8 +117,8 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 			// create a new execution environment
 			curFunc = fn
-			locals = newLocals(curFunc.Template.NumLocals, params)
-			opc = curFunc.Template.OpCodes
+			locals = newLocals(curFunc.Template().NumLocals, params)
+			opc = curFunc.Template().OpCodes
 			s = []g.Value{}
 			ip = 0
 
@@ -140,7 +140,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 			// restore the execution environment
 			curFunc = fr.function
 			locals = fr.locals
-			opc = curFunc.Template.OpCodes
+			opc = curFunc.Template().OpCodes
 			s = fr.stack
 			ip = fr.instPtr
 
@@ -159,7 +159,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 		case g.FUNC_LOCAL:
 
 			// get function from stack
-			fn, ok := s[n].(*g.Func)
+			fn, ok := s[n].(g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
@@ -168,13 +168,13 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 			// push a local onto the captures of the function
 			idx := index(opc, ip)
-			fn.Captures = append(fn.Captures, locals[idx])
+			fn.PushCapture(locals[idx])
 			ip += 3
 
 		case g.FUNC_CAPTURE:
 
 			// get function from stack
-			fn, ok := s[n].(*g.Func)
+			fn, ok := s[n].(g.Func)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
@@ -183,7 +183,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 			// push a capture onto the captures of the function
 			idx := index(opc, ip)
-			fn.Captures = append(fn.Captures, curFunc.Captures[idx])
+			fn.PushCapture(curFunc.GetCapture(idx))
 			ip += 3
 
 		case g.NEW_OBJ:
@@ -333,7 +333,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 		case g.LOAD_CAPTURE:
 			idx := index(opc, ip)
-			s = append(s, curFunc.Captures[idx].Val)
+			s = append(s, curFunc.GetCapture(idx).Val)
 			ip += 3
 
 		case g.STORE_LOCAL:
@@ -344,7 +344,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 		case g.STORE_CAPTURE:
 			idx := index(opc, ip)
-			curFunc.Captures[idx].Val = s[n]
+			curFunc.GetCapture(idx).Val = s[n]
 			s = s[:n]
 			ip += 3
 
@@ -650,7 +650,7 @@ func (inp *Interpreter) invoke(curFunc *g.Func, locals []*g.Ref) (g.Value, *Erro
 
 // Create a stack of string-representations from the current stack of execution frames
 func (inp *Interpreter) stringFrames(
-	curFunc *g.Func,
+	curFunc g.Func,
 	locals []*g.Ref,
 	valueStack []g.Value,
 	instPtr int) []string {
@@ -658,11 +658,11 @@ func (inp *Interpreter) stringFrames(
 	n := len(inp.frames)
 	stack := make([]string, n+1)
 
-	lineNum := curFunc.Template.LineNumber(instPtr)
+	lineNum := curFunc.Template().LineNumber(instPtr)
 	stack = append(stack, fmt.Sprintf("    at line %d", lineNum))
 
 	for i := n - 1; i >= 0; i-- {
-		tp := inp.frames[i].function.Template
+		tp := inp.frames[i].function.Template()
 		lineNum := tp.LineNumber(inp.frames[i].instPtr)
 		stack = append(stack, fmt.Sprintf("    at line %d", lineNum))
 	}

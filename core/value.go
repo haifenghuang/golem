@@ -140,6 +140,17 @@ type Obj interface {
 }
 
 //---------------------------------------------------------------
+// Func
+
+type Func interface {
+	Value
+
+	Template() *Template
+	GetCapture(int) *Ref
+	PushCapture(*Ref)
+}
+
+//---------------------------------------------------------------
 // Ref
 
 type Ref struct {

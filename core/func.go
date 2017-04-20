@@ -54,32 +54,32 @@ type OpcLine struct {
 }
 
 //---------------------------------------------------------------
-// Func represents an instance of a function
+// _func represents an instance of a function
 
-type Func struct {
-	Template *Template
-	Captures []*Ref
+type _func struct {
+	template *Template
+	captures []*Ref
 }
 
 // Called via NEW_FUNC opcode at runtime
-func NewFunc(template *Template) *Func {
+func NewFunc(template *Template) Func {
 	captures := make([]*Ref, 0, template.NumCaptures)
-	return &Func{template, captures}
+	return &_func{template, captures}
 }
 
-func (f *Func) TypeOf() (Type, Error) { return TFUNC, nil }
+func (f *_func) TypeOf() (Type, Error) { return TFUNC, nil }
 
-func (f *Func) String() (Str, Error) {
+func (f *_func) String() (Str, Error) {
 	return MakeStr(f.doStr()), nil
 }
 
-func (f *Func) doStr() string {
-	return fmt.Sprintf("Func(%p)", f)
+func (f *_func) doStr() string {
+	return fmt.Sprintf("func(%p)", f)
 }
 
-func (f *Func) Eq(v Value) (Bool, Error) {
+func (f *_func) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *Func:
+	case *_func:
 		if f.doStr() == t.doStr() {
 			return TRUE, nil
 		} else {
@@ -90,11 +90,11 @@ func (f *Func) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (f *Func) Cmp(v Value) (Int, Error) {
+func (f *_func) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (f *Func) Add(v Value) (Value, Error) {
+func (f *_func) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -103,4 +103,16 @@ func (f *Func) Add(v Value) (Value, Error) {
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
+}
+
+func (f *_func) Template() *Template {
+	return f.template
+}
+
+func (f *_func) GetCapture(idx int) *Ref {
+	return f.captures[idx]
+}
+
+func (f *_func) PushCapture(ref *Ref) {
+	f.captures = append(f.captures, ref)
 }
