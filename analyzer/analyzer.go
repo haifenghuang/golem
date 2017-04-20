@@ -78,6 +78,9 @@ func (a *analyzer) Visit(node ast.Node) {
 	case *ast.Assignment:
 		a.visitAssignment(t)
 
+	case *ast.PostfixExpr:
+		a.visitPostfixExpr(t)
+
 	case *ast.IdentExpr:
 		a.visitIdentExpr(t)
 
@@ -182,28 +185,45 @@ func (a *analyzer) visitAssignment(asn *ast.Assignment) {
 	switch t := asn.Assignee.(type) {
 
 	case *ast.IdentExpr:
-
 		a.Visit(asn.Val)
-
-		sym := t.Symbol.Text
-		if v, ok := a.curScope.get(sym); ok {
-			if v.IsConst {
-				a.errors = append(a.errors,
-					&aerror{fmt.Sprintf("Symbol '%s' is constant", sym)})
-			}
-			t.Variable = v
-		} else {
-			a.errors = append(a.errors,
-				&aerror{fmt.Sprintf("Symbol '%s' is not defined", sym)})
-		}
+		a.doVisitAssignIdent(t)
 
 	case *ast.FieldExpr:
-
 		a.Visit(t.Operand)
 		a.Visit(asn.Val)
 
 	default:
 		panic("invalid assignee type")
+	}
+}
+
+func (a *analyzer) visitPostfixExpr(ps *ast.PostfixExpr) {
+
+	switch t := ps.Assignee.(type) {
+
+	case *ast.IdentExpr:
+		a.doVisitAssignIdent(t)
+
+	case *ast.FieldExpr:
+		a.Visit(t.Operand)
+
+	default:
+		panic("invalid assignee type")
+	}
+}
+
+// visit an Ident that is part of an assignment
+func (a *analyzer) doVisitAssignIdent(ident *ast.IdentExpr) {
+	sym := ident.Symbol.Text
+	if v, ok := a.curScope.get(sym); ok {
+		if v.IsConst {
+			a.errors = append(a.errors,
+				&aerror{fmt.Sprintf("Symbol '%s' is constant", sym)})
+		}
+		ident.Variable = v
+	} else {
+		a.errors = append(a.errors,
+			&aerror{fmt.Sprintf("Symbol '%s' is not defined", sym)})
 	}
 }
 

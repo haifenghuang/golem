@@ -464,12 +464,14 @@ FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 `)
 }
 
-func TestField(t *testing.T) {
+func TestAssignment(t *testing.T) {
 
 	source := `
 let x = obj { a: 0 };
 let y = x.a;
 x.a = 3;
+x.a++;
+y--;
 `
 	anl := newAnalyzer(source)
 	errors := anl.Analyze()
@@ -493,5 +495,10 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   .   .   FieldExpr(a)
 .   .   .   .   IdentExpr(x,(0,false,false))
 .   .   .   BasicExpr(INT,"3")
+.   .   PostfixExpr("++")
+.   .   .   FieldExpr(a)
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   PostfixExpr("--")
+.   .   .   IdentExpr(y,(1,false,false))
 `)
 }

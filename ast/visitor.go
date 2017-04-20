@@ -85,7 +85,7 @@ func (un *UnaryExpr) Traverse(v Visitor) {
 }
 
 func (pf *PostfixExpr) Traverse(v Visitor) {
-	v.Visit(pf.Operand)
+	v.Visit(pf.Assignee)
 }
 
 func (basic *BasicExpr) Traverse(v Visitor) {

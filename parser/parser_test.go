@@ -138,6 +138,9 @@ func TestPostfix(t *testing.T) {
 
 	p = newParser("a.b++")
 	ok_expr(t, p, "a.b++")
+
+	p = newParser("3++")
+	fail_expr(t, p, "Invalid Postfix Expression at (1, 2)")
 }
 
 func TestMultiplicative(t *testing.T) {

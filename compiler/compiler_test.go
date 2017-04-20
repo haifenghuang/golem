@@ -1046,3 +1046,21 @@ let c = a.minus();
 					g.OpcLine{1, 6},
 					g.OpcLine{15, 0}}}}})
 }
+
+//func TestPostfix(t *testing.T) {
+//
+//	source := `
+//let a = 3;
+//a = a + 1;
+//let b = obj {x:4};
+//b.x = b.x + 1;
+//`
+//
+//	anl := newAnalyzer(source)
+//	mod := NewCompiler(anl).Compile()
+//	fmt.Println("----------------------------")
+//	fmt.Println(source)
+//	//fmt.Println("----------------------------")
+//	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
+//	fmt.Println(mod)
+//}

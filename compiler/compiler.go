@@ -114,6 +114,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.UnaryExpr:
 		c.visitUnaryExpr(t)
 
+		//	case *ast.PostfixExpr:
+		//		c.visitPostfixExpr(t)
+
 	case *ast.BasicExpr:
 		c.visitBasicExpr(t)
 
@@ -176,6 +179,34 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 		panic("invalid assignee type")
 	}
 }
+
+//func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
+//
+//	switch t := pe.Assignee.(type) {
+//
+//	case *ast.IdentExpr:
+//
+//        // -1 or 1
+//		c.pool = append(c.pool, g.Int(i))
+//		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+//
+//		// TODO doesn't DUP-ing have the potential to fill up the operand stack?
+//		c.push(pe.Eq.Position, g.DUP)
+//		c.assignIdent(t)
+//
+//	case *ast.FieldExpr:
+//
+//		c.Visit(t.Operand)
+//		c.Visit(pe.Val)
+//
+//		high, low := index(len(c.pool))
+//		c.pool = append(c.pool, g.Str(t.Key.Text))
+//		c.push(t.Key.Position, g.PUT_FIELD, high, low)
+//
+//	default:
+//		panic("invalid assignee type")
+//	}
+//}
 
 func (c *compiler) visitIf(f *ast.If) {
 

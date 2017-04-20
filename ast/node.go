@@ -124,8 +124,8 @@ type (
 	}
 
 	PostfixExpr struct {
-		Operand Expr
-		Op      *Token
+		Assignee Assignable
+		Op       *Token
 	}
 
 	BasicExpr struct {
@@ -249,7 +249,7 @@ func (n *BinaryExpr) End() Pos   { return n.Rhs.End() }
 func (n *UnaryExpr) Begin() Pos { return n.Op.Position }
 func (n *UnaryExpr) End() Pos   { return n.Operand.End() }
 
-func (n *PostfixExpr) Begin() Pos { return n.Operand.End() }
+func (n *PostfixExpr) Begin() Pos { return n.Assignee.Begin() }
 func (n *PostfixExpr) End() Pos   { return n.Op.Position }
 
 func (n *BasicExpr) Begin() Pos { return n.Token.Position }
@@ -345,7 +345,7 @@ func (unary *UnaryExpr) String() string {
 }
 
 func (pf *PostfixExpr) String() string {
-	return fmt.Sprintf("%v%s", pf.Operand, pf.Op.Text)
+	return fmt.Sprintf("%v%s", pf.Assignee, pf.Op.Text)
 }
 
 func (basic *BasicExpr) String() string {

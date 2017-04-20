@@ -328,16 +328,20 @@ func (p *Parser) unaryExpr() ast.Expr {
 
 func (p *Parser) postfixExpr() ast.Expr {
 
-	pe := p.primaryExpr()
+	exp := p.primaryExpr()
 
-	if isPostfix(p.cur) {
-		tok := p.cur
-		p.consume()
-		return &ast.PostfixExpr{pe, tok}
+	for isPostfix(p.cur) {
 
-	} else {
-		return pe
+		if asn, ok := exp.(ast.Assignable); ok {
+			tok := p.cur
+			p.consume()
+			exp = &ast.PostfixExpr{asn, tok}
+		} else {
+			panic(&parserError{INVALID_POSTFIX, p.cur})
+		}
 	}
+
+	return exp
 }
 
 func (p *Parser) primaryExpr() ast.Expr {
@@ -715,6 +719,7 @@ const (
 	UNEXPECTED_CHAR parserErrorKind = iota
 	UNEXPECTED_TOKEN
 	UNEXPECTED_EOF
+	INVALID_POSTFIX
 )
 
 type parserError struct {
@@ -734,6 +739,9 @@ func (e *parserError) Error() string {
 
 	case UNEXPECTED_EOF:
 		return fmt.Sprintf("Unexpected EOF at %v", e.token.Position)
+
+	case INVALID_POSTFIX:
+		return fmt.Sprintf("Invalid Postfix Expression at %v", e.token.Position)
 
 	default:
 		panic("unreachable")
