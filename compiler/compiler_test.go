@@ -15,7 +15,7 @@
 package compiler
 
 import (
-	"fmt"
+	//"fmt"
 	"golem/analyzer"
 	//"golem/ast"
 	g "golem/core"

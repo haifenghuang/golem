@@ -20,21 +20,21 @@ import (
 )
 
 //---------------------------------------------------------------
-// _list
+// list
 
-type _list struct {
+type list struct {
 	array []Value
 }
 
 func NewList(values []Value) List {
-	return &_list{values}
+	return &list{values}
 }
 
-func (ls *_list) TypeOf() (Type, Error) {
+func (ls *list) TypeOf() (Type, Error) {
 	return TLIST, nil
 }
 
-func (ls *_list) String() (Str, Error) {
+func (ls *list) String() (Str, Error) {
 
 	if len(ls.array) == 0 {
 		return MakeStr("[]"), nil
@@ -57,31 +57,31 @@ func (ls *_list) String() (Str, Error) {
 	return MakeStr(buf.String()), nil
 }
 
-func (ls *_list) Eq(v Value) (Bool, Error) {
+func (ls *list) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *_list:
+	case *list:
 		return MakeBool(reflect.DeepEqual(ls.array, t.array)), nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (ls *_list) Cmp(v Value) (Int, Error) {
+func (ls *list) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (ls *_list) Add(v Value) (Value, Error) {
+func (ls *list) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{ls, t})
+		return strcat(ls, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (ls *_list) Get(index Value) (Value, Error) {
+func (ls *list) Get(index Value) (Value, Error) {
 	if i, ok := index.(Int); ok {
 		n := int(i.IntVal())
 		if (n < 0) || (n >= len(ls.array)) {
@@ -94,7 +94,7 @@ func (ls *_list) Get(index Value) (Value, Error) {
 	}
 }
 
-func (ls *_list) Set(index Value, val Value) Error {
+func (ls *list) Set(index Value, val Value) Error {
 	if i, ok := index.(Int); ok {
 		n := int(i.IntVal())
 		if (n < 0) || (n >= len(ls.array)) {
@@ -108,11 +108,11 @@ func (ls *_list) Set(index Value, val Value) Error {
 	}
 }
 
-func (ls *_list) Append(val Value) Error {
+func (ls *list) Append(val Value) Error {
 	ls.array = append(ls.array, val)
 	return nil
 }
 
-func (ls *_list) Len() (Int, Error) {
+func (ls *list) Len() (Int, Error) {
 	return MakeInt(int64(len(ls.array))), nil
 }

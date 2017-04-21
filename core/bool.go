@@ -62,7 +62,7 @@ func (b _bool) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{b, t})
+		return strcat(b, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

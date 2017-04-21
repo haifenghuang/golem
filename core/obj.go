@@ -29,18 +29,18 @@ type ObjDef struct {
 }
 
 //---------------------------------------------------------------
-// _obj
+// obj
 
-type _obj struct {
+type obj struct {
 	fields map[string]Value
 	inited bool
 }
 
 func NewObj() Obj {
-	return &_obj{nil, false}
+	return &obj{nil, false}
 }
 
-func (o *_obj) Init(def *ObjDef, vals []Value) {
+func (o *obj) Init(def *ObjDef, vals []Value) {
 	o.fields = make(map[string]Value)
 	for i, k := range def.Keys {
 		o.fields[k] = vals[i]
@@ -48,7 +48,7 @@ func (o *_obj) Init(def *ObjDef, vals []Value) {
 	o.inited = true
 }
 
-func (o *_obj) TypeOf() (Type, Error) {
+func (o *obj) TypeOf() (Type, Error) {
 	if !o.inited {
 		return TOBJ, UninitializedObjError()
 	}
@@ -56,7 +56,7 @@ func (o *_obj) TypeOf() (Type, Error) {
 	return TOBJ, nil
 }
 
-func (o *_obj) String() (Str, Error) {
+func (o *obj) String() (Str, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()
 	}
@@ -87,20 +87,20 @@ func (o *_obj) String() (Str, Error) {
 	return MakeStr(buf.String()), nil
 }
 
-func (o *_obj) Eq(v Value) (Bool, Error) {
+func (o *obj) Eq(v Value) (Bool, Error) {
 	if !o.inited {
 		return FALSE, UninitializedObjError()
 	}
 
 	switch t := v.(type) {
-	case *_obj:
+	case *obj:
 		return MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (o *_obj) Cmp(v Value) (Int, Error) {
+func (o *obj) Cmp(v Value) (Int, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()
 	}
@@ -108,7 +108,7 @@ func (o *_obj) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (o *_obj) Add(v Value) (Value, Error) {
+func (o *obj) Add(v Value) (Value, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()
 	}
@@ -116,14 +116,14 @@ func (o *_obj) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{o, t})
+		return strcat(o, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (o *_obj) GetField(key Str) (Value, Error) {
+func (o *obj) GetField(key Str) (Value, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()
 	}
@@ -136,7 +136,7 @@ func (o *_obj) GetField(key Str) (Value, Error) {
 	}
 }
 
-func (o *_obj) PutField(key Str, val Value) Error {
+func (o *obj) PutField(key Str, val Value) Error {
 	if !o.inited {
 		return UninitializedObjError()
 	}

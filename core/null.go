@@ -14,30 +14,30 @@
 
 package core
 
-type _null struct{}
+type null struct{}
 
-var NULL Null = &_null{}
+var NULL Null = &null{}
 
-func (n *_null) TypeOf() (Type, Error) { return TNULL, nil }
+func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
 
-func (n *_null) String() (Str, Error) { return MakeStr("null"), nil }
+func (n *null) String() (Str, Error) { return MakeStr("null"), nil }
 
-func (n *_null) Eq(v Value) (Bool, Error) {
+func (n *null) Eq(v Value) (Bool, Error) {
 	switch v.(type) {
-	case *_null:
+	case *null:
 		return TRUE, nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (n *_null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
+func (n *null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
 
-func (n *_null) Add(v Value) (Value, Error) {
+func (n *null) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{n, t})
+		return strcat(n, t)
 
 	default:
 		return nil, NullValueError()

@@ -91,7 +91,7 @@ func (i _int) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{i, t})
+		return strcat(i, t)
 
 	case _int:
 		return i + t, nil

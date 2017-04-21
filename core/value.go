@@ -59,111 +59,112 @@ func (t Type) String() string {
 }
 
 //---------------------------------------------------------------
+// Shared Functionality
+
+// Getable: Str
+// Indexable: List, Obj
+// Sliceable: List, Str
+
+type (
+	Getable interface {
+		Get(Value) (Value, Error)
+	}
+
+	Indexable interface {
+		Getable
+		Set(Value, Value) Error
+	}
+
+	Sliceable interface {
+		Slice(Value, Value) (Value, Error)
+		SliceFrom(Value) (Value, Error)
+		SliceTo(Value) (Value, Error)
+	}
+)
+
+//---------------------------------------------------------------
 // Value
 
-type Value interface {
-	TypeOf() (Type, Error)
+type (
+	Value interface {
+		TypeOf() (Type, Error)
 
-	Eq(Value) (Bool, Error)
-	String() (Str, Error)
-	Cmp(Value) (Int, Error)
-	Add(Value) (Value, Error)
-}
+		Eq(Value) (Bool, Error)
+		String() (Str, Error)
+		Cmp(Value) (Int, Error)
+		Add(Value) (Value, Error)
+	}
 
-//---------------------------------------------------------------
-// Null
+	Null interface {
+		Value
+	}
 
-type Null interface {
-	Value
-}
+	Bool interface {
+		Value
+		BoolVal() bool
 
-//---------------------------------------------------------------
-// Bool
+		Not() Bool
+	}
 
-type Bool interface {
-	Value
-	BoolVal() bool
+	Str interface {
+		Value
+		StrVal() string
 
-	Not() Bool
-}
+		//Getable
+	}
 
-//---------------------------------------------------------------
-// Str
+	Number interface {
+		Value
+		FloatVal() float64
+		IntVal() int64
 
-type Str interface {
-	Value
-	StrVal() string
-}
+		Sub(Value) (Number, Error)
+		Mul(Value) (Number, Error)
+		Div(Value) (Number, Error)
+		Negate() (Number, Error)
+	}
 
-//---------------------------------------------------------------
-// Number
+	Float interface {
+		Number
+	}
 
-type Number interface {
-	Value
-	FloatVal() float64
-	IntVal() int64
+	Int interface {
+		Number
 
-	Sub(Value) (Number, Error)
-	Mul(Value) (Number, Error)
-	Div(Value) (Number, Error)
-	Negate() (Number, Error)
-}
+		Rem(Value) (Int, Error)
+		BitAnd(Value) (Int, Error)
+		BitOr(Value) (Int, Error)
+		BitXOr(Value) (Int, Error)
+		LeftShift(Value) (Int, Error)
+		RightShift(Value) (Int, Error)
+		Complement() (Int, Error)
+	}
 
-//---------------------------------------------------------------
-// Float
+	List interface {
+		Value
 
-type Float interface {
-	Number
-}
+		Get(Value) (Value, Error)
+		Set(Value, Value) Error
+		Append(Value) Error
+		Len() (Int, Error)
+	}
 
-//---------------------------------------------------------------
-// Int
+	Obj interface {
+		Value
+		Init(*ObjDef, []Value)
 
-type Int interface {
-	Number
+		GetField(Str) (Value, Error)
+		PutField(Str, Value) Error
+	}
 
-	Rem(Value) (Int, Error)
-	BitAnd(Value) (Int, Error)
-	BitOr(Value) (Int, Error)
-	BitXOr(Value) (Int, Error)
-	LeftShift(Value) (Int, Error)
-	RightShift(Value) (Int, Error)
-	Complement() (Int, Error)
-}
+	Func interface {
+		Value
 
-//---------------------------------------------------------------
-// List
-
-type List interface {
-	Value
-
-	Get(Value) (Value, Error)
-	Set(Value, Value) Error
-	Append(Value) Error
-	Len() (Int, Error)
-}
-
-//---------------------------------------------------------------
-// Obj
-
-type Obj interface {
-	Value
-	Init(*ObjDef, []Value)
-
-	GetField(Str) (Value, Error)
-	PutField(Str, Value) Error
-}
-
-//---------------------------------------------------------------
-// Func
-
-type Func interface {
-	Value
-
-	Template() *Template
-	GetCapture(int) *Ref
-	PushCapture(*Ref)
-}
+		Template() *Template
+		GetCapture(int) *Ref
+		PushCapture(*Ref)
+	}
+)
 
 //---------------------------------------------------------------
 // Ref

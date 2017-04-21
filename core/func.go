@@ -98,7 +98,7 @@ func (f *_func) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat([]Value{f, t})
+		return strcat(f, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
