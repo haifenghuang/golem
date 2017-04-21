@@ -53,6 +53,8 @@ const (
 	RPAREN
 	LBRACE
 	RBRACE
+	LBRACKET
+	RBRACKET
 	SEMICOLON
 	COLON
 	COMMA
@@ -146,6 +148,11 @@ func (t TokenKind) String() string {
 		return "LBRACE"
 	case RBRACE:
 		return "RBRACE"
+	case LBRACKET:
+		return "LBRACKET"
+	case RBRACKET:
+		return "RBRACKET"
+
 	case EQ:
 		return "EQ"
 	case DBL_EQ:

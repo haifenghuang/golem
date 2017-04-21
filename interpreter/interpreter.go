@@ -302,6 +302,16 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			s = s[:n]
 			ip += 3
 
+		case g.NEW_LIST:
+
+			size := index(opc, ip)
+			vals := make([]g.Value, size)
+			copy(vals, s[n-size+1:])
+
+			s = s[:n-size+1]
+			s = append(s, g.NewList(vals))
+			ip += 3
+
 		case g.LOAD_NULL:
 			s = append(s, g.NULL)
 			ip++

@@ -141,6 +141,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.FieldExpr:
 		c.visitFieldExpr(t)
 
+	case *ast.ListExpr:
+		c.visitListExpr(t)
+
 	default:
 		t.Traverse(c)
 	}
@@ -577,6 +580,19 @@ func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	high, low := index(len(c.pool))
 	c.pool = append(c.pool, g.MakeStr(fe.Key.Text))
 	c.push(fe.Key.Position, g.GET_FIELD, high, low)
+}
+
+func (c *compiler) visitListExpr(ls *ast.ListExpr) {
+
+	high, low := index(len(ls.Elems))
+
+	// eval each element
+	for _, v := range ls.Elems {
+		c.Visit(v)
+	}
+
+	// create the list
+	c.push(ls.Begin(), g.NEW_LIST, high, low)
 }
 
 func parseInt(text string) int64 {

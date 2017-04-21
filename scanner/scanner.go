@@ -168,6 +168,12 @@ func (s *Scanner) Next() *ast.Token {
 		case r == '}':
 			s.consume()
 			return &ast.Token{ast.RBRACE, "}", pos}
+		case r == '[':
+			s.consume()
+			return &ast.Token{ast.LBRACKET, "[", pos}
+		case r == ']':
+			s.consume()
+			return &ast.Token{ast.RBRACKET, "]", pos}
 		case r == ';':
 			s.consume()
 			return &ast.Token{ast.SEMICOLON, ";", pos}

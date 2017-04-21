@@ -15,7 +15,7 @@
 package compiler
 
 import (
-	//"fmt"
+	"fmt"
 	"golem/analyzer"
 	//"golem/ast"
 	g "golem/core"
@@ -48,11 +48,13 @@ func ok(t *testing.T, mod *g.Module, expect *g.Module) {
 			t.Error("OpCodes: ", mod, " != ", expect)
 		}
 
-		if !reflect.DeepEqual(mt.OpcLines, et.OpcLines) {
-			t.Error("OpcLines: ", mod, " != ", expect)
+		// checking OpcLines is optional
+		if et.OpcLines != nil {
+			if !reflect.DeepEqual(mt.OpcLines, et.OpcLines) {
+				t.Error("OpcLines: ", mod, " != ", expect)
+			}
 		}
 	}
-
 }
 
 func newAnalyzer(source string) analyzer.Analyzer {
@@ -1127,11 +1129,21 @@ let d = b.y--;
 					g.INC_FIELD, 0, 3,
 					g.STORE_LOCAL, 0, 3,
 					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 2},
-					g.OpcLine{11, 3},
-					g.OpcLine{21, 4},
-					g.OpcLine{31, 5},
-					g.OpcLine{41, 0}}}}})
+				nil}}})
 }
+
+//func TestList(t *testing.T) {
+//
+//	source := `
+//let a = [];
+//let b = [1];
+//let c = [1,2,b];
+//`
+//	anl := newAnalyzer(source)
+//	mod := NewCompiler(anl).Compile()
+//	fmt.Println("----------------------------")
+//	fmt.Println(source)
+//	//fmt.Println("----------------------------")
+//	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
+//	fmt.Println(mod)
+//}

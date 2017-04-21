@@ -162,11 +162,18 @@ type (
 		Params  []Expr
 	}
 
+	ListExpr struct {
+		LBracket *Token
+		Elems    []Expr
+		RBracket *Token
+	}
+
 	ObjExpr struct {
-		Token *Token
+		ObjToken *Token
 
 		Keys   []*Token
 		Values []Expr
+
 		// The index of the obj expression in the local variable array.
 		// '-1' means that the obj is not referenced by a 'this', and thus
 		// is not stored in the local variable array
@@ -207,6 +214,7 @@ func (*BasicExpr) exprMarker()   {}
 func (*IdentExpr) exprMarker()   {}
 func (*FnExpr) exprMarker()      {}
 func (*InvokeExpr) exprMarker()  {}
+func (*ListExpr) exprMarker()    {}
 func (*ObjExpr) exprMarker()     {}
 func (*ThisExpr) exprMarker()    {}
 func (*FieldExpr) exprMarker()   {}
@@ -282,7 +290,10 @@ func (n *FnExpr) End() Pos   { return n.Body.End() }
 func (n *InvokeExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *InvokeExpr) End() Pos   { return n.RParen.Position }
 
-func (n *ObjExpr) Begin() Pos { return n.Token.Position }
+func (n *ListExpr) Begin() Pos { return n.LBracket.Position }
+func (n *ListExpr) End() Pos   { return n.RBracket.Position }
+
+func (n *ObjExpr) Begin() Pos { return n.ObjToken.Position }
 func (n *ObjExpr) End() Pos   { return n.RBrace.Position }
 
 func (n *ThisExpr) Begin() Pos { return n.Token.Position }
@@ -403,6 +414,19 @@ func (inv *InvokeExpr) String() string {
 		buf.WriteString(p.String())
 	}
 	buf.WriteString(")")
+	return buf.String()
+}
+
+func (ls *ListExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("[ ")
+	for idx, v := range ls.Elems {
+		if idx > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(v.String())
+	}
+	buf.WriteString(" ]")
 	return buf.String()
 }
 

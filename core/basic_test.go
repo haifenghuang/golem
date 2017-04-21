@@ -22,6 +22,7 @@ import (
 
 func assert(t *testing.T, flag bool) {
 	if !flag {
+		panic("adfadfa")
 		t.Error("assertion failure")
 	}
 }
@@ -37,8 +38,10 @@ func ok(t *testing.T, val Value, err Error, expect Value) {
 
 func fail(t *testing.T, val Value, err Error, expect string) {
 
+	assert(t, val == nil)
+
 	if err.Error() != expect {
-		//t.Error(err.Error(), " != ", expect)
+		t.Error(err.Error(), " != ", expect)
 	}
 }
 
@@ -247,7 +250,7 @@ func TestInt(t *testing.T) {
 	ok(t, v1, err, MakeInt(1))
 
 	v1, err = MakeInt(8).RightShift(MakeStr("a"))
-	fail(t, v1, err, "TypeMismatch: Expected 'MakeInt'")
+	fail(t, v1, err, "TypeMismatch: Expected 'Int'")
 
 	v1, err = MakeInt(8).RightShift(MakeInt(-1))
 	fail(t, v1, err, "InvalidArgument: Shift count cannot be less than zero")

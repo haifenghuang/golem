@@ -63,6 +63,10 @@ func DivideByZeroError() Error {
 	return &serror{"DivideByZero", ""}
 }
 
+func IndexOutOfBoundsError() Error {
+	return &serror{"IndexOutOfBounds", ""}
+}
+
 func NoSuchFieldError(field string) Error {
 	return &serror{
 		"NoSuchField",

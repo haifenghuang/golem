@@ -114,6 +114,12 @@ func (inv *InvokeExpr) Traverse(v Visitor) {
 	}
 }
 
+func (ls *ListExpr) Traverse(v Visitor) {
+	for _, val := range ls.Elems {
+		v.Visit(val)
+	}
+}
+
 func (obj *ObjExpr) Traverse(v Visitor) {
 	for _, val := range obj.Values {
 		v.Visit(val)

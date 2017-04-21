@@ -51,7 +51,7 @@ func TestObj(t *testing.T) {
 	okType(t, o, TOBJ)
 
 	s, err := o.String()
-	ok(t, s, err, MakeStr("obj { }"))
+	ok(t, s, err, MakeStr("obj {}"))
 
 	z, err := o.Eq(newObj(map[string]Value{}))
 	ok(t, z, err, TRUE)
@@ -59,7 +59,7 @@ func TestObj(t *testing.T) {
 	ok(t, z, err, FALSE)
 
 	val, err := o.Add(MakeStr("a"))
-	ok(t, val, err, MakeStr("obj { }a"))
+	ok(t, val, err, MakeStr("obj {}a"))
 
 	val, err = o.GetField(MakeStr("a"))
 	fail(t, val, err, "NoSuchField: Field 'a' not found.")
@@ -139,4 +139,67 @@ func TestLineNumber(t *testing.T) {
 	assert(t, tp.LineNumber(20) == 4)
 	assert(t, tp.LineNumber(28) == 4)
 	assert(t, tp.LineNumber(29) == 0)
+}
+
+func TestList(t *testing.T) {
+	ls := NewList([]Value{})
+	okType(t, ls, TLIST)
+
+	var v Value
+	v, err := ls.String()
+	ok(t, v, err, MakeStr("[]"))
+
+	v, err = ls.Eq(NewList([]Value{}))
+	ok(t, v, err, TRUE)
+
+	v, err = ls.Eq(NewList([]Value{MakeStr("a")}))
+	ok(t, v, err, FALSE)
+
+	v, err = ls.Eq(NULL)
+	ok(t, v, err, FALSE)
+
+	v, err = ls.Len()
+	ok(t, v, err, MakeInt(0))
+
+	err = ls.Append(MakeStr("a"))
+	assert(t, err == nil)
+
+	v, err = ls.Eq(NewList([]Value{}))
+	ok(t, v, err, FALSE)
+
+	v, err = ls.Eq(NewList([]Value{MakeStr("a")}))
+	ok(t, v, err, TRUE)
+
+	v, err = ls.Len()
+	ok(t, v, err, MakeInt(1))
+
+	v, err = ls.Get(MakeInt(0))
+	ok(t, v, err, MakeStr("a"))
+
+	err = ls.Set(MakeInt(0), MakeStr("b"))
+	assert(t, err == nil)
+
+	v, err = ls.Get(MakeInt(0))
+	ok(t, v, err, MakeStr("b"))
+
+	v, err = ls.Get(MakeInt(-1))
+	fail(t, v, err, "IndexOutOfBounds")
+
+	v, err = ls.Get(MakeInt(1))
+	fail(t, v, err, "IndexOutOfBounds")
+
+	err = ls.Set(MakeInt(-1), TRUE)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	err = ls.Set(MakeInt(1), TRUE)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	v, err = ls.String()
+	ok(t, v, err, MakeStr("[ b ]"))
+
+	err = ls.Append(MakeStr("z"))
+	assert(t, err == nil)
+
+	v, err = ls.String()
+	ok(t, v, err, MakeStr("[ b, z ]"))
 }

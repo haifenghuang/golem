@@ -14,26 +14,26 @@
 
 package core
 
-type null struct{}
+type _null struct{}
 
-var NULL Null = &null{}
+var NULL Null = &_null{}
 
-func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
+func (n *_null) TypeOf() (Type, Error) { return TNULL, nil }
 
-func (n *null) String() (Str, Error) { return MakeStr("null"), nil }
+func (n *_null) String() (Str, Error) { return MakeStr("null"), nil }
 
-func (n *null) Eq(v Value) (Bool, Error) {
+func (n *_null) Eq(v Value) (Bool, Error) {
 	switch v.(type) {
-	case *null:
+	case *_null:
 		return TRUE, nil
 	default:
 		return FALSE, nil
 	}
 }
 
-func (n *null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
+func (n *_null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
 
-func (n *null) Add(v Value) (Value, Error) {
+func (n *_null) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

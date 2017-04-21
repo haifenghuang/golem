@@ -404,8 +404,11 @@ func (p *Parser) primary() ast.Expr {
 	case ast.OBJ:
 		return p.objExpr(p.consume())
 
+	case ast.LBRACKET:
+		return p.listExpr(p.consume())
+
 	default:
-		return p.literalExpr()
+		return p.basicExpr()
 	}
 }
 
@@ -498,7 +501,28 @@ func (p *Parser) objExpr(first *ast.Token) ast.Expr {
 	return &ast.ObjExpr{first, keys, values, -1, last}
 }
 
-func (p *Parser) literalExpr() ast.Expr {
+func (p *Parser) listExpr(first *ast.Token) ast.Expr {
+
+	if p.cur.Kind == ast.RBRACKET {
+		return &ast.ListExpr{first, []ast.Expr{}, p.consume()}
+	} else {
+
+		elems := []ast.Expr{p.expression()}
+		for {
+			switch p.cur.Kind {
+			case ast.RBRACKET:
+				return &ast.ListExpr{first, elems, p.consume()}
+			case ast.COMMA:
+				p.consume()
+				elems = append(elems, p.expression())
+			default:
+				panic(p.unexpected())
+			}
+		}
+	}
+}
+
+func (p *Parser) basicExpr() ast.Expr {
 
 	tok := p.cur
 

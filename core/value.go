@@ -30,6 +30,7 @@ const (
 	TINT
 	TFLOAT
 	TFUNC
+	TLIST
 	TOBJ
 )
 
@@ -47,6 +48,8 @@ func (t Type) String() string {
 		return "Float"
 	case TFUNC:
 		return "Func"
+	case TLIST:
+		return "List"
 	case TOBJ:
 		return "Obj"
 
@@ -126,6 +129,18 @@ type Int interface {
 	LeftShift(Value) (Int, Error)
 	RightShift(Value) (Int, Error)
 	Complement() (Int, Error)
+}
+
+//---------------------------------------------------------------
+// List
+
+type List interface {
+	Value
+
+	Get(Value) (Value, Error)
+	Set(Value, Value) Error
+	Append(Value) Error
+	Len() (Int, Error)
 }
 
 //---------------------------------------------------------------

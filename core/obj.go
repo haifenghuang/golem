@@ -61,6 +61,10 @@ func (o *_obj) String() (Str, Error) {
 		return nil, UninitializedObjError()
 	}
 
+	if len(o.fields) == 0 {
+		return MakeStr("obj {}"), nil
+	}
+
 	var buf bytes.Buffer
 	buf.WriteString("obj {")
 	idx := 0

@@ -568,3 +568,22 @@ let b = false ? 5 : 6;
 	ok_ref(t, mod.Locals[0], g.MakeInt(3))
 	ok_ref(t, mod.Locals[1], g.MakeInt(6))
 }
+
+func TestList(t *testing.T) {
+
+	source := `
+let a = [];
+let b = [1];
+let c = [1,2];
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], g.NewList([]g.Value{}))
+	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(1)}))
+	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.MakeInt(1), g.MakeInt(2)}))
+}

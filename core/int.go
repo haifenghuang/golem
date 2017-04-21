@@ -171,7 +171,7 @@ func (i _int) Rem(v Value) (Int, Error) {
 	case _int:
 		return i % t, nil
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i _int) BitAnd(v Value) (Int, Error) {
@@ -179,7 +179,7 @@ func (i _int) BitAnd(v Value) (Int, Error) {
 	case _int:
 		return i & t, nil
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i _int) BitOr(v Value) (Int, Error) {
@@ -187,7 +187,7 @@ func (i _int) BitOr(v Value) (Int, Error) {
 	case _int:
 		return i | t, nil
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i _int) BitXOr(v Value) (Int, Error) {
@@ -195,19 +195,19 @@ func (i _int) BitXOr(v Value) (Int, Error) {
 	case _int:
 		return i ^ t, nil
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 func (i _int) LeftShift(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:
 		if t < 0 {
-			return _int(0), InvalidArgumentError("Shift count cannot be less than zero")
+			return nil, InvalidArgumentError("Shift count cannot be less than zero")
 		} else {
 			return i << uint(t), nil
 		}
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 
@@ -215,12 +215,12 @@ func (i _int) RightShift(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:
 		if t < 0 {
-			return _int(0), InvalidArgumentError("Shift count cannot be less than zero")
+			return nil, InvalidArgumentError("Shift count cannot be less than zero")
 		} else {
 			return i >> uint(t), nil
 		}
 	default:
-		return _int(0), TypeMismatchError("Expected '_int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
 

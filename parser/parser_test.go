@@ -524,3 +524,17 @@ fn() {
 	p = newParser("if 0 {} else {}")
 	okPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 15})
 }
+
+func TestList(t *testing.T) {
+	p := newParser("[]")
+	ok_expr(t, p, "[  ]")
+
+	p = newParser("[a]")
+	ok_expr(t, p, "[ a ]")
+
+	p = newParser("[a, b]")
+	ok_expr(t, p, "[ a, b ]")
+
+	p = newParser("[a, b, [], obj{z:1   }]")
+	ok_expr(t, p, "[ a, b, [  ], obj { z: 1 } ]")
+}
