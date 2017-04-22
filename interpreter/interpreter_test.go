@@ -192,7 +192,10 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "8 >> 2;", g.MakeInt(8>>2))
 
 	// TODO
-	//fail_expr(t, "['a'][2]", "TypeMismatch: Expected 'Bool'")
+	ok_expr(t, "[true][0];", g.TRUE)
+	ok_expr(t, "'abc'[1];", g.MakeStr("b"))
+	fail_expr(t, "[true][2];", "IndexOutOfBounds")
+	fail_expr(t, "'abc'[-1];", "IndexOutOfBounds")
 }
 
 func TestAssignment(t *testing.T) {

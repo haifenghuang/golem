@@ -424,6 +424,9 @@ func TestPrimarySuffix(t *testing.T) {
 
 	p = newParser("a[b][c].d.e().f[g]")
 	ok_expr(t, p, "a[b][c].d.e().f[g]")
+
+	p = newParser("['a'][0]")
+	ok_expr(t, p, "[ 'a' ][0]")
 }
 
 func okExprPos(t *testing.T, p *Parser, expectBegin ast.Pos, expectEnd ast.Pos) {

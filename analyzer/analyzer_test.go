@@ -480,9 +480,9 @@ y.z = x[2]++;
 	anl := newAnalyzer(source)
 	errors := anl.Analyze()
 
-	fmt.Println(source)
-	fmt.Println(ast.Dump(anl.Module()))
-	fmt.Println(errors)
+	//fmt.Println(source)
+	//fmt.Println(ast.Dump(anl.Module()))
+	//fmt.Println(errors)
 
 	ok(t, anl, errors, `
 FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
@@ -526,4 +526,20 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   .   .   .   .   IdentExpr(x,(0,false,false))
 .   .   .   .   .   BasicExpr(INT,"2")
 `)
+}
+
+func TestList(t *testing.T) {
+
+	source := `
+let a = ['x'][0];
+let b = ['x'];
+b[0] = 3;
+b[0]++;
+`
+	anl := newAnalyzer(source)
+	errors := anl.Analyze()
+
+	fmt.Println(source)
+	fmt.Println(ast.Dump(anl.Module()))
+	fmt.Println(errors)
 }

@@ -214,6 +214,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString(fmt.Sprintf("ObjExpr(%v,%d)\n", tokensString(t.Keys), t.LocalThisIndex))
 	case *ThisExpr:
 		p.buf.WriteString(fmt.Sprintf("ThisExpr(%v)\n", t.Variable))
+	case *ListExpr:
+		p.buf.WriteString(fmt.Sprintf("ListExpr\n"))
 
 	case *FieldExpr:
 		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))
