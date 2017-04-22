@@ -144,6 +144,15 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.IndexExpr:
 		c.visitIndexExpr(t)
 
+	case *ast.SliceExpr:
+		c.visitSliceExpr(t)
+
+	case *ast.SliceFromExpr:
+		c.visitSliceFromExpr(t)
+
+	case *ast.SliceToExpr:
+		c.visitSliceToExpr(t)
+
 	case *ast.ListExpr:
 		c.visitListExpr(t)
 
@@ -612,6 +621,25 @@ func (c *compiler) visitIndexExpr(ie *ast.IndexExpr) {
 	c.Visit(ie.Operand)
 	c.Visit(ie.Index)
 	c.push(ie.Index.Begin(), g.GET_INDEX)
+}
+
+func (c *compiler) visitSliceExpr(s *ast.SliceExpr) {
+	c.Visit(s.Operand)
+	c.Visit(s.From)
+	c.Visit(s.To)
+	c.push(s.From.Begin(), g.SLICE)
+}
+
+func (c *compiler) visitSliceFromExpr(s *ast.SliceFromExpr) {
+	c.Visit(s.Operand)
+	c.Visit(s.From)
+	c.push(s.From.Begin(), g.SLICE_FROM)
+}
+
+func (c *compiler) visitSliceToExpr(s *ast.SliceToExpr) {
+	c.Visit(s.Operand)
+	c.Visit(s.To)
+	c.push(s.To.Begin(), g.SLICE_TO)
 }
 
 func (c *compiler) visitListExpr(ls *ast.ListExpr) {

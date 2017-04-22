@@ -394,6 +394,73 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			s = s[:n-1]
 			ip++
 
+		case g.SLICE:
+
+			// get Sliceable from stack
+			slb, ok := s[n-2].(g.Sliceable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Sliceable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get indices from stack
+			from := s[n-1]
+			to := s[n]
+
+			result, err := slb.Slice(from, to)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-2] = result
+			s = s[:n-1]
+			ip++
+
+		case g.SLICE_FROM:
+
+			// get Sliceable from stack
+			slb, ok := s[n-1].(g.Sliceable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Sliceable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get index from stack
+			from := s[n]
+
+			result, err := slb.SliceFrom(from)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-1] = result
+			s = s[:n]
+			ip++
+
+		case g.SLICE_TO:
+
+			// get Sliceable from stack
+			slb, ok := s[n-1].(g.Sliceable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Sliceable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get index from stack
+			to := s[n]
+
+			result, err := slb.SliceTo(to)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-1] = result
+			s = s[:n]
+			ip++
+
 		case g.LOAD_NULL:
 			s = append(s, g.NULL)
 			ip++

@@ -191,11 +191,20 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "8 << 2;", g.MakeInt(8<<2))
 	ok_expr(t, "8 >> 2;", g.MakeInt(8>>2))
 
-	// TODO
 	ok_expr(t, "[true][0];", g.TRUE)
 	ok_expr(t, "'abc'[1];", g.MakeStr("b"))
 	fail_expr(t, "[true][2];", "IndexOutOfBounds")
 	fail_expr(t, "'abc'[-1];", "IndexOutOfBounds")
+
+	ok_expr(t, "'abc'[1:];", g.MakeStr("bc"))
+	ok_expr(t, "'abc'[:1];", g.MakeStr("a"))
+	ok_expr(t, "'abcd'[1:3];", g.MakeStr("bc"))
+	ok_expr(t, "'abcd'[1:1];", g.MakeStr(""))
+
+	ok_expr(t, "[6,7,8][1:];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8][:1];", g.NewList([]g.Value{g.MakeInt(6)}))
+	ok_expr(t, "[6,7,8,9][1:3];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8,9][1:1];", g.NewList([]g.Value{}))
 }
 
 func TestAssignment(t *testing.T) {

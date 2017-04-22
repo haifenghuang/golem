@@ -79,6 +79,10 @@ const (
 	SET_INDEX
 	INC_INDEX
 
+	SLICE
+	SLICE_FROM
+	SLICE_TO
+
 	DUP
 
 	// These are temporary values created during compilation.
@@ -199,13 +203,20 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case INC_INDEX:
 		return fmt.Sprintf("%d: INC_INDEX\n", i)
 
+	case SLICE:
+		return fmt.Sprintf("%d: SLICE\n", i)
+	case SLICE_FROM:
+		return fmt.Sprintf("%d: SLICE_FROM\n", i)
+	case SLICE_TO:
+		return fmt.Sprintf("%d: SLICE_TO\n", i)
+
+	case DUP:
+		return fmt.Sprintf("%d: DUP\n", i)
+
 	case BREAK:
 		return fmtIndex(opcodes, i, "BREAK")
 	case CONTINUE:
 		return fmtIndex(opcodes, i, "CONTINUE")
-
-	case DUP:
-		return fmt.Sprintf("%d: DUP\n", i)
 
 	default:
 		panic("unreachable")
