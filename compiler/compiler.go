@@ -381,10 +381,10 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 	case ast.PERCENT:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.REM)
-	case ast.PIPE:
+	case ast.AMP:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.BIT_AND)
-	case ast.AMP:
+	case ast.PIPE:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.BIT_OR)
 	case ast.CARET:

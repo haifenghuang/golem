@@ -184,13 +184,12 @@ func TestExpressions(t *testing.T) {
 
 	ok_expr(t, "~0;", g.MakeInt(-1))
 
-	// TODO
-	//ok_expr(t, "8 % 2;", g.MakeInt(1%2))
-	//ok_expr(t, "8 & 2;", g.MakeInt(1&2))
-	//ok_expr(t, "8 | 2;", g.MakeInt(1|2))
-	//ok_expr(t, "8 ^ 2;", g.MakeInt(1^2))
-	//ok_expr(t, "8 << 2;", g.MakeInt(1<<2))
-	//ok_expr(t, "8 >> 2;", g.MakeInt(1>>2))
+	ok_expr(t, "8 % 2;", g.MakeInt(8%2))
+	ok_expr(t, "8 & 2;", g.MakeInt(int64(8)&int64(2)))
+	ok_expr(t, "8 | 2;", g.MakeInt(8|2))
+	ok_expr(t, "8 ^ 2;", g.MakeInt(8^2))
+	ok_expr(t, "8 << 2;", g.MakeInt(8<<2))
+	ok_expr(t, "8 >> 2;", g.MakeInt(8>>2))
 
 	// TODO
 	//fail_expr(t, "['a'][2]", "TypeMismatch: Expected 'Bool'")
