@@ -15,7 +15,8 @@
 package core
 
 import (
-	//"fmt"
+	"fmt"
+	//"golang.org/x/exp/utf8string"
 	"reflect"
 	"testing"
 )
@@ -470,7 +471,9 @@ func TestBasic(t *testing.T) {
 	entries[ZERO] = TRUE
 	entries[MakeFloat(0.123)] = TRUE
 	entries[FALSE] = TRUE
-	//fmt.Println(entries)
+	fmt.Println(entries)
 
-	//foo := make(map[string]Value)
+	m := make(map[*foo]Value)
+	m[MakeFoo("abc")] = TRUE
+	fmt.Println(m)
 }

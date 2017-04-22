@@ -28,3 +28,10 @@ func parseIndex(val Value, max int) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
+// Concatenate two values into a string
+func foocat(a Value, b Value) (Str, Error) {
+	return nil, nil
+	//var buf bytes.Buffer
+	//buf.WriteString(a.StrVal())
+}
