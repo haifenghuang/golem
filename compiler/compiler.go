@@ -373,6 +373,9 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 	case ast.CMP:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.CMP)
+	case ast.HAS:
+		b.Traverse(c)
+		c.push(b.Op.Position, g.HAS)
 
 	case ast.PLUS:
 		b.Traverse(c)

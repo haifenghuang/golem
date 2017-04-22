@@ -160,6 +160,7 @@ type (
 
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error
+		Has(Value) (Bool, Error)
 	}
 
 	Func interface {

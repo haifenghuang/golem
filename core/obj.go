@@ -173,3 +173,16 @@ func (o *obj) PutField(key Str, val Value) Error {
 		return NoSuchFieldError(key.StrVal())
 	}
 }
+
+func (o *obj) Has(key Value) (Bool, Error) {
+	if !o.inited {
+		return nil, UninitializedObjError()
+	}
+
+	if s, ok := key.(Str); ok {
+		_, has := o.fields[s.StrVal()]
+		return MakeBool(has), nil
+	} else {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
+}

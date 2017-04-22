@@ -120,6 +120,14 @@ func TestObj(t *testing.T) {
 	val, err = o.Get(MakeStr("a"))
 	ok(t, val, err, MakeInt(456))
 
+	val, err = o.Has(MakeStr("a"))
+	ok(t, val, err, TRUE)
+
+	val, err = o.Has(MakeStr("abc"))
+	ok(t, val, err, FALSE)
+
+	val, err = o.Has(ZERO)
+	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 }
 
 func uninitErr(t *testing.T, err Error) {
@@ -142,6 +150,8 @@ func TestUninitialized(t *testing.T) {
 	_, e7 := o.Get(MakeStr(""))
 	e8 := o.Set(MakeStr(""), NULL)
 
+	_, e9 := o.Has(NULL)
+
 	uninitErr(t, e0)
 	uninitErr(t, e1)
 	uninitErr(t, e2)
@@ -151,6 +161,7 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e6)
 	uninitErr(t, e7)
 	uninitErr(t, e8)
+	uninitErr(t, e9)
 }
 
 func TestLineNumber(t *testing.T) {

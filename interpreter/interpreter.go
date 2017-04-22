@@ -603,6 +603,24 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			s[n-1] = val
 			ip++
 
+		case g.HAS:
+
+			// get obj from stack
+			obj, ok := s[n-1].(g.Obj)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Obj'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			val, err := obj.Has(s[n])
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+			s = s[:n]
+			s[n-1] = val
+			ip++
+
 		case g.ADD:
 			val, err := s[n-1].Add(s[n])
 			if err != nil {

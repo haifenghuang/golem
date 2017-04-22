@@ -271,6 +271,8 @@ func TestComparitive(t *testing.T) {
 	ok_expr(t, newParser("1 <=> 3"), "(1 <=> 3)")
 
 	ok_expr(t, newParser("1 <=> 2 + 3 * 4"), "(1 <=> (2 + (3 * 4)))")
+
+	ok_expr(t, newParser("1 has 3"), "(1 has 3)")
 }
 
 func TestAndOr(t *testing.T) {

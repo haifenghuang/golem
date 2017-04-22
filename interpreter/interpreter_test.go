@@ -205,6 +205,13 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "[6,7,8][:1];", g.NewList([]g.Value{g.MakeInt(6)}))
 	ok_expr(t, "[6,7,8,9][1:3];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
 	ok_expr(t, "[6,7,8,9][1:1];", g.NewList([]g.Value{}))
+
+	ok_expr(t, "obj{a: 1}['a'];", g.ONE)
+	ok_expr(t, "obj{a: 1} has 'a';", g.TRUE)
+	ok_expr(t, "obj{a: 1} has 'b';", g.FALSE)
+
+	fail_expr(t, "obj{a: 1}[0];", "TypeMismatch: Expected 'Str'")
+	fail_expr(t, "obj{a: this has 1};", "UninitializedObj: Obj is not yet initialized")
 }
 
 func TestAssignment(t *testing.T) {

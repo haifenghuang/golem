@@ -117,6 +117,7 @@ const (
 
 	OBJ
 	THIS
+	HAS
 )
 
 func (t TokenKind) String() string {
@@ -235,6 +236,8 @@ func (t TokenKind) String() string {
 		return "OBJ"
 	case THIS:
 		return "THIS"
+	case HAS:
+		return "HAS"
 
 	default:
 		panic("unreachable")

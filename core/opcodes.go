@@ -43,6 +43,7 @@ const (
 	LT
 	LTE
 	CMP
+	HAS
 
 	ADD
 	SUB
@@ -156,6 +157,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmt.Sprintf("%d: LTE\n", i)
 	case CMP:
 		return fmt.Sprintf("%d: CMP\n", i)
+	case HAS:
+		return fmt.Sprintf("%d: HAS\n", i)
 
 	case ADD:
 		return fmt.Sprintf("%d: ADD\n", i)

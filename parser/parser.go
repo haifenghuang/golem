@@ -680,7 +680,8 @@ func isComparative(t *ast.Token) bool {
 		ast.GT_EQ,
 		ast.LT,
 		ast.LT_EQ,
-		ast.CMP:
+		ast.CMP,
+		ast.HAS:
 
 		return true
 	default:
