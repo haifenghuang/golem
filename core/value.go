@@ -59,11 +59,9 @@ func (t Type) String() string {
 }
 
 //---------------------------------------------------------------
-// Shared Functionality
+// Various Functionality
 
-// Getable: Str, List, Obj
-// Lenable: Str, List
-// Setable: List, Obj
+// Setable: Obj
 // Sliceable: List, Str
 
 type (
@@ -71,9 +69,9 @@ type (
 		Get(Value) (Value, Error)
 	}
 
-	//Setable interface {
-	//	Set(Value, Value) Error
-	//}
+	Setable interface {
+		Set(Value, Value) Error
+	}
 
 	Lenable interface {
 		Len() (Int, Error)
@@ -149,8 +147,8 @@ type (
 		Value
 
 		Getable
+		Setable
 		Lenable
-		Set(Value, Value) Error
 
 		Append(Value) Error
 	}
@@ -160,6 +158,7 @@ type (
 		Init(*ObjDef, []Value)
 
 		Getable
+		Setable
 
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error

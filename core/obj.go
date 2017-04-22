@@ -135,6 +135,18 @@ func (o *obj) Get(index Value) (Value, Error) {
 	}
 }
 
+func (o *obj) Set(index Value, val Value) Error {
+	if !o.inited {
+		return UninitializedObjError()
+	}
+
+	if s, ok := index.(Str); ok {
+		return o.PutField(s, val)
+	} else {
+		return TypeMismatchError("Expected 'Str'")
+	}
+}
+
 func (o *obj) GetField(key Str) (Value, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()

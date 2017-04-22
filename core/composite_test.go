@@ -108,6 +108,18 @@ func TestObj(t *testing.T) {
 
 	val, err = o.Get(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
+
+	err = o.Set(MakeStr("a"), MakeInt(456))
+	if err != nil {
+		panic("unexpected error")
+	}
+
+	val, err = o.GetField(MakeStr("a"))
+	ok(t, val, err, MakeInt(456))
+
+	val, err = o.Get(MakeStr("a"))
+	ok(t, val, err, MakeInt(456))
+
 }
 
 func uninitErr(t *testing.T, err Error) {
@@ -127,6 +139,9 @@ func TestUninitialized(t *testing.T) {
 	_, e5 := o.GetField(MakeStr(""))
 	e6 := o.PutField(MakeStr(""), NULL)
 
+	_, e7 := o.Get(MakeStr(""))
+	e8 := o.Set(MakeStr(""), NULL)
+
 	uninitErr(t, e0)
 	uninitErr(t, e1)
 	uninitErr(t, e2)
@@ -134,6 +149,8 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e4)
 	uninitErr(t, e5)
 	uninitErr(t, e6)
+	uninitErr(t, e7)
+	uninitErr(t, e8)
 }
 
 func TestLineNumber(t *testing.T) {
