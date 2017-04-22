@@ -84,30 +84,21 @@ func (ls *list) Add(v Value) (Value, Error) {
 }
 
 func (ls *list) Get(index Value) (Value, Error) {
-	if i, ok := index.(Int); ok {
-		n := int(i.IntVal())
-		if (n < 0) || (n >= len(ls.array)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			return ls.array[n], nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
+	idx, err := parseIndex(index, len(ls.array))
+	if err != nil {
+		return nil, err
 	}
+	return ls.array[idx.IntVal()], nil
 }
 
 func (ls *list) Set(index Value, val Value) Error {
-	if i, ok := index.(Int); ok {
-		n := int(i.IntVal())
-		if (n < 0) || (n >= len(ls.array)) {
-			return IndexOutOfBoundsError()
-		} else {
-			ls.array[n] = val
-			return nil
-		}
-	} else {
-		return TypeMismatchError("Expected 'Int'")
+	idx, err := parseIndex(index, len(ls.array))
+	if err != nil {
+		return err
 	}
+
+	ls.array[idx.IntVal()] = val
+	return nil
 }
 
 func (ls *list) Append(val Value) Error {
@@ -121,68 +112,31 @@ func (ls *list) Len() (Int, Error) {
 
 func (ls *list) Slice(from Value, to Value) (Value, Error) {
 
-	// from
-	if f, ok := from.(Int); ok {
-		fn := int(f.IntVal())
-		if (fn < 0) || (fn >= len(ls.array)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-
-			// to
-			if t, ok := to.(Int); ok {
-				tn := int(t.IntVal())
-
-				if (tn < 0) || (tn > len(ls.array)) {
-					return nil, IndexOutOfBoundsError()
-				} else if tn < fn {
-					// TODO do we want a different error here?
-					return nil, IndexOutOfBoundsError()
-				} else {
-
-					a := ls.array[fn:tn]
-					b := make([]Value, len(a))
-					copy(b, a)
-					return NewList(b), nil
-
-				}
-			} else {
-				return nil, TypeMismatchError("Expected 'Int'")
-			}
-
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
+	f, err := parseIndex(from, len(ls.array))
+	if err != nil {
+		return nil, err
 	}
+
+	t, err := parseIndex(to, len(ls.array)+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO do we want a different error here?
+	if t.IntVal() < f.IntVal() {
+		return nil, IndexOutOfBoundsError()
+	}
+
+	a := ls.array[f.IntVal():t.IntVal()]
+	b := make([]Value, len(a))
+	copy(b, a)
+	return NewList(b), nil
 }
 
 func (ls *list) SliceFrom(from Value) (Value, Error) {
-	if f, ok := from.(Int); ok {
-		fn := int(f.IntVal())
-		if (fn < 0) || (fn >= len(ls.array)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			a := ls.array[fn:]
-			b := make([]Value, len(a))
-			copy(b, a)
-			return NewList(b), nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
-	}
+	return ls.Slice(from, MakeInt(int64(len(ls.array))))
 }
 
 func (ls *list) SliceTo(to Value) (Value, Error) {
-	if t, ok := to.(Int); ok {
-		tn := int(t.IntVal())
-		if (tn < 0) || (tn > len(ls.array)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			a := ls.array[:tn]
-			b := make([]Value, len(a))
-			copy(b, a)
-			return NewList(b), nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
-	}
+	return ls.Slice(ZERO, to)
 }

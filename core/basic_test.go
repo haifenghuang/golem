@@ -15,7 +15,7 @@
 package core
 
 import (
-	"fmt"
+	//"fmt"
 	"reflect"
 	"testing"
 )
@@ -29,10 +29,12 @@ func assert(t *testing.T, flag bool) {
 func ok(t *testing.T, val Value, err Error, expect Value) {
 
 	if err != nil {
+		panic(err.Error())
 		t.Error(err, " != ", nil)
 	}
 
 	if !reflect.DeepEqual(val, expect) {
+		panic("bbb")
 		t.Error(val, " != ", expect)
 	}
 }
@@ -173,7 +175,7 @@ func TestStr(t *testing.T) {
 	v, err = a.SliceFrom(ZERO)
 	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = a.SliceTo(ZERO)
-	ok(t, v, err, MakeStr(""))
+	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = a.SliceTo(ONE)
 	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = a.Slice(ZERO, ONE)
@@ -445,13 +447,30 @@ func TestFloat(t *testing.T) {
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
 }
 
+func TestUtil(t *testing.T) {
+	i, err := parseIndex(MakeInt(0), 2)
+	ok(t, i, err, MakeInt(0))
+
+	i, err = parseIndex(MakeInt(1), 2)
+	ok(t, i, err, MakeInt(1))
+
+	i, err = parseIndex(MakeStr(""), 2)
+	fail(t, i, err, "TypeMismatch: Expected 'Int'")
+
+	i, err = parseIndex(MakeInt(-1), 2)
+	fail(t, i, err, "IndexOutOfBounds")
+
+	i, err = parseIndex(MakeInt(2), 2)
+	fail(t, i, err, "IndexOutOfBounds")
+}
+
 func TestBasic(t *testing.T) {
 	entries := make(map[Basic]Value)
 	entries[NULL] = TRUE
 	entries[ZERO] = TRUE
 	entries[MakeFloat(0.123)] = TRUE
 	entries[FALSE] = TRUE
-	fmt.Println(entries)
+	//fmt.Println(entries)
 
 	//foo := make(map[string]Value)
 }

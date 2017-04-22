@@ -253,7 +253,7 @@ func TestList(t *testing.T) {
 	v, err = ls.SliceFrom(ZERO)
 	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = ls.SliceTo(ZERO)
-	ok(t, v, err, NewList([]Value{}))
+	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = ls.SliceTo(ONE)
 	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = ls.Slice(ZERO, ONE)

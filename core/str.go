@@ -65,18 +65,12 @@ func (s str) Add(v Value) (Value, Error) {
 }
 
 func (s str) Get(index Value) (Value, Error) {
-	if i, ok := index.(Int); ok {
-		n := int(i.IntVal())
-		if (n < 0) || (n >= len(s)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			result := make([]rune, 1)
-			result[0] = s[n]
-			return str(result), nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
+	idx, err := parseIndex(index, len(s))
+	if err != nil {
+		return nil, err
 	}
+
+	return str([]rune{s[idx.IntVal()]}), nil
 }
 
 func (s str) Len() (Int, Error) {
@@ -84,70 +78,34 @@ func (s str) Len() (Int, Error) {
 }
 
 func (s str) Slice(from Value, to Value) (Value, Error) {
-	// from
-	if f, ok := from.(Int); ok {
-		fn := int(f.IntVal())
-		if (fn < 0) || (fn >= len(s)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
 
-			// to
-			if t, ok := to.(Int); ok {
-				tn := int(t.IntVal())
-
-				if (tn < 0) || (tn > len(s)) {
-					return nil, IndexOutOfBoundsError()
-				} else if tn < fn {
-					// TODO do we want a different error here?
-					return nil, IndexOutOfBoundsError()
-				} else {
-
-					a := s[fn:tn]
-					b := make([]rune, len(a))
-					copy(b, a)
-					return str(b), nil
-
-				}
-			} else {
-				return nil, TypeMismatchError("Expected 'Int'")
-			}
-
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
+	f, err := parseIndex(from, len(s))
+	if err != nil {
+		return nil, err
 	}
+
+	t, err := parseIndex(to, len(s)+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO do we want a different error here?
+	if t.IntVal() < f.IntVal() {
+		return nil, IndexOutOfBoundsError()
+	}
+
+	a := s[f.IntVal():t.IntVal()]
+	b := make([]rune, len(a))
+	copy(b, a)
+	return str(b), nil
 }
 
 func (s str) SliceFrom(from Value) (Value, Error) {
-	if f, ok := from.(Int); ok {
-		fn := int(f.IntVal())
-		if (fn < 0) || (fn >= len(s)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			a := s[fn:]
-			b := make([]rune, len(a))
-			copy(b, a)
-			return str(b), nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
-	}
+	return s.Slice(from, MakeInt(int64(len(s))))
 }
 
 func (s str) SliceTo(to Value) (Value, Error) {
-	if t, ok := to.(Int); ok {
-		tn := int(t.IntVal())
-		if (tn < 0) || (tn > len(s)) {
-			return nil, IndexOutOfBoundsError()
-		} else {
-			a := s[:tn]
-			b := make([]rune, len(a))
-			copy(b, a)
-			return str(b), nil
-		}
-	} else {
-		return nil, TypeMismatchError("Expected 'Int'")
-	}
+	return s.Slice(ZERO, to)
 }
 
 //--------------------------------------------------------------
