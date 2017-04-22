@@ -81,6 +81,73 @@ func (s str) Len() (Int, Error) {
 	return MakeInt(int64(len(s))), nil
 }
 
+func (s str) Slice(from Value, to Value) (Value, Error) {
+	// from
+	if f, ok := from.(Int); ok {
+		fn := int(f.IntVal())
+		if (fn < 0) || (fn >= len(s)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+
+			// to
+			if t, ok := to.(Int); ok {
+				tn := int(t.IntVal())
+
+				if (tn < 0) || (tn > len(s)) {
+					return nil, IndexOutOfBoundsError()
+				} else if tn < fn {
+					// TODO do we want a different error here?
+					return nil, IndexOutOfBoundsError()
+				} else {
+
+					a := s[fn:tn]
+					b := make([]rune, len(a))
+					copy(b, a)
+					return str(b), nil
+
+				}
+			} else {
+				return nil, TypeMismatchError("Expected 'Int'")
+			}
+
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
+
+func (s str) SliceFrom(from Value) (Value, Error) {
+	if f, ok := from.(Int); ok {
+		fn := int(f.IntVal())
+		if (fn < 0) || (fn >= len(s)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+			a := s[fn:]
+			b := make([]rune, len(a))
+			copy(b, a)
+			return str(b), nil
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
+
+func (s str) SliceTo(to Value) (Value, Error) {
+	if t, ok := to.(Int); ok {
+		tn := int(t.IntVal())
+		if (tn < 0) || (tn > len(s)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+			a := s[:tn]
+			b := make([]rune, len(a))
+			copy(b, a)
+			return str(b), nil
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
+
 //--------------------------------------------------------------
 
 func fromString(s string) str {

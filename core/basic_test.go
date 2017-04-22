@@ -22,14 +22,15 @@ import (
 
 func assert(t *testing.T, flag bool) {
 	if !flag {
-		panic("adfadfa")
 		t.Error("assertion failure")
 	}
 }
 
 func ok(t *testing.T, val Value, err Error, expect Value) {
 
-	assert(t, err == nil)
+	if err != nil {
+		t.Error(err, " != ", nil)
+	}
 
 	if !reflect.DeepEqual(val, expect) {
 		t.Error(val, " != ", expect)
@@ -38,7 +39,9 @@ func ok(t *testing.T, val Value, err Error, expect Value) {
 
 func fail(t *testing.T, val Value, err Error, expect string) {
 
-	assert(t, val == nil)
+	if val != nil {
+		t.Error(val, " != ", nil)
+	}
 
 	if err.Error() != expect {
 		t.Error(err.Error(), " != ", expect)
@@ -162,6 +165,42 @@ func TestStr(t *testing.T) {
 
 	v, err = MakeStr("abcde").Len()
 	ok(t, v, err, MakeInt(5))
+
+	//////////////////////////////
+	// sliceable
+
+	a = MakeStr("")
+	v, err = a.SliceFrom(ZERO)
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = a.SliceTo(ZERO)
+	ok(t, v, err, MakeStr(""))
+	v, err = a.SliceTo(ONE)
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = a.Slice(ZERO, ONE)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	a = MakeStr("xyz")
+	v, err = a.SliceFrom(ONE)
+	ok(t, v, err, MakeStr("yz"))
+	v, err = a.SliceTo(ONE)
+	ok(t, v, err, MakeStr("x"))
+	v, err = a.Slice(ZERO, ONE)
+	ok(t, v, err, MakeStr("x"))
+	v, err = a.Slice(ZERO, MakeInt(3))
+	ok(t, v, err, MakeStr("xyz"))
+
+	v, err = a.Slice(ZERO, ZERO)
+	ok(t, v, err, MakeStr(""))
+
+	v, err = a.Slice(MakeInt(2), ZERO)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	v, err = a.SliceFrom(MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = a.SliceTo(MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = a.Slice(MakeInt(7), MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
 }
 
 func TestRunes(t *testing.T) {

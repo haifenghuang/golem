@@ -116,3 +116,71 @@ func (ls *list) Append(val Value) Error {
 func (ls *list) Len() (Int, Error) {
 	return MakeInt(int64(len(ls.array))), nil
 }
+
+func (ls *list) Slice(from Value, to Value) (Value, Error) {
+
+	// from
+	if f, ok := from.(Int); ok {
+		fn := int(f.IntVal())
+		if (fn < 0) || (fn >= len(ls.array)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+
+			// to
+			if t, ok := to.(Int); ok {
+				tn := int(t.IntVal())
+
+				if (tn < 0) || (tn > len(ls.array)) {
+					return nil, IndexOutOfBoundsError()
+				} else if tn < fn {
+					// TODO do we want a different error here?
+					return nil, IndexOutOfBoundsError()
+				} else {
+
+					a := ls.array[fn:tn]
+					b := make([]Value, len(a))
+					copy(b, a)
+					return NewList(b), nil
+
+				}
+			} else {
+				return nil, TypeMismatchError("Expected 'Int'")
+			}
+
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
+
+func (ls *list) SliceFrom(from Value) (Value, Error) {
+	if f, ok := from.(Int); ok {
+		fn := int(f.IntVal())
+		if (fn < 0) || (fn >= len(ls.array)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+			a := ls.array[fn:]
+			b := make([]Value, len(a))
+			copy(b, a)
+			return NewList(b), nil
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
+
+func (ls *list) SliceTo(to Value) (Value, Error) {
+	if t, ok := to.(Int); ok {
+		tn := int(t.IntVal())
+		if (tn < 0) || (tn > len(ls.array)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+			a := ls.array[:tn]
+			b := make([]Value, len(a))
+			copy(b, a)
+			return NewList(b), nil
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}

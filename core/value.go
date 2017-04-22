@@ -61,8 +61,6 @@ func (t Type) String() string {
 //---------------------------------------------------------------
 // Various Functionality
 
-// Sliceable: List, Str
-
 type (
 	Getable interface {
 		Get(Value) (Value, Error)
@@ -114,6 +112,7 @@ type (
 
 		Getable
 		Lenable
+		Sliceable
 	}
 
 	Number interface {
@@ -148,7 +147,7 @@ type (
 
 		Indexable
 		Lenable
-		//Sliceable
+		Sliceable
 
 		Append(Value) Error
 	}

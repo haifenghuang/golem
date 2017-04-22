@@ -234,4 +234,40 @@ func TestList(t *testing.T) {
 
 	v, err = ls.String()
 	ok(t, v, err, MakeStr("[ b, z ]"))
+
+	//////////////////////////////
+	// sliceable
+
+	ls = NewList([]Value{})
+	v, err = ls.SliceFrom(ZERO)
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = ls.SliceTo(ZERO)
+	ok(t, v, err, NewList([]Value{}))
+	v, err = ls.SliceTo(ONE)
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = ls.Slice(ZERO, ONE)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	ls = NewList([]Value{TRUE, FALSE, NULL})
+	v, err = ls.SliceFrom(ONE)
+	ok(t, v, err, NewList([]Value{FALSE, NULL}))
+	v, err = ls.SliceTo(ONE)
+	ok(t, v, err, NewList([]Value{TRUE}))
+	v, err = ls.Slice(ZERO, ONE)
+	ok(t, v, err, NewList([]Value{TRUE}))
+	v, err = ls.Slice(ZERO, MakeInt(3))
+	ok(t, v, err, NewList([]Value{TRUE, FALSE, NULL}))
+
+	v, err = ls.Slice(ZERO, ZERO)
+	ok(t, v, err, NewList([]Value{}))
+
+	v, err = ls.Slice(MakeInt(2), ZERO)
+	fail(t, nil, err, "IndexOutOfBounds")
+
+	v, err = ls.SliceFrom(MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = ls.SliceTo(MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
+	v, err = ls.Slice(MakeInt(7), MakeInt(7))
+	fail(t, nil, err, "IndexOutOfBounds")
 }
