@@ -31,6 +31,8 @@ func (b _bool) BoolVal() bool {
 	return bool(b)
 }
 
+func (b _bool) basicMarker() {}
+
 func (b _bool) TypeOf() (Type, Error) { return TBOOL, nil }
 
 func (b _bool) String() (Str, Error) {

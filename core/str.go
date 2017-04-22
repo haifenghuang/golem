@@ -32,6 +32,8 @@ func MakeStr(str string) Str {
 	return fromString(str)
 }
 
+func (s str) basicMarker() {}
+
 func (s str) TypeOf() (Type, Error) { return TSTR, nil }
 
 func (s str) String() (Str, Error) { return s, nil }

@@ -48,6 +48,8 @@ func (o *obj) Init(def *ObjDef, vals []Value) {
 	o.inited = true
 }
 
+func (o *obj) compositeMarker() {}
+
 func (o *obj) TypeOf() (Type, Error) {
 	if !o.inited {
 		return TOBJ, UninitializedObjError()

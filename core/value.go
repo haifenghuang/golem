@@ -95,19 +95,32 @@ type (
 		Add(Value) (Value, Error)
 	}
 
-	Null interface {
+	Basic interface {
 		Value
+		basicMarker()
+	}
+
+	Composite interface {
+		Value
+		compositeMarker()
+	}
+
+	//-----------------------------------------
+	// Basic
+
+	Null interface {
+		Basic
 	}
 
 	Bool interface {
-		Value
+		Basic
 		BoolVal() bool
 
 		Not() Bool
 	}
 
 	Str interface {
-		Value
+		Basic
 		StrVal() string
 
 		Getable
@@ -116,7 +129,7 @@ type (
 	}
 
 	Number interface {
-		Value
+		Basic
 		FloatVal() float64
 		IntVal() int64
 
@@ -142,9 +155,11 @@ type (
 		Complement() (Int, Error)
 	}
 
-	List interface {
-		Value
+	//-----------------------------------------
+	// Composite
 
+	List interface {
+		Composite
 		Indexable
 		Lenable
 		Sliceable
@@ -153,15 +168,18 @@ type (
 	}
 
 	Obj interface {
-		Value
-		Init(*ObjDef, []Value)
-
+		Composite
 		Indexable
+
+		Init(*ObjDef, []Value)
 
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error
 		Has(Value) (Bool, Error)
 	}
+
+	//-----------------------------------------
+	// Func
 
 	Func interface {
 		Value

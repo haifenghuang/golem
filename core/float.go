@@ -32,6 +32,8 @@ func MakeFloat(f float64) Float {
 	return _float(f)
 }
 
+func (f _float) basicMarker() {}
+
 func (f _float) TypeOf() (Type, Error) { return TFLOAT, nil }
 
 func (f _float) String() (Str, Error) {

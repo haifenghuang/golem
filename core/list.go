@@ -30,6 +30,8 @@ func NewList(values []Value) List {
 	return &list{values}
 }
 
+func (ls *list) compositeMarker() {}
+
 func (ls *list) TypeOf() (Type, Error) {
 	return TLIST, nil
 }

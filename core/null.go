@@ -18,6 +18,8 @@ type null struct{}
 
 var NULL Null = &null{}
 
+func (n *null) basicMarker() {}
+
 func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
 
 func (n *null) String() (Str, Error) { return MakeStr("null"), nil }

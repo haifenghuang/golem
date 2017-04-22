@@ -37,6 +37,8 @@ func MakeInt(i int64) Int {
 	return _int(i)
 }
 
+func (i _int) basicMarker() {}
+
 func (i _int) TypeOf() (Type, Error) { return TINT, nil }
 
 func (i _int) String() (Str, Error) {
@@ -174,6 +176,7 @@ func (i _int) Rem(v Value) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
 func (i _int) BitAnd(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:
@@ -182,6 +185,7 @@ func (i _int) BitAnd(v Value) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
 func (i _int) BitOr(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:
@@ -190,6 +194,7 @@ func (i _int) BitOr(v Value) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
 func (i _int) BitXOr(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:
@@ -198,6 +203,7 @@ func (i _int) BitXOr(v Value) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
 func (i _int) LeftShift(v Value) (Int, Error) {
 	switch t := v.(type) {
 	case _int:

@@ -15,7 +15,7 @@
 package core
 
 import (
-	//"fmt"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -443,4 +443,15 @@ func TestFloat(t *testing.T) {
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
 	v1, err = MakeFloat(3.3).Add(NULL)
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
+}
+
+func TestBasic(t *testing.T) {
+	entries := make(map[Basic]Value)
+	entries[NULL] = TRUE
+	entries[ZERO] = TRUE
+	entries[MakeFloat(0.123)] = TRUE
+	entries[FALSE] = TRUE
+	fmt.Println(entries)
+
+	//foo := make(map[string]Value)
 }
