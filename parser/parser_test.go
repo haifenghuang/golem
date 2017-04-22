@@ -422,11 +422,29 @@ func TestPrimarySuffix(t *testing.T) {
 	p = newParser("a.b().c")
 	ok_expr(t, p, "a.b().c")
 
-	p = newParser("a[b][c].d.e().f[g]")
-	ok_expr(t, p, "a[b][c].d.e().f[g]")
-
 	p = newParser("['a'][0]")
 	ok_expr(t, p, "[ 'a' ][0]")
+
+	p = newParser("a[[]]")
+	ok_expr(t, p, "a[[  ]]")
+
+	p = newParser("a[:b]")
+	ok_expr(t, p, "a[:b]")
+	p = newParser("a[:]")
+	fail(t, p, "Unexpected Token ']' at (1, 4)")
+
+	p = newParser("a[b:]")
+	ok_expr(t, p, "a[b:]")
+	p = newParser("a[b:}")
+	fail(t, p, "Unexpected Token '}' at (1, 5)")
+
+	p = newParser("a[b:c]")
+	ok_expr(t, p, "a[b:c]")
+	p = newParser("a[b:c:]")
+	fail(t, p, "Unexpected Token ':' at (1, 6)")
+
+	p = newParser("a[b][c[:x]].d[y:].e().f[g[i:j]]")
+	ok_expr(t, p, "a[b][c[:x]].d[y:].e().f[g[i:j]]")
 }
 
 func okExprPos(t *testing.T, p *Parser, expectBegin ast.Pos, expectEnd ast.Pos) {

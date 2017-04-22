@@ -138,6 +138,22 @@ func (i *IndexExpr) Traverse(v Visitor) {
 	v.Visit(i.Index)
 }
 
+func (i *SliceExpr) Traverse(v Visitor) {
+	v.Visit(i.Operand)
+	v.Visit(i.From)
+	v.Visit(i.To)
+}
+
+func (i *SliceFromExpr) Traverse(v Visitor) {
+	v.Visit(i.Operand)
+	v.Visit(i.From)
+}
+
+func (i *SliceToExpr) Traverse(v Visitor) {
+	v.Visit(i.Operand)
+	v.Visit(i.To)
+}
+
 //--------------------------------------------------------------
 // ast debug
 
@@ -222,6 +238,13 @@ func (p *dump) Visit(node Node) {
 
 	case *IndexExpr:
 		p.buf.WriteString(fmt.Sprintf("IndexExpr\n"))
+
+	case *SliceExpr:
+		p.buf.WriteString(fmt.Sprintf("SliceExpr\n"))
+	case *SliceFromExpr:
+		p.buf.WriteString(fmt.Sprintf("SliceFromExpr\n"))
+	case *SliceToExpr:
+		p.buf.WriteString(fmt.Sprintf("SliceToExpr\n"))
 
 	default:
 		panic("cannot visit")

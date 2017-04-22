@@ -364,17 +364,59 @@ func (p *Parser) primaryExpr() ast.Expr {
 	prm := p.primary()
 
 	for {
-		// look for suffixes: Invoke, Select, Index
+		// look for suffixes: Invoke, Select, Index, Slice
 		switch p.cur.Kind {
 
 		case ast.LPAREN:
-			actual, last := p.actualParams()
-			prm = &ast.InvokeExpr{last, prm, actual}
+			lparen, actual, rparen := p.actualParams()
+			prm = &ast.InvokeExpr{prm, lparen, actual, rparen}
 
 		case ast.LBRACKET:
-			p.expect(ast.LBRACKET)
-			prm = &ast.IndexExpr{prm, p.expression()}
-			p.expect(ast.RBRACKET)
+			lbracket := p.consume()
+
+			switch p.cur.Kind {
+			case ast.COLON:
+				p.consume()
+				prm = &ast.SliceToExpr{
+					prm,
+					lbracket,
+					p.expression(),
+					p.expect(ast.RBRACKET)}
+
+			default:
+				exp := p.expression()
+
+				switch p.cur.Kind {
+				case ast.RBRACKET:
+					prm = &ast.IndexExpr{
+						prm,
+						lbracket,
+						exp,
+						p.expect(ast.RBRACKET)}
+
+				case ast.COLON:
+					p.consume()
+
+					switch p.cur.Kind {
+					case ast.RBRACKET:
+						prm = &ast.SliceFromExpr{
+							prm,
+							lbracket,
+							exp,
+							p.expect(ast.RBRACKET)}
+					default:
+						prm = &ast.SliceExpr{
+							prm,
+							lbracket,
+							exp,
+							p.expression(),
+							p.expect(ast.RBRACKET)}
+					}
+
+				default:
+					panic(p.unexpected())
+				}
+			}
 
 		case ast.DOT:
 			p.expect(ast.DOT)
@@ -422,7 +464,7 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 	return &ast.IdentExpr{tok, nil}
 }
 
-func (p *Parser) fnExpr(first *ast.Token) ast.Expr {
+func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
 
 	p.expect(ast.LPAREN)
 
@@ -457,16 +499,16 @@ func (p *Parser) fnExpr(first *ast.Token) ast.Expr {
 	}
 
 	blk := p.block()
-	return &ast.FnExpr{first, params, blk, 0, 0, nil}
+	return &ast.FnExpr{token, params, blk, 0, 0, nil}
 }
 
-func (p *Parser) objExpr(first *ast.Token) ast.Expr {
+func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
 
 	keys := []*ast.Token{}
 	values := []ast.Expr{}
-	var last *ast.Token
+	var rbrace *ast.Token
 
-	p.expect(ast.LBRACE)
+	lbrace := p.expect(ast.LBRACE)
 
 	switch p.cur.Kind {
 
@@ -487,7 +529,7 @@ func (p *Parser) objExpr(first *ast.Token) ast.Expr {
 				values = append(values, p.expression())
 
 			case ast.RBRACE:
-				last = p.consume()
+				rbrace = p.consume()
 				break loop
 
 			default:
@@ -496,26 +538,26 @@ func (p *Parser) objExpr(first *ast.Token) ast.Expr {
 		}
 
 	case ast.RBRACE:
-		last = p.consume()
+		rbrace = p.consume()
 
 	default:
 		panic(p.unexpected())
 	}
 
-	return &ast.ObjExpr{first, keys, values, -1, last}
+	return &ast.ObjExpr{objToken, lbrace, keys, values, rbrace, -1}
 }
 
-func (p *Parser) listExpr(first *ast.Token) ast.Expr {
+func (p *Parser) listExpr(lbracket *ast.Token) ast.Expr {
 
 	if p.cur.Kind == ast.RBRACKET {
-		return &ast.ListExpr{first, []ast.Expr{}, p.consume()}
+		return &ast.ListExpr{lbracket, []ast.Expr{}, p.consume()}
 	} else {
 
 		elems := []ast.Expr{p.expression()}
 		for {
 			switch p.cur.Kind {
 			case ast.RBRACKET:
-				return &ast.ListExpr{first, elems, p.consume()}
+				return &ast.ListExpr{lbracket, elems, p.consume()}
 			case ast.COMMA:
 				p.consume()
 				elems = append(elems, p.expression())
@@ -541,16 +583,15 @@ func (p *Parser) basicExpr() ast.Expr {
 	}
 }
 
-func (p *Parser) actualParams() ([]ast.Expr, *ast.Token) {
+func (p *Parser) actualParams() (*ast.Token, []ast.Expr, *ast.Token) {
 
-	p.expect(ast.LPAREN)
+	lparen := p.expect(ast.LPAREN)
 
 	params := []ast.Expr{}
 	switch p.cur.Kind {
 
 	case ast.RPAREN:
-		last := p.consume()
-		return params, last
+		return lparen, params, p.consume()
 
 	default:
 		params = append(params, p.expression())
@@ -562,8 +603,7 @@ func (p *Parser) actualParams() ([]ast.Expr, *ast.Token) {
 				params = append(params, p.expression())
 
 			case ast.RPAREN:
-				last := p.consume()
-				return params, last
+				return lparen, params, p.consume()
 
 			default:
 				panic(p.unexpected())

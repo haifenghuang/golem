@@ -156,10 +156,10 @@ type (
 	}
 
 	InvokeExpr struct {
-		RParen *Token
-
 		Operand Expr
+		LParen  *Token
 		Params  []Expr
+		RParen  *Token
 	}
 
 	ListExpr struct {
@@ -170,16 +170,15 @@ type (
 
 	ObjExpr struct {
 		ObjToken *Token
-
-		Keys   []*Token
-		Values []Expr
+		LBrace   *Token
+		Keys     []*Token
+		Values   []Expr
+		RBrace   *Token
 
 		// The index of the obj expression in the local variable array.
 		// '-1' means that the obj is not referenced by a 'this', and thus
 		// is not stored in the local variable array
 		LocalThisIndex int
-
-		RBrace *Token
 	}
 
 	ThisExpr struct {
@@ -193,8 +192,32 @@ type (
 	}
 
 	IndexExpr struct {
-		Operand Expr
-		Index   Expr
+		Operand  Expr
+		LBracket *Token
+		Index    Expr
+		RBracket *Token
+	}
+
+	SliceExpr struct {
+		Operand  Expr
+		LBracket *Token
+		From     Expr
+		To       Expr
+		RBracket *Token
+	}
+
+	SliceFromExpr struct {
+		Operand  Expr
+		LBracket *Token
+		From     Expr
+		RBracket *Token
+	}
+
+	SliceToExpr struct {
+		Operand  Expr
+		LBracket *Token
+		To       Expr
+		RBracket *Token
 	}
 )
 
@@ -210,20 +233,23 @@ func (*Break) stmtMarker()    {}
 func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
 
-func (*Assignment) exprMarker()  {}
-func (*TernaryExpr) exprMarker() {}
-func (*BinaryExpr) exprMarker()  {}
-func (*UnaryExpr) exprMarker()   {}
-func (*PostfixExpr) exprMarker() {}
-func (*BasicExpr) exprMarker()   {}
-func (*IdentExpr) exprMarker()   {}
-func (*FnExpr) exprMarker()      {}
-func (*InvokeExpr) exprMarker()  {}
-func (*ListExpr) exprMarker()    {}
-func (*ObjExpr) exprMarker()     {}
-func (*ThisExpr) exprMarker()    {}
-func (*FieldExpr) exprMarker()   {}
-func (*IndexExpr) exprMarker()   {}
+func (*Assignment) exprMarker()    {}
+func (*TernaryExpr) exprMarker()   {}
+func (*BinaryExpr) exprMarker()    {}
+func (*UnaryExpr) exprMarker()     {}
+func (*PostfixExpr) exprMarker()   {}
+func (*BasicExpr) exprMarker()     {}
+func (*IdentExpr) exprMarker()     {}
+func (*FnExpr) exprMarker()        {}
+func (*InvokeExpr) exprMarker()    {}
+func (*ListExpr) exprMarker()      {}
+func (*ObjExpr) exprMarker()       {}
+func (*ThisExpr) exprMarker()      {}
+func (*FieldExpr) exprMarker()     {}
+func (*IndexExpr) exprMarker()     {}
+func (*SliceExpr) exprMarker()     {}
+func (*SliceFromExpr) exprMarker() {}
+func (*SliceToExpr) exprMarker()   {}
 
 func (*IdentExpr) assignableMarker() {}
 func (*FieldExpr) assignableMarker() {}
@@ -314,7 +340,14 @@ func (n *FieldExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *FieldExpr) End() Pos   { return n.Key.Position }
 
 func (n *IndexExpr) Begin() Pos { return n.Operand.Begin() }
-func (n *IndexExpr) End() Pos   { return n.Index.End() }
+func (n *IndexExpr) End() Pos   { return n.RBracket.Position }
+
+func (n *SliceExpr) Begin() Pos     { return n.Operand.Begin() }
+func (n *SliceExpr) End() Pos       { return n.RBracket.Position }
+func (n *SliceFromExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *SliceFromExpr) End() Pos   { return n.RBracket.Position }
+func (n *SliceToExpr) Begin() Pos   { return n.Operand.Begin() }
+func (n *SliceToExpr) End() Pos     { return n.RBracket.Position }
 
 //--------------------------------------------------------------
 // string
@@ -472,6 +505,35 @@ func (i *IndexExpr) String() string {
 	buf.WriteString(i.Operand.String())
 	buf.WriteString("[")
 	buf.WriteString(i.Index.String())
+	buf.WriteString("]")
+	return buf.String()
+}
+
+func (s *SliceExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(s.Operand.String())
+	buf.WriteString("[")
+	buf.WriteString(s.From.String())
+	buf.WriteString(":")
+	buf.WriteString(s.To.String())
+	buf.WriteString("]")
+	return buf.String()
+}
+
+func (s *SliceFromExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(s.Operand.String())
+	buf.WriteString("[")
+	buf.WriteString(s.From.String())
+	buf.WriteString(":]")
+	return buf.String()
+}
+
+func (s *SliceToExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(s.Operand.String())
+	buf.WriteString("[:")
+	buf.WriteString(s.To.String())
 	buf.WriteString("]")
 	return buf.String()
 }
