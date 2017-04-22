@@ -15,8 +15,6 @@
 package core
 
 import (
-	"fmt"
-	//"golang.org/x/exp/utf8string"
 	"reflect"
 	"testing"
 )
@@ -204,34 +202,16 @@ func TestStr(t *testing.T) {
 	fail(t, nil, err, "IndexOutOfBounds")
 	v, err = a.Slice(MakeInt(7), MakeInt(7))
 	fail(t, nil, err, "IndexOutOfBounds")
-}
 
-func TestRunes(t *testing.T) {
+	//////////////////////////////
+	// unicode
 
-	runes := str{}
-	const nihongo = "日本語"
-	for _, r := range nihongo {
-		runes = append(runes, r)
-	}
-	assert(t, string(runes) == nihongo)
+	a = MakeStr("日本語")
+	v, err = a.Len()
+	ok(t, v, err, MakeInt(3))
 
-	assert(t, runesEq(str{}, str{}))
-	assert(t, runesEq(str{'a'}, str{'a'}))
-	assert(t, runesEq(str{'a', 'b'}, str{'a', 'b'}))
-
-	assert(t, !runesEq(str{}, str{'a'}))
-	assert(t, !runesEq(str{'a'}, str{}))
-	assert(t, !runesEq(str{'a'}, str{'b'}))
-	assert(t, !runesEq(str{'c', 'b'}, str{'a', 'b'}))
-
-	assert(t, runesCmp(str{}, str{}) == 0)
-	assert(t, runesCmp(str{'a'}, str{'a'}) == 0)
-	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'b'}) == 0)
-
-	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'z'}) == -1)
-	assert(t, runesCmp(str{'c', 'b'}, str{'a', 'b'}) == 1)
-	assert(t, runesCmp(str{}, str{'a', 'b'}) == -2)
-	assert(t, runesCmp(str{'a', 'b', 'c', 'd', 'e'}, str{'a', 'b'}) == 3)
+	v, err = a.Get(MakeInt(2))
+	ok(t, v, err, MakeStr("語"))
 }
 
 func TestInt(t *testing.T) {
@@ -466,14 +446,12 @@ func TestUtil(t *testing.T) {
 }
 
 func TestBasic(t *testing.T) {
+	// make sure all the Basic types can be used as hashmap key
 	entries := make(map[Basic]Value)
 	entries[NULL] = TRUE
 	entries[ZERO] = TRUE
 	entries[MakeFloat(0.123)] = TRUE
 	entries[FALSE] = TRUE
-	fmt.Println(entries)
-
-	m := make(map[*foo]Value)
-	m[MakeFoo("abc")] = TRUE
-	fmt.Println(m)
+	entries[MakeStr("abc")] = TRUE
+	//fmt.Println(entries)
 }
