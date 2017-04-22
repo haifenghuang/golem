@@ -75,9 +75,9 @@ type (
 	//	Set(Value, Value) Error
 	//}
 
-	//Lenable interface {
-	//	Len() (Int, Error)
-	//}
+	Lenable interface {
+		Len() (Int, Error)
+	}
 
 	//Sliceable interface {
 	//	Slice(Value, Value) (Value, Error)
@@ -115,6 +115,7 @@ type (
 		StrVal() string
 
 		Getable
+		Lenable
 	}
 
 	Number interface {
@@ -148,8 +149,8 @@ type (
 		Value
 
 		Getable
+		Lenable
 		Set(Value, Value) Error
-		Len() (Int, Error)
 
 		Append(Value) Error
 	}

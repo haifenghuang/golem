@@ -153,6 +153,15 @@ func TestStr(t *testing.T) {
 
 	v, err = ab.Get(MakeInt(2))
 	fail(t, v, err, "IndexOutOfBounds")
+
+	v, err = MakeStr("").Len()
+	ok(t, v, err, ZERO)
+
+	v, err = MakeStr("a").Len()
+	ok(t, v, err, ONE)
+
+	v, err = MakeStr("abcde").Len()
+	ok(t, v, err, MakeInt(5))
 }
 
 func TestRunes(t *testing.T) {
@@ -177,7 +186,7 @@ func TestRunes(t *testing.T) {
 	assert(t, runesCmp(str{'a'}, str{'a'}) == 0)
 	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'b'}) == 0)
 
-	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'c'}) == -1)
+	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'z'}) == -1)
 	assert(t, runesCmp(str{'c', 'b'}, str{'a', 'b'}) == 1)
 	assert(t, runesCmp(str{}, str{'a', 'b'}) == -2)
 	assert(t, runesCmp(str{'a', 'b', 'c', 'd', 'e'}, str{'a', 'b'}) == 3)

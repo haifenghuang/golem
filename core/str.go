@@ -77,6 +77,10 @@ func (s str) Get(index Value) (Value, Error) {
 	}
 }
 
+func (s str) Len() (Int, Error) {
+	return MakeInt(int64(len(s))), nil
+}
+
 //--------------------------------------------------------------
 
 func fromString(s string) str {
