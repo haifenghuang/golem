@@ -62,18 +62,20 @@ func (s str) Add(v Value) (Value, Error) {
 	return strcat(s, v)
 }
 
-//func (s *str) Get(index Value) (Value, Error) {
-//	if i, ok := index.(Int); ok {
-//		n := int(i.IntVal())
-//		if (n < 0) || (n >= len(s.array)) {
-//			return nil, IndexOutOfBoundsError()
-//		} else {
-//			return s.array[n], nil
-//		}
-//	} else {
-//		return nil, TypeMismatchError("Expected 'Int'")
-//	}
-//}
+func (s str) Get(index Value) (Value, Error) {
+	if i, ok := index.(Int); ok {
+		n := int(i.IntVal())
+		if (n < 0) || (n >= len(s)) {
+			return nil, IndexOutOfBoundsError()
+		} else {
+			result := make([]rune, 1)
+			result[0] = s[n]
+			return str(result), nil
+		}
+	} else {
+		return nil, TypeMismatchError("Expected 'Int'")
+	}
+}
 
 //--------------------------------------------------------------
 

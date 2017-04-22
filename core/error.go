@@ -70,7 +70,7 @@ func IndexOutOfBoundsError() Error {
 func NoSuchFieldError(field string) Error {
 	return &serror{
 		"NoSuchField",
-		fmt.Sprintf("Field '%s' not found.", field)}
+		fmt.Sprintf("Field '%s' not found", field)}
 }
 
 func InvalidArgumentError(msg string) Error {

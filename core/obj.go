@@ -123,6 +123,18 @@ func (o *obj) Add(v Value) (Value, Error) {
 	}
 }
 
+func (o *obj) Get(index Value) (Value, Error) {
+	if !o.inited {
+		return nil, UninitializedObjError()
+	}
+
+	if s, ok := index.(Str); ok {
+		return o.GetField(s)
+	} else {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
+}
+
 func (o *obj) GetField(key Str) (Value, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()

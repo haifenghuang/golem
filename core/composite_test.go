@@ -62,7 +62,13 @@ func TestObj(t *testing.T) {
 	ok(t, val, err, MakeStr("obj {}a"))
 
 	val, err = o.GetField(MakeStr("a"))
-	fail(t, val, err, "NoSuchField: Field 'a' not found.")
+	fail(t, val, err, "NoSuchField: Field 'a' not found")
+
+	val, err = o.Get(MakeStr("a"))
+	fail(t, val, err, "NoSuchField: Field 'a' not found")
+
+	val, err = o.Get(ZERO)
+	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
 	//////////////////
 
@@ -84,7 +90,13 @@ func TestObj(t *testing.T) {
 	ok(t, val, err, MakeInt(1))
 
 	val, err = o.GetField(MakeStr("b"))
-	fail(t, val, err, "NoSuchField: Field 'b' not found.")
+	fail(t, val, err, "NoSuchField: Field 'b' not found")
+
+	val, err = o.Get(MakeStr("a"))
+	ok(t, val, err, MakeInt(1))
+
+	val, err = o.Get(MakeStr("b"))
+	fail(t, val, err, "NoSuchField: Field 'b' not found")
 
 	err = o.PutField(MakeStr("a"), MakeInt(123))
 	if err != nil {
@@ -92,6 +104,9 @@ func TestObj(t *testing.T) {
 	}
 
 	val, err = o.GetField(MakeStr("a"))
+	ok(t, val, err, MakeInt(123))
+
+	val, err = o.Get(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
 }
 
