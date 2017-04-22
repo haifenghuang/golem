@@ -69,11 +69,15 @@ const (
 
 	NEW_OBJ
 	INIT_OBJ
+	NEW_LIST
+
 	GET_FIELD
 	PUT_FIELD
 	INC_FIELD
 
-	NEW_LIST
+	GET_INDEX
+	SET_INDEX
+	INC_INDEX
 
 	DUP
 
@@ -187,6 +191,13 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmtIndex(opcodes, i, "INC_FIELD")
 	case NEW_LIST:
 		return fmtIndex(opcodes, i, "NEW_LIST")
+
+	case GET_INDEX:
+		return fmt.Sprintf("%d: GET_INDEX\n", i)
+	case SET_INDEX:
+		return fmt.Sprintf("%d: SET_INDEX\n", i)
+	case INC_INDEX:
+		return fmt.Sprintf("%d: INC_INDEX\n", i)
 
 	case BREAK:
 		return fmtIndex(opcodes, i, "BREAK")

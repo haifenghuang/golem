@@ -192,6 +192,11 @@ func (a *analyzer) visitAssignment(asn *ast.Assignment) {
 		a.Visit(t.Operand)
 		a.Visit(asn.Val)
 
+	case *ast.IndexExpr:
+		a.Visit(t.Operand)
+		a.Visit(t.Index)
+		a.Visit(asn.Val)
+
 	default:
 		panic("invalid assignee type")
 	}
@@ -206,6 +211,10 @@ func (a *analyzer) visitPostfixExpr(ps *ast.PostfixExpr) {
 
 	case *ast.FieldExpr:
 		a.Visit(t.Operand)
+
+	case *ast.IndexExpr:
+		a.Visit(t.Operand)
+		a.Visit(t.Index)
 
 	default:
 		panic("invalid assignee type")

@@ -61,7 +61,6 @@ func (t Type) String() string {
 //---------------------------------------------------------------
 // Various Functionality
 
-// Setable: Obj
 // Sliceable: List, Str
 
 type (
@@ -69,7 +68,8 @@ type (
 		Get(Value) (Value, Error)
 	}
 
-	Setable interface {
+	Indexable interface {
+		Getable
 		Set(Value, Value) Error
 	}
 
@@ -77,11 +77,11 @@ type (
 		Len() (Int, Error)
 	}
 
-	//Sliceable interface {
-	//	Slice(Value, Value) (Value, Error)
-	//	SliceFrom(Value) (Value, Error)
-	//	SliceTo(Value) (Value, Error)
-	//}
+	Sliceable interface {
+		Slice(Value, Value) (Value, Error)
+		SliceFrom(Value) (Value, Error)
+		SliceTo(Value) (Value, Error)
+	}
 )
 
 //---------------------------------------------------------------
@@ -146,9 +146,9 @@ type (
 	List interface {
 		Value
 
-		Getable
-		Setable
+		Indexable
 		Lenable
+		//Sliceable
 
 		Append(Value) Error
 	}
@@ -157,8 +157,7 @@ type (
 		Value
 		Init(*ObjDef, []Value)
 
-		Getable
-		Setable
+		Indexable
 
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error

@@ -133,6 +133,11 @@ func (f *FieldExpr) Traverse(v Visitor) {
 	v.Visit(f.Operand)
 }
 
+func (i *IndexExpr) Traverse(v Visitor) {
+	v.Visit(i.Operand)
+	v.Visit(i.Index)
+}
+
 //--------------------------------------------------------------
 // ast debug
 
@@ -212,6 +217,9 @@ func (p *dump) Visit(node Node) {
 
 	case *FieldExpr:
 		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))
+
+	case *IndexExpr:
+		p.buf.WriteString(fmt.Sprintf("IndexExpr\n"))
 
 	default:
 		panic("cannot visit")

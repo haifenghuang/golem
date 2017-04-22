@@ -141,6 +141,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.FieldExpr:
 		c.visitFieldExpr(t)
 
+	case *ast.IndexExpr:
+		c.visitIndexExpr(t)
+
 	case *ast.ListExpr:
 		c.visitListExpr(t)
 
@@ -180,6 +183,13 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 		high, low := index(len(c.pool))
 		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
 		c.push(t.Key.Position, g.PUT_FIELD, high, low)
+
+	case *ast.IndexExpr:
+
+		c.Visit(t.Operand)
+		c.Visit(t.Index)
+		c.Visit(asn.Val)
+		c.push(t.Index.Begin(), g.SET_INDEX)
 
 	default:
 		panic("invalid assignee type")
@@ -223,6 +233,22 @@ func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
 		high, low := index(len(c.pool))
 		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
 		c.push(t.Key.Position, g.INC_FIELD, high, low)
+
+	case *ast.IndexExpr:
+
+		c.Visit(t.Operand)
+		c.Visit(t.Index)
+
+		switch pe.Op.Text {
+		case "++":
+			c.push(pe.Op.Position, g.LOAD_ONE)
+		case "--":
+			c.push(pe.Op.Position, g.LOAD_NEG_ONE)
+		default:
+			panic("invalid postfix operator")
+		}
+
+		c.push(t.Index.Begin(), g.INC_INDEX)
 
 	default:
 		panic("invalid assignee type")
@@ -580,6 +606,12 @@ func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	high, low := index(len(c.pool))
 	c.pool = append(c.pool, g.MakeStr(fe.Key.Text))
 	c.push(fe.Key.Position, g.GET_FIELD, high, low)
+}
+
+func (c *compiler) visitIndexExpr(ie *ast.IndexExpr) {
+	c.Visit(ie.Operand)
+	c.Visit(ie.Index)
+	c.push(ie.Index.Begin(), g.GET_INDEX)
 }
 
 func (c *compiler) visitListExpr(ls *ast.ListExpr) {

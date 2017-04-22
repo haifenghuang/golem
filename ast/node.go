@@ -191,6 +191,11 @@ type (
 		Operand Expr
 		Key     *Token
 	}
+
+	IndexExpr struct {
+		Operand Expr
+		Index   Expr
+	}
 )
 
 //--------------------------------------------------------------
@@ -218,9 +223,11 @@ func (*ListExpr) exprMarker()    {}
 func (*ObjExpr) exprMarker()     {}
 func (*ThisExpr) exprMarker()    {}
 func (*FieldExpr) exprMarker()   {}
+func (*IndexExpr) exprMarker()   {}
 
 func (*IdentExpr) assignableMarker() {}
 func (*FieldExpr) assignableMarker() {}
+func (*IndexExpr) assignableMarker() {}
 
 //--------------------------------------------------------------
 // Begin, End
@@ -305,6 +312,9 @@ func (n *ThisExpr) End() Pos {
 
 func (n *FieldExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *FieldExpr) End() Pos   { return n.Key.Position }
+
+func (n *IndexExpr) Begin() Pos { return n.Operand.Begin() }
+func (n *IndexExpr) End() Pos   { return n.Index.End() }
 
 //--------------------------------------------------------------
 // string
@@ -454,6 +464,15 @@ func (f *FieldExpr) String() string {
 	buf.WriteString(f.Operand.String())
 	buf.WriteString(".")
 	buf.WriteString(f.Key.Text)
+	return buf.String()
+}
+
+func (i *IndexExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(i.Operand.String())
+	buf.WriteString("[")
+	buf.WriteString(i.Index.String())
+	buf.WriteString("]")
 	return buf.String()
 }
 

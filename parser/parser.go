@@ -371,10 +371,14 @@ func (p *Parser) primaryExpr() ast.Expr {
 			actual, last := p.actualParams()
 			prm = &ast.InvokeExpr{last, prm, actual}
 
+		case ast.LBRACKET:
+			p.expect(ast.LBRACKET)
+			prm = &ast.IndexExpr{prm, p.expression()}
+			p.expect(ast.RBRACKET)
+
 		case ast.DOT:
 			p.expect(ast.DOT)
-			key := p.expect(ast.IDENT)
-			prm = &ast.FieldExpr{prm, key}
+			prm = &ast.FieldExpr{prm, p.expect(ast.IDENT)}
 
 		default:
 			return prm

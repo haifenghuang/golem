@@ -472,13 +472,17 @@ let y = x.a;
 x.a = 3;
 x.a++;
 y--;
+x[y] = 42;
+y = x[3];
+x[2]++;
+y.z = x[2]++;
 `
 	anl := newAnalyzer(source)
 	errors := anl.Analyze()
 
-	//fmt.Println(source)
-	//fmt.Println(ast.Dump(anl.Module()))
-	//fmt.Println(errors)
+	fmt.Println(source)
+	fmt.Println(ast.Dump(anl.Module()))
+	fmt.Println(errors)
 
 	ok(t, anl, errors, `
 FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
@@ -500,5 +504,26 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   .   .   .   IdentExpr(x,(0,false,false))
 .   .   PostfixExpr("--")
 .   .   .   IdentExpr(y,(1,false,false))
+.   .   Assignment
+.   .   .   IndexExpr
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   .   .   IdentExpr(y,(1,false,false))
+.   .   .   BasicExpr(INT,"42")
+.   .   Assignment
+.   .   .   IdentExpr(y,(1,false,false))
+.   .   .   IndexExpr
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   .   .   BasicExpr(INT,"3")
+.   .   PostfixExpr("++")
+.   .   .   IndexExpr
+.   .   .   .   IdentExpr(x,(0,false,false))
+.   .   .   .   BasicExpr(INT,"2")
+.   .   Assignment
+.   .   .   FieldExpr(z)
+.   .   .   .   IdentExpr(y,(1,false,false))
+.   .   .   PostfixExpr("++")
+.   .   .   .   IndexExpr
+.   .   .   .   .   IdentExpr(x,(0,false,false))
+.   .   .   .   .   BasicExpr(INT,"2")
 `)
 }

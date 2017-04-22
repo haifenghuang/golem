@@ -184,12 +184,16 @@ func TestExpressions(t *testing.T) {
 
 	ok_expr(t, "~0;", g.MakeInt(-1))
 
+	// TODO
 	//ok_expr(t, "8 % 2;", g.MakeInt(1%2))
 	//ok_expr(t, "8 & 2;", g.MakeInt(1&2))
 	//ok_expr(t, "8 | 2;", g.MakeInt(1|2))
 	//ok_expr(t, "8 ^ 2;", g.MakeInt(1^2))
 	//ok_expr(t, "8 << 2;", g.MakeInt(1<<2))
 	//ok_expr(t, "8 >> 2;", g.MakeInt(1>>2))
+
+	// TODO
+	//fail_expr(t, "['a'][2]", "TypeMismatch: Expected 'Bool'")
 }
 
 func TestAssignment(t *testing.T) {
@@ -495,11 +499,24 @@ a = obj { x: 8 }.x = 5;
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
+	ok_ref(t, mod.Locals[0], g.MakeInt(5))
+
+	source = `
+let a = obj { x: 8 };
+a['x'] = 3;
+let b = a['x']++;
+let c = a['x'];
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
 	//fmt.Println("----------------------------")
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(5))
+	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.MakeInt(4)}))
+	ok_ref(t, mod.Locals[1], g.MakeInt(3))
+	ok_ref(t, mod.Locals[2], g.MakeInt(4))
 }
 
 func TestErrStack(t *testing.T) {
@@ -573,8 +590,11 @@ func TestList(t *testing.T) {
 
 	source := `
 let a = [];
-let b = [1];
-let c = [1,2];
+let b = [true];
+let c = [false,22];
+let d = b[0];
+b[0] = 33;
+let e = c[1]++;
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
@@ -584,6 +604,8 @@ let c = [1,2];
 	//fmt.Println(mod)
 
 	ok_ref(t, mod.Locals[0], g.NewList([]g.Value{}))
-	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(1)}))
-	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.MakeInt(1), g.MakeInt(2)}))
+	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(33)}))
+	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
+	ok_ref(t, mod.Locals[3], g.TRUE)
+	ok_ref(t, mod.Locals[4], g.MakeInt(22))
 }

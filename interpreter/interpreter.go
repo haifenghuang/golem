@@ -212,6 +212,16 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			// done
 			ip += 3
 
+		case g.NEW_LIST:
+
+			size := index(opc, ip)
+			vals := make([]g.Value, size)
+			copy(vals, s[n-size+1:])
+
+			s = s[:n-size+1]
+			s = append(s, g.NewList(vals))
+			ip += 3
+
 		case g.GET_FIELD:
 
 			idx := index(opc, ip)
@@ -302,15 +312,87 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			s = s[:n]
 			ip += 3
 
-		case g.NEW_LIST:
+		case g.GET_INDEX:
 
-			size := index(opc, ip)
-			vals := make([]g.Value, size)
-			copy(vals, s[n-size+1:])
+			// get Getable from stack
+			gtb, ok := s[n-1].(g.Getable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Getable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
 
-			s = s[:n-size+1]
-			s = append(s, g.NewList(vals))
-			ip += 3
+			// get index from stack
+			idx := s[n]
+
+			result, err := gtb.Get(idx)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-1] = result
+			s = s[:n]
+			ip++
+
+		case g.SET_INDEX:
+
+			// get Indexable from stack
+			ibl, ok := s[n-2].(g.Indexable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Getable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get index from stack
+			idx := s[n-1]
+
+			// get value from stack
+			val := s[n]
+
+			err := ibl.Set(idx, val)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-2] = val
+			s = s[:n-1]
+			ip++
+
+		case g.INC_INDEX:
+
+			// get Indexable from stack
+			ibl, ok := s[n-2].(g.Indexable)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Getable'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// get index from stack
+			idx := s[n-1]
+
+			// get value from stack
+			val := s[n]
+
+			before, err := ibl.Get(idx)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			after, err := before.Add(val)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			err = ibl.Set(idx, after)
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n-2] = before
+			s = s[:n-1]
+			ip++
 
 		case g.LOAD_NULL:
 			s = append(s, g.NULL)
