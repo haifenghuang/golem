@@ -41,6 +41,10 @@ func (i _int) basicMarker() {}
 
 func (i _int) TypeOf() (Type, Error) { return TINT, nil }
 
+func (i _int) HashCode() int {
+	return int(i)
+}
+
 func (i _int) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%d", i)), nil
 }

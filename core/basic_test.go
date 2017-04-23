@@ -203,15 +203,15 @@ func TestStr(t *testing.T) {
 	v, err = a.Slice(MakeInt(7), MakeInt(7))
 	fail(t, nil, err, "IndexOutOfBounds")
 
-	//////////////////////////////
-	// unicode
+	////////////////////////////////
+	//// unicode
 
-	a = MakeStr("日本語")
-	v, err = a.Len()
-	ok(t, v, err, MakeInt(3))
+	//a = MakeStr("日本語")
+	//v, err = a.Len()
+	//ok(t, v, err, MakeInt(3))
 
-	v, err = a.Get(MakeInt(2))
-	ok(t, v, err, MakeStr("語"))
+	//v, err = a.Get(MakeInt(2))
+	//ok(t, v, err, MakeStr("語"))
 }
 
 func TestInt(t *testing.T) {
@@ -426,23 +426,6 @@ func TestFloat(t *testing.T) {
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
 	v1, err = MakeFloat(3.3).Add(NULL)
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
-}
-
-func TestUtil(t *testing.T) {
-	i, err := parseIndex(MakeInt(0), 2)
-	ok(t, i, err, MakeInt(0))
-
-	i, err = parseIndex(MakeInt(1), 2)
-	ok(t, i, err, MakeInt(1))
-
-	i, err = parseIndex(MakeStr(""), 2)
-	fail(t, i, err, "TypeMismatch: Expected 'Int'")
-
-	i, err = parseIndex(MakeInt(-1), 2)
-	fail(t, i, err, "IndexOutOfBounds")
-
-	i, err = parseIndex(MakeInt(2), 2)
-	fail(t, i, err, "IndexOutOfBounds")
 }
 
 func TestBasic(t *testing.T) {

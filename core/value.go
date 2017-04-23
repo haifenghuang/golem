@@ -80,6 +80,10 @@ type (
 		SliceFrom(Value) (Value, Error)
 		SliceTo(Value) (Value, Error)
 	}
+
+	HashKey interface {
+		HashCode() int
+	}
 )
 
 //---------------------------------------------------------------
@@ -97,6 +101,7 @@ type (
 
 	Basic interface {
 		Value
+		//HashKey
 		basicMarker()
 	}
 
@@ -145,6 +150,7 @@ type (
 
 	Int interface {
 		Number
+		HashKey
 
 		Rem(Value) (Int, Error)
 		BitAnd(Value) (Int, Error)
