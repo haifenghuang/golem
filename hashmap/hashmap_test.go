@@ -17,12 +17,29 @@ package hashmap
 import (
 	//"fmt"
 	g "golem/core"
+	"reflect"
 	"testing"
 )
 
-func assert(t *testing.T, flag bool) {
-	if !flag {
-		panic("assertion failure")
+func ok(t *testing.T, val g.Value, err g.Error, expect g.Value) {
+
+	if err != nil {
+		t.Error(err, " != ", nil)
+	}
+
+	if !reflect.DeepEqual(val, expect) {
+		t.Error(val, " != ", expect)
+	}
+}
+
+func fail(t *testing.T, val g.Value, err g.Error, expect string) {
+
+	if val != nil {
+		t.Error(val, " != ", nil)
+	}
+
+	if err.Error() != expect {
+		t.Error(err.Error(), " != ", expect)
 	}
 }
 
@@ -46,41 +63,64 @@ func TestHashMap(t *testing.T) {
 	hm := NewHashMap(nil)
 	debug(hm)
 
-	assert(t, hm.Len() == 0)
-	assert(t, hm.Get(g.MakeInt(3)) == nil)
+	ok(t, hm.Len(), nil, g.ZERO)
+	v, err := hm.Get(g.MakeInt(3))
+	ok(t, v, err, nil)
 
-	hm.Put(g.MakeInt(3), g.MakeInt(33))
+	err = hm.Put(g.MakeInt(3), g.MakeInt(33))
+	ok(t, nil, err, nil)
 	debug(hm)
 
-	assert(t, hm.Len() == 1)
-	assert(t, hm.Get(g.MakeInt(3)) == g.MakeInt(33))
-	assert(t, hm.Get(g.MakeInt(5)) == nil)
+	ok(t, hm.Len(), nil, g.ONE)
+	v, err = hm.Get(g.MakeInt(3))
+	ok(t, v, err, g.MakeInt(33))
+	v, err = hm.Get(g.MakeInt(5))
+	ok(t, v, err, nil)
 
-	hm.Put(g.MakeInt(3), g.MakeInt(33))
+	err = hm.Put(g.MakeInt(3), g.MakeInt(33))
+	ok(t, nil, err, nil)
 	debug(hm)
 
-	assert(t, hm.Len() == 1)
-	assert(t, hm.Get(g.MakeInt(3)) == g.MakeInt(33))
-	assert(t, hm.Get(g.MakeInt(5)) == nil)
+	ok(t, hm.Len(), nil, g.ONE)
+	v, err = hm.Get(g.MakeInt(3))
+	ok(t, v, err, g.MakeInt(33))
+	v, err = hm.Get(g.MakeInt(5))
+	ok(t, v, err, nil)
 
-	hm.Put(g.MakeInt(int64(2)), g.MakeInt(int64(22)))
+	err = hm.Put(g.MakeInt(int64(2)), g.MakeInt(int64(22)))
+	ok(t, nil, err, nil)
 	debug(hm)
-	assert(t, hm.Len() == 2)
+	ok(t, hm.Len(), nil, g.MakeInt(2))
 
-	hm.Put(g.MakeInt(int64(1)), g.MakeInt(int64(11)))
+	err = hm.Put(g.MakeInt(int64(1)), g.MakeInt(int64(11)))
+	ok(t, nil, err, nil)
 	debug(hm)
-	assert(t, hm.Len() == 3)
+	ok(t, hm.Len(), nil, g.MakeInt(3))
 
 	for i := 1; i <= 20; i++ {
-		hm.Put(g.MakeInt(int64(i)), g.MakeInt(int64(i*10+i)))
+		err = hm.Put(g.MakeInt(int64(i)), g.MakeInt(int64(i*10+i)))
+		ok(t, nil, err, nil)
 	}
 	debug(hm)
 
 	for i := 1; i <= 40; i++ {
+		v, err = hm.Get(g.MakeInt(int64(i)))
 		if i <= 20 {
-			assert(t, hm.Get(g.MakeInt(int64(i))) != nil)
+			ok(t, v, err, g.MakeInt(int64(i*10+i)))
 		} else {
-			assert(t, hm.Get(g.MakeInt(int64(i))) == nil)
+			ok(t, v, err, nil)
 		}
 	}
+}
+
+func TestStrHashMap(t *testing.T) {
+
+	hm := NewHashMap(nil)
+
+	err := hm.Put(g.MakeStr("abc"), g.MakeStr("xyz"))
+	ok(t, nil, err, nil)
+
+	//v, err := hm.Get(g.MakeStr("abc"))
+	//ok(t, v, err, g.MakeStr("xyz"))
+
 }

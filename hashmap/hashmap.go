@@ -19,6 +19,9 @@ import (
 	g "golem/core"
 )
 
+// A Custom HashMap implementation.  This allows us
+// to use things like []rune as a key into a hash map.
+
 type (
 	HashMap struct {
 		buckets []bucket
@@ -26,7 +29,7 @@ type (
 	}
 
 	Entry struct {
-		Key   g.HashKey
+		Key   g.Value
 		Value g.Value
 	}
 
@@ -44,43 +47,71 @@ func NewHashMap(entries []Entry) *HashMap {
 	return hm
 }
 
-func (hm *HashMap) Get(key g.HashKey) g.Value {
-	h := key.HashCode() % len(hm.buckets)
-	b := hm.buckets[h]
+func (hm *HashMap) Get(key g.Value) (value g.Value, err g.Error) {
+
+	// panic-recover is the cleanest approach
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(g.Error); ok {
+				value = nil
+				err = e
+			}
+			panic(r)
+		}
+	}()
+
+	b := hm.buckets[hm.hashBucket(key)]
 	n := indexOf(b, key)
 	if n == -1 {
-		return nil
+		return nil, nil
 	} else {
-		return b[n].Value
+		return b[n].Value, nil
 	}
 }
 
-func (hm *HashMap) Put(key g.HashKey, value g.Value) {
-	h := key.HashCode() % len(hm.buckets)
-	b := hm.buckets[h]
-	n := indexOf(b, key)
+func (hm *HashMap) Put(key g.Value, value g.Value) (err g.Error) {
+
+	// panic-recover is the cleanest approach
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(g.Error); ok {
+				err = e
+			}
+			panic(r)
+		}
+	}()
+
+	h := hm.hashBucket(key)
+	n := indexOf(hm.buckets[h], key)
 	if n == -1 {
 		if hm.tooFull() {
 			hm.rehash()
-			h = key.HashCode() % len(hm.buckets)
-			b = hm.buckets[h]
-			n = indexOf(b, key)
+			h = hm.hashBucket(key)
 		}
-		hm.buckets[h] = append(b, &Entry{key, value})
+		hm.buckets[h] = append(hm.buckets[h], &Entry{key, value})
 		hm.size++
 
 	} else {
-		b[n].Value = value
+		hm.buckets[h][n].Value = value
 	}
+
+	return nil
 }
 
-func (hm *HashMap) Len() int {
-	return hm.size
+func (hm *HashMap) Len() g.Int {
+	return g.MakeInt(int64(hm.size))
 }
 
-func indexOf(b bucket, key g.HashKey) int {
+func indexOf(b bucket, key g.Value) int {
 	for i, e := range b {
-		if e.Key == key {
+
+		// panic-recover is the cleanest approach
+		eq, err := e.Key.Eq(key)
+		if err != nil {
+			panic(err)
+		}
+
+		if eq.BoolVal() {
 			return i
 		}
 	}
@@ -99,9 +130,24 @@ func (hm *HashMap) rehash() {
 	hm.buckets = make([]bucket, capacity, capacity)
 	for _, b := range oldBuckets {
 		for _, e := range b {
-			h := e.Key.HashCode() % len(hm.buckets)
-			b := hm.buckets[h]
-			hm.buckets[h] = append(b, e)
+			h := hm.hashBucket(e.Key)
+			hm.buckets[h] = append(hm.buckets[h], e)
 		}
 	}
+}
+
+func (hm *HashMap) hashBucket(key g.Value) int {
+
+	// panic-recover is the cleanest approach
+	hc, err := key.HashCode()
+	if err != nil {
+		panic(err)
+	}
+
+	hv := int(hc.IntVal())
+	if hv < 0 {
+		hv = 0 - hv
+	}
+
+	return hv % len(hm.buckets)
 }

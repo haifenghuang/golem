@@ -14,7 +14,9 @@
 
 package core
 
-import ()
+import (
+//"fmt"
+)
 
 type str []rune
 
@@ -35,16 +37,16 @@ func (s str) String() (Str, Error) { return s, nil }
 func (s str) HashCode() (Int, Error) {
 
 	// https://en.wikipedia.org/wiki/Jenkins_hash_function
-	var hash int64 = 0
+	var hash rune = 0
 	for _, r := range s {
-		hash += int64(r)
+		hash += r
 		hash += hash << 10
 		hash ^= hash >> 6
 	}
 	hash += hash << 3
 	hash ^= hash >> 11
 	hash += hash << 15
-	return MakeInt(hash), nil
+	return MakeInt(int64(hash)), nil
 }
 
 func (s str) Eq(v Value) (Bool, Error) {
@@ -160,7 +162,7 @@ func strcat(a Value, b Value) (str, Error) {
 	cb := make([]rune, len(sb))
 	copy(cb, sb)
 
-	result := str{}
+	result := make(str, 0, len(ca)+len(cb))
 	result = append(result, ca...)
 	result = append(result, cb...)
 	return result, nil

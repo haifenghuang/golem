@@ -151,6 +151,7 @@ func TestUninitialized(t *testing.T) {
 	e8 := o.Set(MakeStr(""), NULL)
 
 	_, e9 := o.Has(NULL)
+	_, e10 := o.HashCode()
 
 	uninitErr(t, e0)
 	uninitErr(t, e1)
@@ -162,6 +163,7 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e7)
 	uninitErr(t, e8)
 	uninitErr(t, e9)
+	uninitErr(t, e10)
 }
 
 func TestLineNumber(t *testing.T) {

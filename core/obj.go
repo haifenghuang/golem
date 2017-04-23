@@ -91,6 +91,10 @@ func (o *obj) String() (Str, Error) {
 }
 
 func (o *obj) HashCode() (Int, Error) {
+	if !o.inited {
+		return nil, UninitializedObjError()
+	}
+
 	// TODO $hash()
 	return nil, TypeMismatchError("Expected Hashable Type")
 }

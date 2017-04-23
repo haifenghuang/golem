@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
 go test golem/core
+go test golem/hashmap
 
 go test golem/scanner
 go test golem/parser

@@ -210,15 +210,15 @@ func TestStr(t *testing.T) {
 	v, err = a.Slice(MakeInt(7), MakeInt(7))
 	fail(t, nil, err, "IndexOutOfBounds")
 
-	////////////////////////////////
-	//// unicode
+	//////////////////////////////
+	// unicode
 
-	//a = MakeStr("日本語")
-	//v, err = a.Len()
-	//ok(t, v, err, MakeInt(3))
+	a = MakeStr("日本語")
+	v, err = a.Len()
+	ok(t, v, err, MakeInt(3))
 
-	//v, err = a.Get(MakeInt(2))
-	//ok(t, v, err, MakeStr("語"))
+	v, err = a.Get(MakeInt(2))
+	ok(t, v, err, MakeStr("語"))
 }
 
 func TestInt(t *testing.T) {
@@ -500,5 +500,5 @@ func TestBasicHashCode(t *testing.T) {
 	ok(t, h, err, MakeInt(0))
 
 	h, err = MakeStr("abcdef").HashCode()
-	ok(t, h, err, MakeInt(1928994870288439732))
+	ok(t, h, err, MakeInt(436938535))
 }
