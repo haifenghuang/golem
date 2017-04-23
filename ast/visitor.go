@@ -126,6 +126,17 @@ func (obj *ObjExpr) Traverse(v Visitor) {
 	}
 }
 
+func (dict *DictExpr) Traverse(v Visitor) {
+	for _, e := range dict.Entries {
+		v.Visit(e)
+	}
+}
+
+func (de *DictEntryExpr) Traverse(v Visitor) {
+	v.Visit(de.Key)
+	v.Visit(de.Value)
+}
+
 func (this *ThisExpr) Traverse(v Visitor) {
 }
 
@@ -228,6 +239,10 @@ func (p *dump) Visit(node Node) {
 
 	case *ObjExpr:
 		p.buf.WriteString(fmt.Sprintf("ObjExpr(%v,%d)\n", tokensString(t.Keys), t.LocalThisIndex))
+	case *DictExpr:
+		p.buf.WriteString(fmt.Sprintf("DictExpr\n"))
+	case *DictEntryExpr:
+		p.buf.WriteString(fmt.Sprintf("DictEntryExpr\n"))
 	case *ThisExpr:
 		p.buf.WriteString(fmt.Sprintf("ThisExpr(%v)\n", t.Variable))
 	case *ListExpr:

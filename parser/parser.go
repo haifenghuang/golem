@@ -450,6 +450,9 @@ func (p *Parser) primary() ast.Expr {
 	case ast.OBJ:
 		return p.objExpr(p.consume())
 
+	case ast.DICT:
+		return p.dictExpr(p.consume())
+
 	case ast.LBRACKET:
 		return p.listExpr(p.consume())
 
@@ -545,6 +548,49 @@ func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
 	}
 
 	return &ast.ObjExpr{objToken, lbrace, keys, values, rbrace, -1}
+}
+
+func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {
+
+	entries := []*ast.DictEntryExpr{}
+	var rbrace *ast.Token
+
+	lbrace := p.expect(ast.LBRACE)
+
+	switch p.cur.Kind {
+
+	case ast.RBRACE:
+		rbrace = p.consume()
+
+	default:
+		key := p.expression()
+		p.expect(ast.COLON)
+		value := p.expression()
+		entries = append(entries, &ast.DictEntryExpr{key, value})
+
+	loop:
+		for {
+			switch p.cur.Kind {
+
+			case ast.COMMA:
+				p.consume()
+
+				key = p.expression()
+				p.expect(ast.COLON)
+				value = p.expression()
+				entries = append(entries, &ast.DictEntryExpr{key, value})
+
+			case ast.RBRACE:
+				rbrace = p.consume()
+				break loop
+
+			default:
+				panic(p.unexpected())
+			}
+		}
+	}
+
+	return &ast.DictExpr{dictToken, lbrace, entries, rbrace}
 }
 
 func (p *Parser) listExpr(lbracket *ast.Token) ast.Expr {

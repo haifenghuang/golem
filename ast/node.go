@@ -191,6 +191,18 @@ type (
 		Key     *Token
 	}
 
+	DictExpr struct {
+		DictToken *Token
+		LBrace    *Token
+		Entries   []*DictEntryExpr
+		RBrace    *Token
+	}
+
+	DictEntryExpr struct {
+		Key   Expr
+		Value Expr
+	}
+
 	IndexExpr struct {
 		Operand  Expr
 		LBracket *Token
@@ -246,6 +258,8 @@ func (*ListExpr) exprMarker()      {}
 func (*ObjExpr) exprMarker()       {}
 func (*ThisExpr) exprMarker()      {}
 func (*FieldExpr) exprMarker()     {}
+func (*DictExpr) exprMarker()      {}
+func (*DictEntryExpr) exprMarker() {}
 func (*IndexExpr) exprMarker()     {}
 func (*SliceExpr) exprMarker()     {}
 func (*SliceFromExpr) exprMarker() {}
@@ -338,6 +352,12 @@ func (n *ThisExpr) End() Pos {
 
 func (n *FieldExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *FieldExpr) End() Pos   { return n.Key.Position }
+
+func (n *DictExpr) Begin() Pos { return n.DictToken.Position }
+func (n *DictExpr) End() Pos   { return n.RBrace.Position }
+
+func (n *DictEntryExpr) Begin() Pos { return n.Key.Begin() }
+func (n *DictEntryExpr) End() Pos   { return n.Value.End() }
 
 func (n *IndexExpr) Begin() Pos { return n.Operand.Begin() }
 func (n *IndexExpr) End() Pos   { return n.RBracket.Position }
@@ -497,6 +517,27 @@ func (f *FieldExpr) String() string {
 	buf.WriteString(f.Operand.String())
 	buf.WriteString(".")
 	buf.WriteString(f.Key.Text)
+	return buf.String()
+}
+
+func (dict *DictExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("dict { ")
+	for idx, e := range dict.Entries {
+		if idx > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(e.String())
+	}
+	buf.WriteString(" }")
+	return buf.String()
+}
+
+func (de *DictEntryExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(de.Key.String())
+	buf.WriteString(": ")
+	buf.WriteString(de.Value.String())
 	return buf.String()
 }
 
