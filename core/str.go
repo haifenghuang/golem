@@ -68,6 +68,7 @@ func (s str) Get(index Value) (Value, Error) {
 		return nil, err
 	}
 
+	// copy to avoid memory leaks
 	return str([]rune{s[idx.IntVal()]}), nil
 }
 
@@ -92,6 +93,7 @@ func (s str) Slice(from Value, to Value) (Value, Error) {
 		return nil, IndexOutOfBoundsError()
 	}
 
+	// copy to avoid memory leaks
 	a := s[f.IntVal():t.IntVal()]
 	b := make([]rune, len(a))
 	copy(b, a)
@@ -129,20 +131,27 @@ func fromValue(v Value) (str, Error) {
 }
 
 func strcat(a Value, b Value) (str, Error) {
+
+	sa, err := fromValue(a)
+	if err != nil {
+		return nil, err
+	}
+
+	sb, err := fromValue(b)
+	if err != nil {
+		return nil, err
+	}
+
+	// copy to avoid memory leaks
+	ca := make([]rune, len(sa))
+	copy(ca, sa)
+
+	cb := make([]rune, len(sb))
+	copy(cb, sb)
+
 	result := str{}
-
-	s, err := fromValue(a)
-	if err != nil {
-		return nil, err
-	}
-	result = append(result, s...)
-
-	s, err = fromValue(b)
-	if err != nil {
-		return nil, err
-	}
-	result = append(result, s...)
-
+	result = append(result, ca...)
+	result = append(result, cb...)
 	return result, nil
 }
 
