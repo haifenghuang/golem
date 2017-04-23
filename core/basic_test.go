@@ -33,6 +33,7 @@ func ok(t *testing.T, val Value, err Error, expect Value) {
 	}
 
 	if !reflect.DeepEqual(val, expect) {
+		//panic("asdfasfad")
 		t.Error(val, " != ", expect)
 	}
 }
@@ -57,7 +58,7 @@ func okType(t *testing.T, val Value, expected Type) {
 func TestNull(t *testing.T) {
 	okType(t, NULL, TNULL)
 
-	s, err := NULL.String()
+	s, err := NULL.ToStr()
 	ok(t, s, err, MakeStr("null"))
 
 	b, err := NULL.Eq(NULL)
@@ -73,9 +74,9 @@ func TestNull(t *testing.T) {
 
 func TestBool(t *testing.T) {
 
-	s, err := TRUE.String()
+	s, err := TRUE.ToStr()
 	ok(t, s, err, MakeStr("true"))
-	s, err = FALSE.String()
+	s, err = FALSE.ToStr()
 	ok(t, s, err, MakeStr("false"))
 
 	okType(t, TRUE, TBOOL)
@@ -124,9 +125,9 @@ func TestStr(t *testing.T) {
 
 	var v Value
 
-	v, err := a.String()
+	v, err := a.ToStr()
 	ok(t, v, err, MakeStr("a"))
-	v, err = b.String()
+	v, err = b.ToStr()
 	ok(t, v, err, MakeStr("b"))
 
 	okType(t, a, TSTR)
@@ -225,9 +226,9 @@ func TestInt(t *testing.T) {
 	a := MakeInt(0)
 	b := MakeInt(1)
 
-	s, err := a.String()
+	s, err := a.ToStr()
 	ok(t, s, err, MakeStr("0"))
-	s, err = b.String()
+	s, err = b.ToStr()
 	ok(t, s, err, MakeStr("1"))
 
 	okType(t, a, TINT)
@@ -345,9 +346,9 @@ func TestFloat(t *testing.T) {
 	a := MakeFloat(0.1)
 	b := MakeFloat(1.2)
 
-	s, err := a.String()
+	s, err := a.ToStr()
 	ok(t, s, err, MakeStr("0.1"))
-	s, err = b.String()
+	s, err = b.ToStr()
 	ok(t, s, err, MakeStr("1.2"))
 
 	okType(t, a, TFLOAT)

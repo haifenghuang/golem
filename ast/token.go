@@ -118,6 +118,7 @@ const (
 	OBJ
 	THIS
 	HAS
+	DICT
 )
 
 func (t TokenKind) String() string {
@@ -238,6 +239,8 @@ func (t TokenKind) String() string {
 		return "THIS"
 	case HAS:
 		return "HAS"
+	case DICT:
+		return "DICT"
 
 	default:
 		panic("unreachable")

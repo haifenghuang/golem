@@ -50,12 +50,12 @@ func TestObj(t *testing.T) {
 	o := newObj(map[string]Value{})
 	okType(t, o, TOBJ)
 
-	s, err := o.String()
+	s, err := o.ToStr()
 	ok(t, s, err, MakeStr("obj {}"))
 
 	z, err := o.Eq(newObj(map[string]Value{}))
 	ok(t, z, err, TRUE)
-	z, err = o.Eq(newObj(map[string]Value{"a": MakeInt(1)}))
+	z, err = o.Eq(newObj(map[string]Value{"a": ONE}))
 	ok(t, z, err, FALSE)
 
 	val, err := o.Add(MakeStr("a"))
@@ -72,28 +72,28 @@ func TestObj(t *testing.T) {
 
 	//////////////////
 
-	o = newObj(map[string]Value{"a": MakeInt(1)})
+	o = newObj(map[string]Value{"a": ONE})
 	okType(t, o, TOBJ)
 
-	s, err = o.String()
+	s, err = o.ToStr()
 	ok(t, s, err, MakeStr("obj { a: 1 }"))
 
 	z, err = o.Eq(newObj(map[string]Value{}))
 	ok(t, z, err, FALSE)
-	z, err = o.Eq(newObj(map[string]Value{"a": MakeInt(1)}))
+	z, err = o.Eq(newObj(map[string]Value{"a": ONE}))
 	ok(t, z, err, TRUE)
 
 	val, err = o.Add(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj { a: 1 }a"))
 
 	val, err = o.GetField(MakeStr("a"))
-	ok(t, val, err, MakeInt(1))
+	ok(t, val, err, ONE)
 
 	val, err = o.GetField(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found")
 
 	val, err = o.Get(MakeStr("a"))
-	ok(t, val, err, MakeInt(1))
+	ok(t, val, err, ONE)
 
 	val, err = o.Get(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found")
@@ -140,7 +140,7 @@ func TestUninitialized(t *testing.T) {
 	o := NewObj()
 	_, e0 := o.TypeOf()
 	_, e1 := o.Eq(NULL)
-	_, e2 := o.String()
+	_, e2 := o.ToStr()
 	_, e3 := o.Cmp(NULL)
 	_, e4 := o.Add(NULL)
 
@@ -191,7 +191,7 @@ func TestList(t *testing.T) {
 	okType(t, ls, TLIST)
 
 	var v Value
-	v, err := ls.String()
+	v, err := ls.ToStr()
 	ok(t, v, err, MakeStr("[]"))
 
 	v, err = ls.Eq(NewList([]Value{}))
@@ -216,7 +216,7 @@ func TestList(t *testing.T) {
 	ok(t, v, err, TRUE)
 
 	v, err = ls.Len()
-	ok(t, v, err, MakeInt(1))
+	ok(t, v, err, ONE)
 
 	v, err = ls.Get(MakeInt(0))
 	ok(t, v, err, MakeStr("a"))
@@ -230,22 +230,22 @@ func TestList(t *testing.T) {
 	v, err = ls.Get(MakeInt(-1))
 	fail(t, v, err, "IndexOutOfBounds")
 
-	v, err = ls.Get(MakeInt(1))
+	v, err = ls.Get(ONE)
 	fail(t, v, err, "IndexOutOfBounds")
 
 	err = ls.Set(MakeInt(-1), TRUE)
 	fail(t, nil, err, "IndexOutOfBounds")
 
-	err = ls.Set(MakeInt(1), TRUE)
+	err = ls.Set(ONE, TRUE)
 	fail(t, nil, err, "IndexOutOfBounds")
 
-	v, err = ls.String()
+	v, err = ls.ToStr()
 	ok(t, v, err, MakeStr("[ b ]"))
 
 	err = ls.Append(MakeStr("z"))
 	assert(t, err == nil)
 
-	v, err = ls.String()
+	v, err = ls.ToStr()
 	ok(t, v, err, MakeStr("[ b, z ]"))
 
 	//////////////////////////////
@@ -294,4 +294,53 @@ func TestCompositeHashCode(t *testing.T) {
 
 	h, err = newObj(map[string]Value{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
+}
+
+func TestDict(t *testing.T) {
+	d := NewDict(NewHashMap([]*HEntry{}))
+	okType(t, d, TDICT)
+
+	var v Value
+	v, err := d.ToStr()
+	ok(t, v, err, MakeStr("dict {}"))
+
+	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	ok(t, v, err, TRUE)
+
+	v, err = d.Eq(NULL)
+	ok(t, v, err, FALSE)
+
+	v, err = d.Len()
+	ok(t, v, err, MakeInt(0))
+
+	v, err = d.Get(MakeStr("a"))
+	ok(t, v, err, NULL)
+
+	err = d.Set(MakeStr("a"), ONE)
+	assert(t, err == nil)
+
+	v, err = d.Get(MakeStr("a"))
+	ok(t, v, err, ONE)
+
+	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	ok(t, v, err, FALSE)
+
+	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{
+		&HEntry{MakeStr("a"), ONE}})))
+	ok(t, v, err, TRUE)
+
+	v, err = d.Len()
+	ok(t, v, err, ONE)
+
+	v, err = d.ToStr()
+	ok(t, v, err, MakeStr("dict { a: 1 }"))
+
+	err = d.Set(MakeStr("b"), MakeInt(2))
+	assert(t, err == nil)
+
+	v, err = d.Get(MakeStr("b"))
+	ok(t, v, err, MakeInt(2))
+
+	v, err = d.ToStr()
+	ok(t, v, err, MakeStr("dict { b: 2, a: 1 }"))
 }

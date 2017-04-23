@@ -59,7 +59,7 @@ func (o *obj) TypeOf() (Type, Error) {
 	return TOBJ, nil
 }
 
-func (o *obj) String() (Str, Error) {
+func (o *obj) ToStr() (Str, Error) {
 	if !o.inited {
 		return nil, UninitializedObjError()
 	}
@@ -80,11 +80,11 @@ func (o *obj) String() (Str, Error) {
 		buf.WriteString(k)
 		buf.WriteString(": ")
 
-		s, err := v.String()
+		s, err := v.ToStr()
 		if err != nil {
 			return nil, err
 		}
-		buf.WriteString(s.StrVal())
+		buf.WriteString(s.String())
 	}
 	buf.WriteString(" }")
 	return MakeStr(buf.String()), nil
@@ -165,11 +165,11 @@ func (o *obj) GetField(key Str) (Value, Error) {
 		return nil, UninitializedObjError()
 	}
 
-	v, ok := o.fields[key.StrVal()]
+	v, ok := o.fields[key.String()]
 	if ok {
 		return v, nil
 	} else {
-		return nil, NoSuchFieldError(key.StrVal())
+		return nil, NoSuchFieldError(key.String())
 	}
 }
 
@@ -178,12 +178,12 @@ func (o *obj) PutField(key Str, val Value) Error {
 		return UninitializedObjError()
 	}
 
-	_, ok := o.fields[key.StrVal()]
+	_, ok := o.fields[key.String()]
 	if ok {
-		o.fields[key.StrVal()] = val
+		o.fields[key.String()] = val
 		return nil
 	} else {
-		return NoSuchFieldError(key.StrVal())
+		return NoSuchFieldError(key.String())
 	}
 }
 
@@ -193,7 +193,7 @@ func (o *obj) Has(key Value) (Bool, Error) {
 	}
 
 	if s, ok := key.(Str); ok {
-		_, has := o.fields[s.StrVal()]
+		_, has := o.fields[s.String()]
 		return MakeBool(has), nil
 	} else {
 		return nil, TypeMismatchError("Expected 'Str'")

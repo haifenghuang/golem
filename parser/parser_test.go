@@ -564,3 +564,8 @@ func TestList(t *testing.T) {
 	p = newParser("[a, b, [], obj{z:1   }]")
 	ok_expr(t, p, "[ a, b, [  ], obj { z: 1 } ]")
 }
+
+//func TestDict(t *testing.T) {
+//	p := newDict("obj{}")
+//	ok_expr(t, p, "dict {  }")
+//}

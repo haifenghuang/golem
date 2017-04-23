@@ -22,7 +22,7 @@ func (n *null) basicMarker() {}
 
 func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
 
-func (n *null) String() (Str, Error) { return MakeStr("null"), nil }
+func (n *null) ToStr() (Str, Error) { return MakeStr("null"), nil }
 
 func (n *null) HashCode() (Int, Error) { return nil, NullValueError() }
 

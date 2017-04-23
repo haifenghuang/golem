@@ -36,7 +36,7 @@ func (ls *list) TypeOf() (Type, Error) {
 	return TLIST, nil
 }
 
-func (ls *list) String() (Str, Error) {
+func (ls *list) ToStr() (Str, Error) {
 
 	if len(ls.array) == 0 {
 		return MakeStr("[]"), nil
@@ -49,11 +49,11 @@ func (ls *list) String() (Str, Error) {
 			buf.WriteString(",")
 		}
 		buf.WriteString(" ")
-		s, err := v.String()
+		s, err := v.ToStr()
 		if err != nil {
 			return nil, err
 		}
-		buf.WriteString(s.StrVal())
+		buf.WriteString(s.String())
 	}
 	buf.WriteString(" ]")
 	return MakeStr(buf.String()), nil

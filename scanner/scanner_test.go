@@ -280,11 +280,12 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.LET, "let", 1, 17)
 	ok(t, s, ast.EOF, "", 1, 21)
 
-	s = NewScanner("obj this has")
+	s = NewScanner("obj this has dict")
 	ok(t, s, ast.OBJ, "obj", 1, 1)
 	ok(t, s, ast.THIS, "this", 1, 5)
 	ok(t, s, ast.HAS, "has", 1, 10)
-	ok(t, s, ast.EOF, "", 1, 13)
+	ok(t, s, ast.DICT, "dict", 1, 14)
+	ok(t, s, ast.EOF, "", 1, 18)
 }
 
 func TestComments(t *testing.T) {

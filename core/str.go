@@ -20,7 +20,7 @@ import (
 
 type str []rune
 
-func (s str) StrVal() string {
+func (s str) String() string {
 	return string(s)
 }
 
@@ -32,7 +32,7 @@ func (s str) basicMarker() {}
 
 func (s str) TypeOf() (Type, Error) { return TSTR, nil }
 
-func (s str) String() (Str, Error) { return s, nil }
+func (s str) ToStr() (Str, Error) { return s, nil }
 
 func (s str) HashCode() (Int, Error) {
 
@@ -135,11 +135,11 @@ func fromValue(v Value) (str, Error) {
 	if sv, ok := v.(str); ok {
 		return sv, nil
 	} else {
-		s, err := v.String()
+		s, err := v.ToStr()
 		if err != nil {
 			return nil, err
 		}
-		return fromString(s.StrVal()), nil
+		return fromString(s.String()), nil
 	}
 }
 

@@ -47,7 +47,7 @@ func (i _int) basicMarker() {}
 
 func (i _int) TypeOf() (Type, Error) { return TINT, nil }
 
-func (i _int) String() (Str, Error) {
+func (i _int) ToStr() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%d", i)), nil
 }
 

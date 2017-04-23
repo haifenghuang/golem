@@ -35,7 +35,7 @@ func (b _bool) basicMarker() {}
 
 func (b _bool) TypeOf() (Type, Error) { return TBOOL, nil }
 
-func (b _bool) String() (Str, Error) {
+func (b _bool) ToStr() (Str, Error) {
 	if b {
 		return MakeStr("true"), nil
 	} else {

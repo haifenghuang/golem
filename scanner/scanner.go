@@ -363,6 +363,8 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.LET, text, pos}
 	case "obj":
 		return &ast.Token{ast.OBJ, text, pos}
+	case "dict":
+		return &ast.Token{ast.DICT, text, pos}
 	case "this":
 		return &ast.Token{ast.THIS, text, pos}
 	case "has":

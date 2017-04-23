@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package hashmap
+package core
 
 import (
-	//"fmt"
-	g "golem/core"
+//"fmt"
 )
 
 // A Custom HashMap implementation.  This allows us
@@ -28,15 +27,15 @@ type (
 		size    int
 	}
 
-	Entry struct {
-		Key   g.Value
-		Value g.Value
+	HEntry struct {
+		Key   Value
+		Value Value
 	}
 
-	bucket []*Entry
+	bucket []*HEntry
 )
 
-func NewHashMap(entries []Entry) *HashMap {
+func NewHashMap(entries []*HEntry) *HashMap {
 	capacity := 5
 	buckets := make([]bucket, capacity, capacity)
 	hm := &HashMap{buckets, 0}
@@ -47,12 +46,12 @@ func NewHashMap(entries []Entry) *HashMap {
 	return hm
 }
 
-func (hm *HashMap) Get(key g.Value) (value g.Value, err g.Error) {
+func (hm *HashMap) Get(key Value) (value Value, err Error) {
 
 	// panic-recover is the cleanest approach
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(g.Error); ok {
+			if e, ok := r.(Error); ok {
 				value = nil
 				err = e
 			}
@@ -63,18 +62,18 @@ func (hm *HashMap) Get(key g.Value) (value g.Value, err g.Error) {
 	b := hm.buckets[hm.hashBucket(key)]
 	n := indexOf(b, key)
 	if n == -1 {
-		return nil, nil
+		return NULL, nil
 	} else {
 		return b[n].Value, nil
 	}
 }
 
-func (hm *HashMap) Put(key g.Value, value g.Value) (err g.Error) {
+func (hm *HashMap) Put(key Value, value Value) (err Error) {
 
 	// panic-recover is the cleanest approach
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(g.Error); ok {
+			if e, ok := r.(Error); ok {
 				err = e
 			}
 			panic(r)
@@ -88,7 +87,7 @@ func (hm *HashMap) Put(key g.Value, value g.Value) (err g.Error) {
 			hm.rehash()
 			h = hm.hashBucket(key)
 		}
-		hm.buckets[h] = append(hm.buckets[h], &Entry{key, value})
+		hm.buckets[h] = append(hm.buckets[h], &HEntry{key, value})
 		hm.size++
 
 	} else {
@@ -98,11 +97,21 @@ func (hm *HashMap) Put(key g.Value, value g.Value) (err g.Error) {
 	return nil
 }
 
-func (hm *HashMap) Len() g.Int {
-	return g.MakeInt(int64(hm.size))
+func (hm *HashMap) Len() Int {
+	return MakeInt(int64(hm.size))
 }
 
-func indexOf(b bucket, key g.Value) int {
+func (hm *HashMap) Iterator(callback func(*HEntry)) {
+	for _, b := range hm.buckets {
+		for _, e := range b {
+			callback(e)
+		}
+	}
+}
+
+//--------------------------------------------------------------
+
+func indexOf(b bucket, key Value) int {
 	for i, e := range b {
 
 		// panic-recover is the cleanest approach
@@ -136,7 +145,7 @@ func (hm *HashMap) rehash() {
 	}
 }
 
-func (hm *HashMap) hashBucket(key g.Value) int {
+func (hm *HashMap) hashBucket(key Value) int {
 
 	// panic-recover is the cleanest approach
 	hc, err := key.HashCode()

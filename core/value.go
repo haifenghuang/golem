@@ -31,6 +31,7 @@ const (
 	TFLOAT
 	TFUNC
 	TLIST
+	TDICT
 	TOBJ
 )
 
@@ -50,6 +51,8 @@ func (t Type) String() string {
 		return "Func"
 	case TLIST:
 		return "List"
+	case TDICT:
+		return "Dict"
 	case TOBJ:
 		return "Obj"
 
@@ -91,7 +94,7 @@ type (
 
 		HashCode() (Int, Error)
 		Eq(Value) (Bool, Error)
-		String() (Str, Error)
+		ToStr() (Str, Error)
 
 		Cmp(Value) (Int, Error)
 		Add(Value) (Value, Error)
@@ -123,7 +126,7 @@ type (
 
 	Str interface {
 		Basic
-		StrVal() string
+		String() string
 
 		Getable
 		Lenable
@@ -178,6 +181,12 @@ type (
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error
 		Has(Value) (Bool, Error)
+	}
+
+	Dict interface {
+		Composite
+		Indexable
+		Lenable
 	}
 
 	//-----------------------------------------
