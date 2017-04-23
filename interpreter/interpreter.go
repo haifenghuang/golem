@@ -222,6 +222,20 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			s = append(s, g.NewList(vals))
 			ip += 3
 
+		case g.NEW_DICT:
+
+			size := index(opc, ip)
+			entries := make([]*g.HEntry, 0, size)
+
+			numVals := size * 2
+			for i := n - numVals + 1; i <= n; i += 2 {
+				entries = append(entries, &g.HEntry{s[i], s[i+1]})
+			}
+
+			s = s[:n-numVals+1]
+			s = append(s, g.NewDict(g.NewHashMap(entries)))
+			ip += 3
+
 		case g.GET_FIELD:
 
 			idx := index(opc, ip)

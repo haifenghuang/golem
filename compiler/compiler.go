@@ -156,6 +156,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.ListExpr:
 		c.visitListExpr(t)
 
+	case *ast.DictExpr:
+		c.visitDictExpr(t)
+
 	default:
 		t.Traverse(c)
 	}
@@ -647,15 +650,26 @@ func (c *compiler) visitSliceToExpr(s *ast.SliceToExpr) {
 
 func (c *compiler) visitListExpr(ls *ast.ListExpr) {
 
-	high, low := index(len(ls.Elems))
-
 	// eval each element
 	for _, v := range ls.Elems {
 		c.Visit(v)
 	}
 
 	// create the list
+	high, low := index(len(ls.Elems))
 	c.push(ls.Begin(), g.NEW_LIST, high, low)
+}
+
+func (c *compiler) visitDictExpr(d *ast.DictExpr) {
+
+	// eval each entry
+	for _, v := range d.Entries {
+		c.Visit(v)
+	}
+
+	// create the list
+	high, low := index(len(d.Entries))
+	c.push(d.Begin(), g.NEW_DICT, high, low)
 }
 
 func parseInt(text string) int64 {

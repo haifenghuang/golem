@@ -627,3 +627,24 @@ let e = c[1]++;
 	ok_ref(t, mod.Locals[3], g.TRUE)
 	ok_ref(t, mod.Locals[4], g.MakeInt(22))
 }
+
+func TestDict(t *testing.T) {
+
+	source := `
+let a = dict { 'x': 1, 'y': 2 };
+let b = a['x'];
+let c = a['z'];
+a['x'] = -1;
+let d = a['x'];
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[1], g.ONE)
+	ok_ref(t, mod.Locals[2], g.NULL)
+	ok_ref(t, mod.Locals[3], g.NEG_ONE)
+}
