@@ -15,6 +15,7 @@
 package core
 
 import (
+	//"fmt"
 	"reflect"
 	"testing"
 )
@@ -471,4 +472,33 @@ func TestRunes(t *testing.T) {
 	assert(t, runesCmp(str{'c', 'b'}, str{'a', 'b'}) == 1)
 	assert(t, runesCmp(str{}, str{'a', 'b'}) == -2)
 	assert(t, runesCmp(str{'a', 'b', 'c', 'd', 'e'}, str{'a', 'b'}) == 3)
+}
+
+func TestBasicHashCode(t *testing.T) {
+	h, err := NULL.HashCode()
+	fail(t, h, err, "NullValue")
+
+	h, err = TRUE.HashCode()
+	ok(t, h, err, MakeInt(1009))
+
+	h, err = FALSE.HashCode()
+	ok(t, h, err, MakeInt(1013))
+
+	h, err = MakeInt(123).HashCode()
+	ok(t, h, err, MakeInt(123))
+
+	h, err = MakeFloat(0).HashCode()
+	ok(t, h, err, MakeInt(0))
+
+	h, err = MakeFloat(1.0).HashCode()
+	ok(t, h, err, MakeInt(4607182418800017408))
+
+	h, err = MakeFloat(-1.23e45).HashCode()
+	ok(t, h, err, MakeInt(-3941894481896550236))
+
+	h, err = MakeStr("").HashCode()
+	ok(t, h, err, MakeInt(0))
+
+	h, err = MakeStr("abcdef").HashCode()
+	ok(t, h, err, MakeInt(1928994870288439732))
 }

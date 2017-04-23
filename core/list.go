@@ -59,6 +59,10 @@ func (ls *list) String() (Str, Error) {
 	return MakeStr(buf.String()), nil
 }
 
+func (ls *list) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
+}
+
 func (ls *list) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *list:

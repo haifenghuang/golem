@@ -38,13 +38,6 @@ func MakeInt(i int64) Int {
 }
 
 //--------------------------------------------------------------
-// HashKey
-
-func (i _int) HashCode() int {
-	return int(i)
-}
-
-//--------------------------------------------------------------
 // Basic
 
 func (i _int) basicMarker() {}
@@ -56,6 +49,10 @@ func (i _int) TypeOf() (Type, Error) { return TINT, nil }
 
 func (i _int) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%d", i)), nil
+}
+
+func (i _int) HashCode() (Int, Error) {
+	return i, nil
 }
 
 func (i _int) Eq(v Value) (Bool, Error) {

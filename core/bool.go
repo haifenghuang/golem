@@ -43,6 +43,14 @@ func (b _bool) String() (Str, Error) {
 	}
 }
 
+func (b _bool) HashCode() (Int, Error) {
+	if b {
+		return MakeInt(1009), nil
+	} else {
+		return MakeInt(1013), nil
+	}
+}
+
 func (b _bool) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case _bool:

@@ -282,3 +282,14 @@ func TestList(t *testing.T) {
 	v, err = ls.Slice(MakeInt(7), MakeInt(7))
 	fail(t, nil, err, "IndexOutOfBounds")
 }
+
+func TestCompositeHashCode(t *testing.T) {
+	h, err := NewFunc(&Template{}).HashCode()
+	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
+
+	h, err = NewList([]Value{}).HashCode()
+	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
+
+	h, err = newObj(map[string]Value{}).HashCode()
+	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
+}

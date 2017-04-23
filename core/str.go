@@ -22,10 +22,6 @@ func (s str) StrVal() string {
 	return string(s)
 }
 
-func (s str) Runes() []rune {
-	return s
-}
-
 func MakeStr(str string) Str {
 	return fromString(str)
 }
@@ -35,6 +31,21 @@ func (s str) basicMarker() {}
 func (s str) TypeOf() (Type, Error) { return TSTR, nil }
 
 func (s str) String() (Str, Error) { return s, nil }
+
+func (s str) HashCode() (Int, Error) {
+
+	// https://en.wikipedia.org/wiki/Jenkins_hash_function
+	var hash int64 = 0
+	for _, r := range s {
+		hash += int64(r)
+		hash += hash << 10
+		hash ^= hash >> 6
+	}
+	hash += hash << 3
+	hash ^= hash >> 11
+	hash += hash << 15
+	return MakeInt(hash), nil
+}
 
 func (s str) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {

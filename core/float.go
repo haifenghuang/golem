@@ -15,6 +15,8 @@
 package core
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 )
 
@@ -38,6 +40,25 @@ func (f _float) TypeOf() (Type, Error) { return TFLOAT, nil }
 
 func (f _float) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%g", f)), nil
+}
+
+func (f _float) HashCode() (Int, Error) {
+
+	writer := new(bytes.Buffer)
+	err := binary.Write(writer, binary.LittleEndian, f.FloatVal())
+	if err != nil {
+		panic("Float.HashCode() write failed")
+	}
+	b := writer.Bytes()
+
+	var hashCode int64
+	reader := bytes.NewReader(b)
+	err = binary.Read(reader, binary.LittleEndian, &hashCode)
+	if err != nil {
+		panic("Float.HashCode() read failed")
+	}
+
+	return MakeInt(hashCode), nil
 }
 
 func (f _float) Eq(v Value) (Bool, Error) {

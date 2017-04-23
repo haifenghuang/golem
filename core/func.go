@@ -77,6 +77,10 @@ func (f *_func) doStr() string {
 	return fmt.Sprintf("func(%p)", f)
 }
 
+func (f *_func) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
+}
+
 func (f *_func) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *_func:

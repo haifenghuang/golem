@@ -32,6 +32,7 @@ type ObjDef struct {
 // obj
 
 type obj struct {
+	// TODO replace this with a more efficient data structure
 	fields map[string]Value
 	inited bool
 }
@@ -89,11 +90,17 @@ func (o *obj) String() (Str, Error) {
 	return MakeStr(buf.String()), nil
 }
 
+func (o *obj) HashCode() (Int, Error) {
+	// TODO $hash()
+	return nil, TypeMismatchError("Expected Hashable Type")
+}
+
 func (o *obj) Eq(v Value) (Bool, Error) {
 	if !o.inited {
 		return FALSE, UninitializedObjError()
 	}
 
+	// TODO $eq()
 	switch t := v.(type) {
 	case *obj:
 		return MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
