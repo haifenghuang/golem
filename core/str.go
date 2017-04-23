@@ -14,113 +14,166 @@
 
 package core
 
-import (
-	"golang.org/x/exp/utf8string"
-)
+import ()
 
-type str struct {
-	ustr *utf8string.String
+type str []rune
+
+func (s str) StrVal() string {
+	return string(s)
 }
 
-func (s *str) StrVal() string {
-	return s.ustr.String()
+func (s str) Runes() []rune {
+	return s
 }
 
-func MakeStr(s string) *str {
-	return &str{utf8string.NewString(s)}
+func MakeStr(str string) Str {
+	return fromString(str)
 }
 
-func (s *str) basicMarker() {}
+func (s str) basicMarker() {}
 
-func (s *str) TypeOf() (Type, Error) { return TSTR, nil }
+func (s str) TypeOf() (Type, Error) { return TSTR, nil }
 
-func (s *str) String() (Str, Error) { return s, nil }
+func (s str) String() (Str, Error) { return s, nil }
 
-func (s *str) Eq(v Value) (Bool, Error) {
+func (s str) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *str:
-		a := s.ustr.String()
-		b := t.ustr.String()
-		return MakeBool(a == b), nil
+
+	case str:
+		return MakeBool(runesEq(s, t)), nil
 
 	default:
 		return FALSE, nil
 	}
 }
 
-func (s *str) Cmp(v Value) (Int, Error) {
+func (s str) Cmp(v Value) (Int, Error) {
 	switch t := v.(type) {
-	case *str:
-		a := s.ustr.String()
-		b := t.ustr.String()
-		if a < b {
-			return NEG_ONE, nil
-		} else if a > b {
-			return ONE, nil
-		} else {
-			return ZERO, nil
-		}
+
+	case str:
+		return MakeInt(int64(runesCmp(s, t))), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Comparable Type")
 	}
 }
 
-func (s *str) Add(v Value) (Value, Error) {
+func (s str) Add(v Value) (Value, Error) {
 	return strcat(s, v)
 }
 
-func (s *str) Get(index Value) (Value, Error) {
-	idx, err := parseIndex(index, s.ustr.RuneCount())
+func (s str) Get(index Value) (Value, Error) {
+	idx, err := parseIndex(index, len(s))
 	if err != nil {
 		return nil, err
 	}
 
-	// NOTE: We are copying the slice.
-	// This will allow garbage collection of strings
-	// that are no longer referenced directly.
-	n := int(idx.IntVal())
-	result := string([]rune{s.ustr.At(n)})
-	return MakeStr(result), nil
+	return str([]rune{s[idx.IntVal()]}), nil
 }
 
-func (s *str) Len() (Int, Error) {
-	return MakeInt(int64(s.ustr.RuneCount())), nil
+func (s str) Len() (Int, Error) {
+	return MakeInt(int64(len(s))), nil
 }
 
-func (s *str) Slice(from Value, to Value) (Value, Error) {
+func (s str) Slice(from Value, to Value) (Value, Error) {
 
-	f, err := parseIndex(from, s.ustr.RuneCount())
+	f, err := parseIndex(from, len(s))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := parseIndex(to, s.ustr.RuneCount()+1)
+	t, err := parseIndex(to, len(s)+1)
 	if err != nil {
 		return nil, err
 	}
-
-	fn := int(f.IntVal())
-	tn := int(t.IntVal())
 
 	// TODO do we want a different error here?
-	if tn < fn {
+	if t.IntVal() < f.IntVal() {
 		return nil, IndexOutOfBoundsError()
 	}
 
-	// NOTE: We are copying the slice.
-	// This will allow garbage collection of strings
-	// that are no longer referenced directly.
-	a := []byte(s.ustr.Slice(fn, tn))
-	b := make([]byte, len(a))
+	a := s[f.IntVal():t.IntVal()]
+	b := make([]rune, len(a))
 	copy(b, a)
-	return MakeStr(string(b)), nil
+	return str(b), nil
 }
 
-func (s *str) SliceFrom(from Value) (Value, Error) {
-	return s.Slice(from, MakeInt(int64(s.ustr.RuneCount())))
+func (s str) SliceFrom(from Value) (Value, Error) {
+	return s.Slice(from, MakeInt(int64(len(s))))
 }
 
-func (s *str) SliceTo(to Value) (Value, Error) {
+func (s str) SliceTo(to Value) (Value, Error) {
 	return s.Slice(ZERO, to)
+}
+
+//--------------------------------------------------------------
+
+func fromString(s string) str {
+	z := str{}
+	for _, r := range s {
+		z = append(z, r)
+	}
+	return z
+}
+
+func fromValue(v Value) (str, Error) {
+	if sv, ok := v.(str); ok {
+		return sv, nil
+	} else {
+		s, err := v.String()
+		if err != nil {
+			return nil, err
+		}
+		return fromString(s.StrVal()), nil
+	}
+}
+
+func strcat(a Value, b Value) (str, Error) {
+	result := str{}
+
+	s, err := fromValue(a)
+	if err != nil {
+		return nil, err
+	}
+	result = append(result, s...)
+
+	s, err = fromValue(b)
+	if err != nil {
+		return nil, err
+	}
+	result = append(result, s...)
+
+	return result, nil
+}
+
+func runesEq(a str, b str) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, r := range a {
+		if r != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+
+func runesCmp(a str, b str) int {
+	n := min(len(a), len(b))
+	for i := 0; i < n; i++ {
+		if a[i] < b[i] {
+			return -1
+		} else if a[i] > b[i] {
+			return 1
+		}
+	}
+	return len(a) - len(b)
 }

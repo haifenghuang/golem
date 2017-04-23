@@ -435,6 +435,34 @@ func TestBasic(t *testing.T) {
 	entries[ZERO] = TRUE
 	entries[MakeFloat(0.123)] = TRUE
 	entries[FALSE] = TRUE
-	entries[MakeStr("abc")] = TRUE
+	//entries[MakeStr("abc")] = TRUE
 	//fmt.Println(entries)
+}
+
+func TestRunes(t *testing.T) {
+
+	runes := str{}
+	const nihongo = "日本語"
+	for _, r := range nihongo {
+		runes = append(runes, r)
+	}
+	assert(t, string(runes) == nihongo)
+
+	assert(t, runesEq(str{}, str{}))
+	assert(t, runesEq(str{'a'}, str{'a'}))
+	assert(t, runesEq(str{'a', 'b'}, str{'a', 'b'}))
+
+	assert(t, !runesEq(str{}, str{'a'}))
+	assert(t, !runesEq(str{'a'}, str{}))
+	assert(t, !runesEq(str{'a'}, str{'b'}))
+	assert(t, !runesEq(str{'c', 'b'}, str{'a', 'b'}))
+
+	assert(t, runesCmp(str{}, str{}) == 0)
+	assert(t, runesCmp(str{'a'}, str{'a'}) == 0)
+	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'b'}) == 0)
+
+	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'z'}) == -1)
+	assert(t, runesCmp(str{'c', 'b'}, str{'a', 'b'}) == 1)
+	assert(t, runesCmp(str{}, str{'a', 'b'}) == -2)
+	assert(t, runesCmp(str{'a', 'b', 'c', 'd', 'e'}, str{'a', 'b'}) == 3)
 }

@@ -14,9 +14,7 @@
 
 package core
 
-import (
-	"bytes"
-)
+import ()
 
 // Parse an index value.
 // The value must be between 0 (inclusive) and max (exclusive)
@@ -31,22 +29,4 @@ func parseIndex(val Value, max int) (Int, Error) {
 	} else {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
-}
-
-// Concatenate two values into a string
-func strcat(a Value, b Value) (Str, Error) {
-	as, err := a.String()
-	if err != nil {
-		return nil, err
-	}
-
-	bs, err := b.String()
-	if err != nil {
-		return nil, err
-	}
-
-	var buf bytes.Buffer
-	buf.WriteString(as.StrVal())
-	buf.WriteString(bs.StrVal())
-	return MakeStr(buf.String()), nil
 }
