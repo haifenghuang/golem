@@ -37,13 +37,22 @@ func MakeInt(i int64) Int {
 	return _int(i)
 }
 
-func (i _int) basicMarker() {}
-
-func (i _int) TypeOf() (Type, Error) { return TINT, nil }
+//--------------------------------------------------------------
+// HashKey
 
 func (i _int) HashCode() int {
 	return int(i)
 }
+
+//--------------------------------------------------------------
+// Basic
+
+func (i _int) basicMarker() {}
+
+//--------------------------------------------------------------
+// Value
+
+func (i _int) TypeOf() (Type, Error) { return TINT, nil }
 
 func (i _int) String() (Str, Error) {
 	return MakeStr(fmt.Sprintf("%d", i)), nil
@@ -112,6 +121,9 @@ func (i _int) Add(v Value) (Value, Error) {
 	}
 }
 
+//--------------------------------------------------------------
+// Number
+
 func (i _int) Sub(v Value) (Number, Error) {
 	switch t := v.(type) {
 
@@ -171,6 +183,9 @@ func (i _int) Div(v Value) (Number, Error) {
 func (i _int) Negate() (Number, Error) {
 	return 0 - i, nil
 }
+
+//--------------------------------------------------------------
+// Int
 
 func (i _int) Rem(v Value) (Int, Error) {
 	switch t := v.(type) {

@@ -57,7 +57,20 @@ func (b _bool) Eq(v Value) (Bool, Error) {
 }
 
 func (b _bool) Cmp(v Value) (Int, Error) {
-	return nil, TypeMismatchError("Expected Comparable Type")
+	switch t := v.(type) {
+
+	case _bool:
+		if b == t {
+			return ZERO, nil
+		} else if b {
+			return ONE, nil
+		} else {
+			return NEG_ONE, nil
+		}
+
+	default:
+		return nil, TypeMismatchError("Expected Comparable Type")
+	}
 }
 
 func (b _bool) Add(v Value) (Value, Error) {

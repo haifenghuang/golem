@@ -28,12 +28,10 @@ func assert(t *testing.T, flag bool) {
 func ok(t *testing.T, val Value, err Error, expect Value) {
 
 	if err != nil {
-		panic(err.Error())
 		t.Error(err, " != ", nil)
 	}
 
 	if !reflect.DeepEqual(val, expect) {
-		panic("bbb")
 		t.Error(val, " != ", expect)
 	}
 }
@@ -96,7 +94,15 @@ func TestBool(t *testing.T) {
 	b, err = FALSE.Eq(MakeStr("a"))
 	ok(t, b, err, FALSE)
 
-	i, err := TRUE.Cmp(MakeInt(1))
+	i, err := TRUE.Cmp(FALSE)
+	ok(t, i, err, ONE)
+	i, err = FALSE.Cmp(TRUE)
+	ok(t, i, err, NEG_ONE)
+	i, err = TRUE.Cmp(TRUE)
+	ok(t, i, err, ZERO)
+	i, err = FALSE.Cmp(FALSE)
+	ok(t, i, err, ZERO)
+	i, err = TRUE.Cmp(MakeInt(1))
 	fail(t, i, err, "TypeMismatch: Expected Comparable Type")
 
 	val := TRUE.Not()
