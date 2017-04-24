@@ -430,30 +430,33 @@ func (p *Parser) primaryExpr() ast.Expr {
 
 func (p *Parser) primary() ast.Expr {
 
-	switch p.cur.Kind {
+	switch {
 
-	case ast.LPAREN:
+	case p.cur.Kind == ast.LPAREN:
 		p.consume()
 		expr := p.expression()
 		p.expect(ast.RPAREN)
 		return expr
 
-	case ast.IDENT:
+	case p.cur.Kind == ast.IDENT:
 		return p.identExpr()
 
-	case ast.THIS:
+	case isBuiltIn(p.cur):
+		return &ast.BuiltinExpr{p.consume()}
+
+	case p.cur.Kind == ast.THIS:
 		return &ast.ThisExpr{p.consume(), nil}
 
-	case ast.FN:
+	case p.cur.Kind == ast.FN:
 		return p.fnExpr(p.consume())
 
-	case ast.OBJ:
+	case p.cur.Kind == ast.OBJ:
 		return p.objExpr(p.consume())
 
-	case ast.DICT:
+	case p.cur.Kind == ast.DICT:
 		return p.dictExpr(p.consume())
 
-	case ast.LBRACKET:
+	case p.cur.Kind == ast.LBRACKET:
 		return p.listExpr(p.consume())
 
 	default:
@@ -806,6 +809,19 @@ func isAssignOp(t *ast.Token) bool {
 		ast.DBL_LT_EQ,
 		ast.DBL_GT_EQ:
 
+		return true
+	default:
+		return false
+	}
+}
+
+func isBuiltIn(t *ast.Token) bool {
+	switch t.Kind {
+	case
+		ast.FN_PRINT,
+		ast.FN_PRINTLN,
+		ast.FN_STR,
+		ast.FN_LEN:
 		return true
 	default:
 		return false

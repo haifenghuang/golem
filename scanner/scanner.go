@@ -369,6 +369,14 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.THIS, text, pos}
 	case "has":
 		return &ast.Token{ast.HAS, text, pos}
+	case "print":
+		return &ast.Token{ast.FN_PRINT, text, pos}
+	case "println":
+		return &ast.Token{ast.FN_PRINTLN, text, pos}
+	case "str":
+		return &ast.Token{ast.FN_STR, text, pos}
+	case "len":
+		return &ast.Token{ast.FN_LEN, text, pos}
 
 	default:
 		return &ast.Token{ast.IDENT, text, pos}

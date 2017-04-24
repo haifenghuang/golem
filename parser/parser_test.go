@@ -116,6 +116,9 @@ func TestPrimary(t *testing.T) {
 
 	p = newParser("bar")
 	ok_expr(t, p, "bar")
+
+	p = newParser("str")
+	ok_expr(t, p, "str")
 }
 
 func TestUnary(t *testing.T) {
@@ -574,4 +577,19 @@ func TestDict(t *testing.T) {
 
 	p = newParser("dict { 'a': 1, null: [  ], [  ]: dict {  } }")
 	ok_expr(t, p, "dict { 'a': 1, null: [  ], [  ]: dict {  } }")
+}
+
+func TestBuiltin(t *testing.T) {
+	p := newParser("print(12)")
+	ok_expr(t, p, "print(12)")
+
+	p = newParser("str([])")
+	ok_expr(t, p, "str([  ])")
+
+	p = newParser("a = println")
+	ok_expr(t, p, "(a = println)")
+
+	p = newParser("len - null")
+	ok_expr(t, p, "(len - null)")
+
 }

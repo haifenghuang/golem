@@ -119,6 +119,11 @@ const (
 	THIS
 	HAS
 	DICT
+
+	FN_PRINT
+	FN_PRINTLN
+	FN_STR
+	FN_LEN
 )
 
 func (t TokenKind) String() string {
@@ -241,6 +246,15 @@ func (t TokenKind) String() string {
 		return "HAS"
 	case DICT:
 		return "DICT"
+
+	case FN_PRINT:
+		return "FN_PRINT"
+	case FN_PRINTLN:
+		return "FN_PRINTLN"
+	case FN_STR:
+		return "FN_STR"
+	case FN_LEN:
+		return "FN_LEN"
 
 	default:
 		panic("unreachable")

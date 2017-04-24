@@ -101,7 +101,7 @@ func (hm *HashMap) Len() Int {
 	return MakeInt(int64(hm.size))
 }
 
-func (hm *HashMap) Iterator(callback func(*HEntry)) {
+func (hm *HashMap) Each(callback func(*HEntry)) {
 	for _, b := range hm.buckets {
 		for _, e := range b {
 			callback(e)

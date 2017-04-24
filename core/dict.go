@@ -43,7 +43,7 @@ func (d *dict) ToStr() (Str, Error) {
 	idx := 0
 	var err Error = nil
 	var s Str = nil
-	d.hashMap.Iterator(func(entry *HEntry) {
+	d.hashMap.Each(func(entry *HEntry) {
 		if err != nil {
 			return
 		}

@@ -143,6 +143,10 @@ type (
 		Variable *Variable
 	}
 
+	BuiltinExpr struct {
+		Fn *Token
+	}
+
 	FnExpr struct {
 		Token *Token
 
@@ -252,6 +256,7 @@ func (*UnaryExpr) exprMarker()     {}
 func (*PostfixExpr) exprMarker()   {}
 func (*BasicExpr) exprMarker()     {}
 func (*IdentExpr) exprMarker()     {}
+func (*BuiltinExpr) exprMarker()   {}
 func (*FnExpr) exprMarker()        {}
 func (*InvokeExpr) exprMarker()    {}
 func (*ListExpr) exprMarker()      {}
@@ -265,9 +270,10 @@ func (*SliceExpr) exprMarker()     {}
 func (*SliceFromExpr) exprMarker() {}
 func (*SliceToExpr) exprMarker()   {}
 
-func (*IdentExpr) assignableMarker() {}
-func (*FieldExpr) assignableMarker() {}
-func (*IndexExpr) assignableMarker() {}
+func (*IdentExpr) assignableMarker()   {}
+func (*BuiltinExpr) assignableMarker() {}
+func (*FieldExpr) assignableMarker()   {}
+func (*IndexExpr) assignableMarker()   {}
 
 //--------------------------------------------------------------
 // Begin, End
@@ -329,6 +335,13 @@ func (n *IdentExpr) End() Pos {
 	return Pos{
 		n.Symbol.Position.Line,
 		n.Symbol.Position.Col + len(n.Symbol.Text) - 1}
+}
+
+func (n *BuiltinExpr) Begin() Pos { return n.Fn.Position }
+func (n *BuiltinExpr) End() Pos {
+	return Pos{
+		n.Fn.Position.Line,
+		n.Fn.Position.Col + len(n.Fn.Text) - 1}
 }
 
 func (n *FnExpr) Begin() Pos { return n.Token.Position }
@@ -447,6 +460,10 @@ func (basic *BasicExpr) String() string {
 
 func (ident *IdentExpr) String() string {
 	return ident.Symbol.Text
+}
+
+func (blt *BuiltinExpr) String() string {
+	return blt.Fn.Text
 }
 
 func (fn *FnExpr) String() string {

@@ -100,6 +100,9 @@ func (basic *BasicExpr) Traverse(v Visitor) {
 func (ident *IdentExpr) Traverse(v Visitor) {
 }
 
+func (ident *BuiltinExpr) Traverse(v Visitor) {
+}
+
 func (fn *FnExpr) Traverse(v Visitor) {
 	for _, n := range fn.FormalParams {
 		v.Visit(n)

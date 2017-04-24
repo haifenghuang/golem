@@ -108,7 +108,7 @@ func TestHashMapIterator(t *testing.T) {
 		&HEntry{MakeStr("c"), MakeInt(3)}})
 
 	entries := []*HEntry{}
-	hm.Iterator(func(entry *HEntry) {
+	hm.Each(func(entry *HEntry) {
 		entries = append(entries, entry)
 	})
 
@@ -123,7 +123,7 @@ func TestHashMapIterator(t *testing.T) {
 
 	hm = NewHashMap([]*HEntry{})
 	entries = []*HEntry{}
-	hm.Iterator(func(entry *HEntry) {
+	hm.Each(func(entry *HEntry) {
 		entries = append(entries, entry)
 	})
 

@@ -126,7 +126,7 @@ type (
 
 	Str interface {
 		Basic
-		String() string
+		fmt.Stringer
 
 		Getable
 		Lenable
