@@ -343,42 +343,32 @@ func TestDict(t *testing.T) {
 
 	v, err = d.ToStr()
 	ok(t, v, err, MakeStr("dict { b: 2, a: 1 }"))
+
+	tp := NewTuple([]Value{ONE, ZERO})
+	d = NewDict(NewHashMap([]*HEntry{
+		&HEntry{tp, TRUE}}))
+
+	v, err = d.ToStr()
+	ok(t, v, err, MakeStr("dict { (1, 0): true }"))
+
+	v, err = d.Get(tp)
+	ok(t, v, err, TRUE)
 }
 
 func TestTuple(t *testing.T) {
-	tp := NewTuple([]Value{})
+	var v Value
+
+	tp := NewTuple([]Value{ONE, ZERO})
 	okType(t, tp, TTUPLE)
 
-	var v Value
-	v, err := tp.ToStr()
-	ok(t, v, err, MakeStr("()"))
-
-	v, err = tp.Eq(NewTuple([]Value{}))
-	ok(t, v, err, TRUE)
-
-	v, err = tp.Eq(NewTuple([]Value{ONE}))
+	v, err := tp.Eq(NewTuple([]Value{ZERO, ZERO}))
 	ok(t, v, err, FALSE)
+
+	v, err = tp.Eq(NewTuple([]Value{ONE, ZERO}))
+	ok(t, v, err, TRUE)
 
 	v, err = tp.Eq(NULL)
 	ok(t, v, err, FALSE)
-
-	v, err = tp.Len()
-	ok(t, v, err, ZERO)
-
-	tp = NewTuple([]Value{ONE})
-	v, err = tp.ToStr()
-	ok(t, v, err, MakeStr("(1)"))
-
-	v, err = tp.Eq(NewTuple([]Value{}))
-	ok(t, v, err, FALSE)
-
-	v, err = tp.Eq(NewTuple([]Value{ONE}))
-	ok(t, v, err, TRUE)
-
-	v, err = tp.Eq(NewTuple([]Value{ONE, ZERO}))
-	ok(t, v, err, FALSE)
-
-	tp = NewTuple([]Value{ONE, ZERO})
 
 	v, err = tp.Get(ZERO)
 	ok(t, v, err, ONE)

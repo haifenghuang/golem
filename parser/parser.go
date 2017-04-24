@@ -120,9 +120,11 @@ func (p *Parser) statement() ast.Stmt {
 func (p *Parser) constStmt() *ast.Const {
 
 	token := p.expect(ast.CONST)
+
 	sym := p.expect(ast.IDENT)
-	p.expect(ast.EQ)
 	ident := &ast.IdentExpr{sym, nil}
+
+	p.expect(ast.EQ)
 	expr := p.expression()
 	semi := p.expect(ast.SEMICOLON)
 
@@ -132,9 +134,11 @@ func (p *Parser) constStmt() *ast.Const {
 func (p *Parser) letStmt() *ast.Let {
 
 	token := p.expect(ast.LET)
+
 	sym := p.expect(ast.IDENT)
-	p.expect(ast.EQ)
 	ident := &ast.IdentExpr{sym, nil}
+
+	p.expect(ast.EQ)
 	expr := p.expression()
 	semi := p.expect(ast.SEMICOLON)
 

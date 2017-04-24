@@ -27,6 +27,9 @@ type tuple struct {
 }
 
 func NewTuple(values []Value) Tuple {
+	if len(values) < 2 {
+		panic("invalid tuple size")
+	}
 	return &tuple{values}
 }
 
@@ -37,11 +40,6 @@ func (tp *tuple) TypeOf() (Type, Error) {
 }
 
 func (tp *tuple) ToStr() (Str, Error) {
-
-	if len(tp.array) == 0 {
-		return MakeStr("()"), nil
-	}
-
 	var buf bytes.Buffer
 	buf.WriteString("(")
 	for idx, v := range tp.array {
@@ -59,7 +57,22 @@ func (tp *tuple) ToStr() (Str, Error) {
 }
 
 func (tp *tuple) HashCode() (Int, Error) {
-	return nil, TypeMismatchError("Expected Hashable Type")
+
+	// https://en.wikipedia.org/wiki/Jenkins_hash_function
+	var hash int64 = 0
+	for _, v := range tp.array {
+		h, err := v.HashCode()
+		if err != nil {
+			return nil, err
+		}
+		hash += h.IntVal()
+		hash += hash << 10
+		hash ^= hash >> 6
+	}
+	hash += hash << 3
+	hash ^= hash >> 11
+	hash += hash << 15
+	return MakeInt(hash), nil
 }
 
 func (tp *tuple) Eq(v Value) (Bool, Error) {
