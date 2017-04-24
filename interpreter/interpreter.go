@@ -230,6 +230,16 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			s = append(s, g.NewList(vals))
 			ip += 3
 
+		case g.NEW_TUPLE:
+
+			size := index(opc, ip)
+			vals := make([]g.Value, size)
+			copy(vals, s[n-size+1:])
+
+			s = s[:n-size+1]
+			s = append(s, g.NewTuple(vals))
+			ip += 3
+
 		case g.NEW_DICT:
 
 			size := index(opc, ip)

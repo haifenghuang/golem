@@ -123,6 +123,12 @@ func (ls *ListExpr) Traverse(v Visitor) {
 	}
 }
 
+func (tp *TupleExpr) Traverse(v Visitor) {
+	for _, val := range tp.Elems {
+		v.Visit(val)
+	}
+}
+
 func (obj *ObjExpr) Traverse(v Visitor) {
 	for _, val := range obj.Values {
 		v.Visit(val)
@@ -250,6 +256,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString(fmt.Sprintf("ThisExpr(%v)\n", t.Variable))
 	case *ListExpr:
 		p.buf.WriteString(fmt.Sprintf("ListExpr\n"))
+	case *TupleExpr:
+		p.buf.WriteString(fmt.Sprintf("TupleExpr\n"))
 
 	case *FieldExpr:
 		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))

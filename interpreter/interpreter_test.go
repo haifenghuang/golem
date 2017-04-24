@@ -667,3 +667,22 @@ println(b);
 	ok_ref(t, mod.Locals[0], g.MakeInt(3))
 	ok_ref(t, mod.Locals[1], g.MakeStr("[ 4, 5, 6 ]"))
 }
+
+func TestTuple(t *testing.T) {
+
+	source := `
+let a = (4,5);
+let b = a[0];
+let c = a[1];
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], g.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
+	ok_ref(t, mod.Locals[1], g.MakeInt(4))
+	ok_ref(t, mod.Locals[2], g.MakeInt(5))
+}

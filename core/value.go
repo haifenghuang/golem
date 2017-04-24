@@ -31,6 +31,7 @@ const (
 	TFLOAT
 	TFUNC
 	TLIST
+	TTUPLE
 	TDICT
 	TOBJ
 )
@@ -51,6 +52,8 @@ func (t Type) String() string {
 		return "Func"
 	case TLIST:
 		return "List"
+	case TTUPLE:
+		return "Tuple"
 	case TDICT:
 		return "Dict"
 	case TOBJ:
@@ -170,6 +173,13 @@ type (
 		Sliceable
 
 		Append(Value) Error
+	}
+
+	Tuple interface {
+		Composite
+
+		Getable
+		Lenable
 	}
 
 	Obj interface {

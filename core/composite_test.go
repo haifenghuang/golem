@@ -204,7 +204,7 @@ func TestList(t *testing.T) {
 	ok(t, v, err, FALSE)
 
 	v, err = ls.Len()
-	ok(t, v, err, MakeInt(0))
+	ok(t, v, err, ZERO)
 
 	err = ls.Append(MakeStr("a"))
 	assert(t, err == nil)
@@ -218,22 +218,22 @@ func TestList(t *testing.T) {
 	v, err = ls.Len()
 	ok(t, v, err, ONE)
 
-	v, err = ls.Get(MakeInt(0))
+	v, err = ls.Get(ZERO)
 	ok(t, v, err, MakeStr("a"))
 
-	err = ls.Set(MakeInt(0), MakeStr("b"))
+	err = ls.Set(ZERO, MakeStr("b"))
 	assert(t, err == nil)
 
-	v, err = ls.Get(MakeInt(0))
+	v, err = ls.Get(ZERO)
 	ok(t, v, err, MakeStr("b"))
 
-	v, err = ls.Get(MakeInt(-1))
+	v, err = ls.Get(NEG_ONE)
 	fail(t, v, err, "IndexOutOfBounds")
 
 	v, err = ls.Get(ONE)
 	fail(t, v, err, "IndexOutOfBounds")
 
-	err = ls.Set(MakeInt(-1), TRUE)
+	err = ls.Set(NEG_ONE, TRUE)
 	fail(t, nil, err, "IndexOutOfBounds")
 
 	err = ls.Set(ONE, TRUE)
@@ -311,7 +311,7 @@ func TestDict(t *testing.T) {
 	ok(t, v, err, FALSE)
 
 	v, err = d.Len()
-	ok(t, v, err, MakeInt(0))
+	ok(t, v, err, ZERO)
 
 	v, err = d.Get(MakeStr("a"))
 	ok(t, v, err, NULL)
@@ -343,4 +343,58 @@ func TestDict(t *testing.T) {
 
 	v, err = d.ToStr()
 	ok(t, v, err, MakeStr("dict { b: 2, a: 1 }"))
+}
+
+func TestTuple(t *testing.T) {
+	tp := NewTuple([]Value{})
+	okType(t, tp, TTUPLE)
+
+	var v Value
+	v, err := tp.ToStr()
+	ok(t, v, err, MakeStr("()"))
+
+	v, err = tp.Eq(NewTuple([]Value{}))
+	ok(t, v, err, TRUE)
+
+	v, err = tp.Eq(NewTuple([]Value{ONE}))
+	ok(t, v, err, FALSE)
+
+	v, err = tp.Eq(NULL)
+	ok(t, v, err, FALSE)
+
+	v, err = tp.Len()
+	ok(t, v, err, ZERO)
+
+	tp = NewTuple([]Value{ONE})
+	v, err = tp.ToStr()
+	ok(t, v, err, MakeStr("(1)"))
+
+	v, err = tp.Eq(NewTuple([]Value{}))
+	ok(t, v, err, FALSE)
+
+	v, err = tp.Eq(NewTuple([]Value{ONE}))
+	ok(t, v, err, TRUE)
+
+	v, err = tp.Eq(NewTuple([]Value{ONE, ZERO}))
+	ok(t, v, err, FALSE)
+
+	tp = NewTuple([]Value{ONE, ZERO})
+
+	v, err = tp.Get(ZERO)
+	ok(t, v, err, ONE)
+
+	v, err = tp.Get(ONE)
+	ok(t, v, err, ZERO)
+
+	v, err = tp.Get(NEG_ONE)
+	fail(t, v, err, "IndexOutOfBounds")
+
+	v, err = tp.Get(MakeInt(2))
+	fail(t, v, err, "IndexOutOfBounds")
+
+	v, err = tp.ToStr()
+	ok(t, v, err, MakeStr("(1, 0)"))
+
+	v, err = tp.Len()
+	ok(t, v, err, MakeInt(2))
 }

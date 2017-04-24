@@ -593,3 +593,11 @@ func TestBuiltin(t *testing.T) {
 	ok_expr(t, p, "(len - null)")
 
 }
+
+func TestTuple(t *testing.T) {
+	p := newParser("(a, b)")
+	ok_expr(t, p, "(a, b)")
+
+	p = newParser("(a, b, obj { z: 1 })[2]")
+	ok_expr(t, p, "(a, b, obj { z: 1 })[2]")
+}

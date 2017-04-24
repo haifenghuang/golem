@@ -172,6 +172,12 @@ type (
 		RBracket *Token
 	}
 
+	TupleExpr struct {
+		LParen *Token
+		Elems  []Expr
+		RParen *Token
+	}
+
 	ObjExpr struct {
 		ObjToken *Token
 		LBrace   *Token
@@ -260,6 +266,7 @@ func (*BuiltinExpr) exprMarker()   {}
 func (*FnExpr) exprMarker()        {}
 func (*InvokeExpr) exprMarker()    {}
 func (*ListExpr) exprMarker()      {}
+func (*TupleExpr) exprMarker()     {}
 func (*ObjExpr) exprMarker()       {}
 func (*ThisExpr) exprMarker()      {}
 func (*FieldExpr) exprMarker()     {}
@@ -352,6 +359,9 @@ func (n *InvokeExpr) End() Pos   { return n.RParen.Position }
 
 func (n *ListExpr) Begin() Pos { return n.LBracket.Position }
 func (n *ListExpr) End() Pos   { return n.RBracket.Position }
+
+func (n *TupleExpr) Begin() Pos { return n.LParen.Position }
+func (n *TupleExpr) End() Pos   { return n.RParen.Position }
 
 func (n *ObjExpr) Begin() Pos { return n.ObjToken.Position }
 func (n *ObjExpr) End() Pos   { return n.RBrace.Position }
@@ -507,6 +517,19 @@ func (ls *ListExpr) String() string {
 		buf.WriteString(v.String())
 	}
 	buf.WriteString(" ]")
+	return buf.String()
+}
+
+func (tp *TupleExpr) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("(")
+	for idx, v := range tp.Elems {
+		if idx > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(v.String())
+	}
+	buf.WriteString(")")
 	return buf.String()
 }
 

@@ -433,10 +433,21 @@ func (p *Parser) primary() ast.Expr {
 	switch {
 
 	case p.cur.Kind == ast.LPAREN:
-		p.consume()
+		lparen := p.consume()
 		expr := p.expression()
-		p.expect(ast.RPAREN)
-		return expr
+
+		switch p.cur.Kind {
+		case ast.RPAREN:
+			p.expect(ast.RPAREN)
+			return expr
+
+		case ast.COMMA:
+			p.expect(ast.COMMA)
+			return p.tupleExpr(lparen, expr)
+
+		default:
+			panic(p.unexpected())
+		}
 
 	case p.cur.Kind == ast.IDENT:
 		return p.identExpr()
@@ -613,6 +624,23 @@ func (p *Parser) listExpr(lbracket *ast.Token) ast.Expr {
 			default:
 				panic(p.unexpected())
 			}
+		}
+	}
+}
+
+func (p *Parser) tupleExpr(lparen *ast.Token, expr ast.Expr) ast.Expr {
+
+	elems := []ast.Expr{expr, p.expression()}
+
+	for {
+		switch p.cur.Kind {
+		case ast.RPAREN:
+			return &ast.TupleExpr{lparen, elems, p.consume()}
+		case ast.COMMA:
+			p.consume()
+			elems = append(elems, p.expression())
+		default:
+			panic(p.unexpected())
 		}
 	}
 }

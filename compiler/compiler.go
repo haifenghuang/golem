@@ -159,6 +159,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.ListExpr:
 		c.visitListExpr(t)
 
+	case *ast.TupleExpr:
+		c.visitTupleExpr(t)
+
 	case *ast.DictExpr:
 		c.visitDictExpr(t)
 
@@ -682,6 +685,18 @@ func (c *compiler) visitListExpr(ls *ast.ListExpr) {
 	// create the list
 	high, low := index(len(ls.Elems))
 	c.push(ls.Begin(), g.NEW_LIST, high, low)
+}
+
+func (c *compiler) visitTupleExpr(tp *ast.TupleExpr) {
+
+	// eval each element
+	for _, v := range tp.Elems {
+		c.Visit(v)
+	}
+
+	// create the list
+	high, low := index(len(tp.Elems))
+	c.push(tp.Begin(), g.NEW_TUPLE, high, low)
 }
 
 func (c *compiler) visitDictExpr(d *ast.DictExpr) {
