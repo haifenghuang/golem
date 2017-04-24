@@ -19,10 +19,84 @@ import (
 )
 
 //---------------------------------------------------------------
+// Func represents an instance of a function
+
+type _func struct {
+}
+
+func (f *_func) TypeOf() (Type, Error) { return TFUNC, nil }
+
+func (f *_func) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
+}
+
+func (f *_func) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
+}
+
+//---------------------------------------------------------------
+// BytecodeFunc represents a function that is defined
+// via Golem source code
+
+type _bytecodeFunc struct {
+	*_func
+	template *Template
+	captures []*Ref
+}
+
+// Called via NEW_FUNC opcode at runtime
+func NewBytecodeFunc(template *Template) BytecodeFunc {
+	captures := make([]*Ref, 0, template.NumCaptures)
+	return &_bytecodeFunc{&_func{}, template, captures}
+}
+
+func (bf *_bytecodeFunc) ToStr() (Str, Error) {
+	return MakeStr(bf.bytecodeStr()), nil
+}
+
+func (bf *_bytecodeFunc) Eq(v Value) (Bool, Error) {
+	switch t := v.(type) {
+	case *_bytecodeFunc:
+		if bf.bytecodeStr() == t.bytecodeStr() {
+			return TRUE, nil
+		} else {
+			return FALSE, nil
+		}
+	default:
+		return FALSE, nil
+	}
+}
+
+func (bf *_bytecodeFunc) Add(v Value) (Value, Error) {
+	switch t := v.(type) {
+
+	case Str:
+		return strcat(bf, t)
+
+	default:
+		return nil, TypeMismatchError("Expected Number Type")
+	}
+}
+
+func (bf *_bytecodeFunc) Template() *Template {
+	return bf.template
+}
+
+func (bf *_bytecodeFunc) GetCapture(idx int) *Ref {
+	return bf.captures[idx]
+}
+
+func (bf *_bytecodeFunc) PushCapture(ref *Ref) {
+	bf.captures = append(bf.captures, ref)
+}
+
+func (bf *_bytecodeFunc) bytecodeStr() string {
+	return fmt.Sprintf("func(%p)", bf)
+}
+
 // Template represents the information needed to invoke a function
 // instance.  Templates are created at compile time, and
 // are immutable at run time.
-
 type Template struct {
 	Arity       int
 	NumCaptures int
@@ -45,46 +119,28 @@ func (t *Template) LineNumber(instPtr int) int {
 	return oln[n].LineNum
 }
 
-//---------------------------------------------------------------
 // OpcLine tracks which sequence of opcodes are on a given line
-
 type OpcLine struct {
 	Index   int
 	LineNum int
 }
 
 //---------------------------------------------------------------
-// _func represents an instance of a function
+// NativeFunc represents a function that is defined
+// natively within Go.
 
-type _func struct {
-	template *Template
-	captures []*Ref
+type _nativeFunc struct {
+	*_func
 }
 
-// Called via NEW_FUNC opcode at runtime
-func NewFunc(template *Template) Func {
-	captures := make([]*Ref, 0, template.NumCaptures)
-	return &_func{template, captures}
+func (nf *_nativeFunc) ToStr() (Str, Error) {
+	return MakeStr(nf.nativeStr()), nil
 }
 
-func (f *_func) TypeOf() (Type, Error) { return TFUNC, nil }
-
-func (f *_func) ToStr() (Str, Error) {
-	return MakeStr(f.doStr()), nil
-}
-
-func (f *_func) doStr() string {
-	return fmt.Sprintf("func(%p)", f)
-}
-
-func (f *_func) HashCode() (Int, Error) {
-	return nil, TypeMismatchError("Expected Hashable Type")
-}
-
-func (f *_func) Eq(v Value) (Bool, Error) {
+func (nf *_nativeFunc) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *_func:
-		if f.doStr() == t.doStr() {
+	case *_nativeFunc:
+		if nf.nativeStr() == t.nativeStr() {
 			return TRUE, nil
 		} else {
 			return FALSE, nil
@@ -94,29 +150,17 @@ func (f *_func) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (f *_func) Cmp(v Value) (Int, Error) {
-	return nil, TypeMismatchError("Expected Comparable Type")
-}
-
-func (f *_func) Add(v Value) (Value, Error) {
+func (nf *_nativeFunc) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(f, t)
+		return strcat(nf, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (f *_func) Template() *Template {
-	return f.template
-}
-
-func (f *_func) GetCapture(idx int) *Ref {
-	return f.captures[idx]
-}
-
-func (f *_func) PushCapture(ref *Ref) {
-	f.captures = append(f.captures, ref)
+func (nf *_nativeFunc) nativeStr() string {
+	return fmt.Sprintf("nativeFunc(%p)", nf)
 }

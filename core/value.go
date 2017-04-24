@@ -194,10 +194,20 @@ type (
 
 	Func interface {
 		Value
+	}
+
+	BytecodeFunc interface {
+		Func
 
 		Template() *Template
 		GetCapture(int) *Ref
 		PushCapture(*Ref)
+	}
+
+	NativeFunc interface {
+		Func
+
+		Invoke([]Value) (Value, Error)
 	}
 )
 

@@ -21,8 +21,8 @@ import (
 
 func TestFunc(t *testing.T) {
 
-	a := NewFunc(&Template{})
-	b := NewFunc(&Template{})
+	a := NewBytecodeFunc(&Template{})
+	b := NewBytecodeFunc(&Template{})
 
 	okType(t, a, TFUNC)
 
@@ -286,7 +286,7 @@ func TestList(t *testing.T) {
 }
 
 func TestCompositeHashCode(t *testing.T) {
-	h, err := NewFunc(&Template{}).HashCode()
+	h, err := NewBytecodeFunc(&Template{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
 	h, err = NewList([]Value{}).HashCode()

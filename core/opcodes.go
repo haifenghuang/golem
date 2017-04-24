@@ -26,6 +26,7 @@ const (
 	LOAD_ONE
 	LOAD_NEG_ONE
 
+	LOAD_BUILTIN
 	LOAD_CONST
 	LOAD_LOCAL
 	STORE_LOCAL
@@ -97,7 +98,7 @@ func OpCodeSize(opc byte) int {
 
 	switch opc {
 
-	case LOAD_CONST, LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
+	case LOAD_BUILTIN, LOAD_CONST, LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
 		INIT_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD, NEW_LIST, NEW_DICT:
@@ -126,6 +127,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case LOAD_NEG_ONE:
 		return fmt.Sprintf("%d: LOAD_NEG_ONE\n", i)
 
+	case LOAD_BUILTIN:
+		return fmtIndex(opcodes, i, "LOAD_BUILTIN")
 	case LOAD_CONST:
 		return fmtIndex(opcodes, i, "LOAD_CONST")
 	case LOAD_LOCAL:

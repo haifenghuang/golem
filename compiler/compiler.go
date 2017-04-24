@@ -126,6 +126,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.IdentExpr:
 		c.visitIdentExpr(t)
 
+	case *ast.BuiltinExpr:
+		c.visitBuiltinExpr(t)
+
 	case *ast.FnExpr:
 		c.visitFunc(t)
 
@@ -551,6 +554,27 @@ func (c *compiler) visitIdentExpr(ident *ast.IdentExpr) {
 		c.push(ident.Begin(), g.LOAD_CAPTURE, high, low)
 	} else {
 		c.push(ident.Begin(), g.LOAD_LOCAL, high, low)
+	}
+}
+
+func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
+
+	switch blt.Fn.Kind {
+	case ast.FN_PRINT:
+		high, low := index(g.PRINT)
+		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+	case ast.FN_PRINTLN:
+		high, low := index(g.PRINTLN)
+		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+	case ast.FN_STR:
+		high, low := index(g.STR)
+		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+	case ast.FN_LEN:
+		high, low := index(g.LEN)
+		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+
+	default:
+		panic("unknown builtin function")
 	}
 }
 

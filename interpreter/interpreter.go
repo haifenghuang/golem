@@ -23,7 +23,7 @@ import (
 // An execution environment, a.k.a 'stack frame'.
 
 type frame struct {
-	function g.Func
+	function g.BytecodeFunc
 	locals   []*g.Ref
 	stack    []g.Value
 	instPtr  int
@@ -64,13 +64,13 @@ func (inp *Interpreter) Init() (g.Value, *ErrorStack) {
 	inp.mod.Locals = locals
 
 	// make func
-	curFunc := g.NewFunc(tpl)
+	curFunc := g.NewBytecodeFunc(tpl)
 
 	// go
 	return inp.invoke(curFunc, locals)
 }
 
-func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *ErrorStack) {
+func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value, *ErrorStack) {
 
 	pool := inp.mod.Pool
 	defs := inp.mod.ObjDefs
@@ -89,38 +89,46 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 		case g.INVOKE:
 
 			idx := index(opc, ip)
+			params := s[n-idx+1:]
 
-			// get function from stack
-			fn, ok := s[n-idx].(g.Func)
-			if !ok {
+			switch fn := s[n-idx].(type) {
+			case g.BytecodeFunc:
+
+				/////////////////////////////////
+				// invoke a bytecode-defined func
+
+				s = s[:n-idx]
+				ip += 3
+
+				// save the execution environment
+				inp.frames = append(inp.frames, &frame{curFunc, locals, s, ip})
+
+				// create a new execution environment
+				curFunc = fn
+				locals = newLocals(curFunc.Template().NumLocals, params)
+				opc = curFunc.Template().OpCodes
+				s = []g.Value{}
+				ip = 0
+
+			case g.NativeFunc:
+
+				/////////////////////////////////
+				// invoke a natively-defined func
+
+				val, err := fn.Invoke(params)
+				if err != nil {
+					return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+				}
+
+				s = s[:n-idx]
+				s = append(s, val)
+				ip += 3
+
+			default:
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Func'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
-			if fn.Template().Arity != idx {
-				return nil, &ErrorStack{
-					g.ArityMismatchError(fn.Template().Arity, idx),
-					inp.stringFrames(curFunc, locals, s, ip)}
-			}
-
-			// get params from stack
-			params := s[n-idx+1:]
-
-			// remove function and params from stack
-			s = s[:n-idx]
-
-			// move the instruction pointer
-			ip += 3
-
-			// save the execution environment
-			inp.frames = append(inp.frames, &frame{curFunc, locals, s, ip})
-
-			// create a new execution environment
-			curFunc = fn
-			locals = newLocals(curFunc.Template().NumLocals, params)
-			opc = curFunc.Template().OpCodes
-			s = []g.Value{}
-			ip = 0
 
 		case g.RETURN:
 
@@ -152,17 +160,17 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 			// push a function
 			idx := index(opc, ip)
 			tpl := inp.mod.Templates[idx]
-			nf := g.NewFunc(tpl)
+			nf := g.NewBytecodeFunc(tpl)
 			s = append(s, nf)
 			ip += 3
 
 		case g.FUNC_LOCAL:
 
 			// get function from stack
-			fn, ok := s[n].(g.Func)
+			fn, ok := s[n].(g.BytecodeFunc)
 			if !ok {
 				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Func'"),
+					g.TypeMismatchError("Expected 'BytecodeFunc'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
@@ -174,10 +182,10 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 		case g.FUNC_CAPTURE:
 
 			// get function from stack
-			fn, ok := s[n].(g.Func)
+			fn, ok := s[n].(g.BytecodeFunc)
 			if !ok {
 				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Func'"),
+					g.TypeMismatchError("Expected 'BytecodeFunc'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
@@ -493,6 +501,11 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 		case g.LOAD_NEG_ONE:
 			s = append(s, g.NEG_ONE)
 			ip++
+
+		case g.LOAD_BUILTIN:
+			idx := index(opc, ip)
+			s = append(s, g.Builtins[idx])
+			ip += 3
 
 		case g.LOAD_CONST:
 			idx := index(opc, ip)
@@ -841,7 +854,7 @@ func (inp *Interpreter) invoke(curFunc g.Func, locals []*g.Ref) (g.Value, *Error
 
 // Create a stack of string-representations from the current stack of execution frames
 func (inp *Interpreter) stringFrames(
-	curFunc g.Func,
+	curFunc g.BytecodeFunc,
 	locals []*g.Ref,
 	valueStack []g.Value,
 	instPtr int) []string {

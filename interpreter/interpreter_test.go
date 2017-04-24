@@ -648,3 +648,22 @@ let d = a['x'];
 	ok_ref(t, mod.Locals[2], g.NULL)
 	ok_ref(t, mod.Locals[3], g.NEG_ONE)
 }
+
+func TestBuiltin(t *testing.T) {
+
+	source := `
+let a = len([4,5,6]);
+let b = str([4,5,6]);
+print(a);
+println(b);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], g.MakeInt(3))
+	ok_ref(t, mod.Locals[1], g.MakeStr("[ 4, 5, 6 ]"))
+}
