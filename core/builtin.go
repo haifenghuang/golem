@@ -37,30 +37,27 @@ type _str struct{ *_nativeFunc }
 type _len struct{ *_nativeFunc }
 
 func (builtin *_print) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError(1, len(values))
+	for _, v := range values {
+		s, err := v.ToStr()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print(s.String())
 	}
 
-	s, err := values[0].ToStr()
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Print(s.String())
 	return NULL, nil
 }
 
 func (builtin *_println) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError(1, len(values))
+	for _, v := range values {
+		s, err := v.ToStr()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print(s.String())
 	}
+	fmt.Println()
 
-	s, err := values[0].ToStr()
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(s.String())
 	return NULL, nil
 }
 

@@ -654,8 +654,12 @@ func TestBuiltin(t *testing.T) {
 	source := `
 let a = len([4,5,6]);
 let b = str([4,5,6]);
+print();
+println();
 print(a);
 println(b);
+print(a,b);
+println(a,b);
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
