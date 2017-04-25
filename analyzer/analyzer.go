@@ -68,12 +68,10 @@ func (a *analyzer) Visit(node ast.Node) {
 		a.visitFunc(t)
 
 	case *ast.Const:
-		a.Visit(t.Val)
-		a.visitConst(t)
+		a.visitDecls(t.Decls, true)
 
 	case *ast.Let:
-		a.Visit(t.Val)
-		a.visitLet(t)
+		a.visitDecls(t.Decls, false)
 
 	case *ast.Assignment:
 		a.visitAssignment(t)
@@ -156,27 +154,20 @@ func (a *analyzer) doVisitFunc(fn *ast.FnExpr) {
 	fn.ParentCaptures = pc
 }
 
-func (a *analyzer) visitConst(cns *ast.Const) {
+func (a *analyzer) visitDecls(decls []*ast.Decl, isConst bool) {
 
-	sym := cns.Ident.Symbol.Text
+	for _, d := range decls {
+		if d.Val != nil {
+			a.Visit(d.Val)
+		}
 
-	if _, ok := a.curScope.get(sym); ok {
-		a.errors = append(a.errors,
-			&aerror{fmt.Sprintf("Symbol '%s' is already defined", sym)})
-	} else {
-		cns.Ident.Variable = a.curScope.put(sym, true)
-	}
-}
-
-func (a *analyzer) visitLet(let *ast.Let) {
-
-	sym := let.Ident.Symbol.Text
-
-	if _, ok := a.curScope.get(sym); ok {
-		a.errors = append(a.errors,
-			&aerror{fmt.Sprintf("Symbol '%s' is already defined", sym)})
-	} else {
-		let.Ident.Variable = a.curScope.put(sym, false)
+		sym := d.Ident.Symbol.Text
+		if _, ok := a.curScope.get(sym); ok {
+			a.errors = append(a.errors,
+				&aerror{fmt.Sprintf("Symbol '%s' is already defined", sym)})
+		} else {
+			d.Ident.Variable = a.curScope.put(sym, isConst)
+		}
 	}
 }
 

@@ -121,28 +121,46 @@ func (p *Parser) constStmt() *ast.Const {
 
 	token := p.expect(ast.CONST)
 
-	sym := p.expect(ast.IDENT)
-	ident := &ast.IdentExpr{sym, nil}
-
-	p.expect(ast.EQ)
-	expr := p.expression()
-	semi := p.expect(ast.SEMICOLON)
-
-	return &ast.Const{token, ident, expr, semi}
+	decls := []*ast.Decl{p.decl()}
+	for {
+		switch p.cur.Kind {
+		case ast.COMMA:
+			p.consume()
+			decls = append(decls, p.decl())
+		case ast.SEMICOLON:
+			return &ast.Const{token, decls, p.consume()}
+		default:
+			panic(p.unexpected())
+		}
+	}
 }
 
 func (p *Parser) letStmt() *ast.Let {
 
 	token := p.expect(ast.LET)
 
-	sym := p.expect(ast.IDENT)
-	ident := &ast.IdentExpr{sym, nil}
+	decls := []*ast.Decl{p.decl()}
+	for {
+		switch p.cur.Kind {
+		case ast.COMMA:
+			p.consume()
+			decls = append(decls, p.decl())
+		case ast.SEMICOLON:
+			return &ast.Let{token, decls, p.consume()}
+		default:
+			panic(p.unexpected())
+		}
+	}
+}
 
-	p.expect(ast.EQ)
-	expr := p.expression()
-	semi := p.expect(ast.SEMICOLON)
+func (p *Parser) decl() *ast.Decl {
 
-	return &ast.Let{token, ident, expr, semi}
+	ident := &ast.IdentExpr{p.expect(ast.IDENT), nil}
+	if p.accept(ast.EQ) {
+		return &ast.Decl{ident, p.expression()}
+	} else {
+		return &ast.Decl{ident, nil}
+	}
 }
 
 func (p *Parser) ifStmt() *ast.If {

@@ -313,6 +313,12 @@ func TestStatement(t *testing.T) {
 
 	p = newParser("a = b;")
 	ok(t, p, "fn() { (a = b); }")
+
+	p = newParser("let a = 3; const b = 4;")
+	ok(t, p, "fn() { let a = 3; const b = 4; }")
+
+	p = newParser("let a = 3, b; const x, y, z = 5; ")
+	ok(t, p, "fn() { let a = 3, b; const x, y, z = 5; }")
 }
 
 func TestFn(t *testing.T) {

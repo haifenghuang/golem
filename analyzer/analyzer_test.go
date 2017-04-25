@@ -476,6 +476,8 @@ x[y] = 42;
 y = x[3];
 x[2]++;
 y.z = x[2]++;
+let g, h = 5;
+const i = 6, j;
 `
 	anl := newAnalyzer(source)
 	errors := anl.Analyze()
@@ -485,7 +487,7 @@ y.z = x[2]++;
 	//fmt.Println(errors)
 
 	ok(t, anl, errors, `
-FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+FnExpr(numLocals:6 numCaptures:0 parentCaptures:[])
 .   Block
 .   .   Let
 .   .   .   IdentExpr(x,(0,false,false))
@@ -525,6 +527,14 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   .   .   .   IndexExpr
 .   .   .   .   .   IdentExpr(x,(0,false,false))
 .   .   .   .   .   BasicExpr(INT,"2")
+.   .   Let
+.   .   .   IdentExpr(g,(2,false,false))
+.   .   .   IdentExpr(h,(3,false,false))
+.   .   .   BasicExpr(INT,"5")
+.   .   Const
+.   .   .   IdentExpr(i,(4,true,false))
+.   .   .   IdentExpr(j,(5,true,false))
+.   .   .   BasicExpr(INT,"6")
 `)
 }
 
@@ -539,7 +549,31 @@ b[0]++;
 	anl := newAnalyzer(source)
 	errors := anl.Analyze()
 
-	fmt.Println(source)
-	fmt.Println(ast.Dump(anl.Module()))
-	fmt.Println(errors)
+	//fmt.Println(source)
+	//fmt.Println(ast.Dump(anl.Module()))
+	//fmt.Println(errors)
+
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   Let
+.   .   .   IdentExpr(a,(0,false,false))
+.   .   .   IndexExpr
+.   .   .   .   ListExpr
+.   .   .   .   .   BasicExpr(STR,"x")
+.   .   .   .   BasicExpr(INT,"0")
+.   .   Let
+.   .   .   IdentExpr(b,(1,false,false))
+.   .   .   ListExpr
+.   .   .   .   BasicExpr(STR,"x")
+.   .   Assignment
+.   .   .   IndexExpr
+.   .   .   .   IdentExpr(b,(1,false,false))
+.   .   .   .   BasicExpr(INT,"0")
+.   .   .   BasicExpr(INT,"3")
+.   .   PostfixExpr("++")
+.   .   .   IndexExpr
+.   .   .   .   IdentExpr(b,(1,false,false))
+.   .   .   .   BasicExpr(INT,"0")
+`)
 }

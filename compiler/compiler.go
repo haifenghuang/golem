@@ -83,12 +83,10 @@ func (c *compiler) Visit(node ast.Node) {
 	switch t := node.(type) {
 
 	case *ast.Const:
-		c.Visit(t.Val)
-		c.assignIdent(t.Ident)
+		c.visitDecls(t.Decls)
 
 	case *ast.Let:
-		c.Visit(t.Val)
-		c.assignIdent(t.Ident)
+		c.visitDecls(t.Decls)
 
 	case *ast.Assignment:
 		c.visitAssignment(t)
@@ -167,6 +165,19 @@ func (c *compiler) Visit(node ast.Node) {
 
 	default:
 		t.Traverse(c)
+	}
+}
+
+func (c *compiler) visitDecls(decls []*ast.Decl) {
+
+	for _, d := range decls {
+		if d.Val == nil {
+			c.push(d.Ident.Begin(), g.LOAD_NULL)
+		} else {
+			c.Visit(d.Val)
+		}
+
+		c.assignIdent(d.Ident)
 	}
 }
 

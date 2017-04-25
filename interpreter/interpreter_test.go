@@ -690,3 +690,22 @@ let c = a[1];
 	ok_ref(t, mod.Locals[1], g.MakeInt(4))
 	ok_ref(t, mod.Locals[2], g.MakeInt(5))
 }
+
+func TestDecl(t *testing.T) {
+
+	source := `
+let a, b = 0;
+const c = 1, d;
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	ok_ref(t, mod.Locals[0], g.NULL)
+	ok_ref(t, mod.Locals[1], g.ZERO)
+	ok_ref(t, mod.Locals[2], g.ONE)
+	ok_ref(t, mod.Locals[3], g.NULL)
+}

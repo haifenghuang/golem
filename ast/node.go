@@ -62,16 +62,19 @@ type (
 
 	Const struct {
 		Token     *Token
-		Ident     *IdentExpr
-		Val       Expr
+		Decls     []*Decl
 		Semicolon *Token
 	}
 
 	Let struct {
 		Token     *Token
-		Ident     *IdentExpr
-		Val       Expr
+		Decls     []*Decl
 		Semicolon *Token
+	}
+
+	Decl struct {
+		Ident *IdentExpr
+		Val   Expr
 	}
 
 	If struct {
@@ -404,11 +407,33 @@ func (blk *Block) String() string {
 }
 
 func (cns *Const) String() string {
-	return fmt.Sprintf("const %v = %v;", cns.Ident, cns.Val)
+	buf := new(bytes.Buffer)
+	buf.WriteString("const ")
+	buf.WriteString(stringDecls(cns.Decls))
+	buf.WriteString(";")
+	return buf.String()
 }
 
 func (let *Let) String() string {
-	return fmt.Sprintf("let %v = %v;", let.Ident, let.Val)
+	buf := new(bytes.Buffer)
+	buf.WriteString("let ")
+	buf.WriteString(stringDecls(let.Decls))
+	buf.WriteString(";")
+	return buf.String()
+}
+
+func stringDecls(decls []*Decl) string {
+	buf := new(bytes.Buffer)
+	for i, d := range decls {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(fmt.Sprintf("%v", d.Ident))
+		if d.Val != nil {
+			buf.WriteString(fmt.Sprintf(" = %v", d.Val))
+		}
+	}
+	return buf.String()
 }
 
 func (asn *Assignment) String() string {
