@@ -101,14 +101,6 @@ func (hm *HashMap) Len() Int {
 	return MakeInt(int64(hm.size))
 }
 
-func (hm *HashMap) Each(callback func(*HEntry)) {
-	for _, b := range hm.buckets {
-		for _, e := range b {
-			callback(e)
-		}
-	}
-}
-
 //--------------------------------------------------------------
 
 func indexOf(b bucket, key Value) int {
@@ -159,4 +151,48 @@ func (hm *HashMap) hashBucket(key Value) int {
 	}
 
 	return hv % len(hm.buckets)
+}
+
+//--------------------------------------------------------------
+
+func (hm *HashMap) Iterator() *HIterator {
+	return &HIterator{hm, -1, -1}
+}
+
+type HIterator struct {
+	hm        *HashMap
+	bucketIdx int
+	entryIdx  int
+}
+
+func (h *HIterator) Next() bool {
+
+	// advance to next entry in current bucket
+	h.entryIdx++
+
+	// if we are not pointing at a valid entry
+	if (h.bucketIdx == -1) || (h.entryIdx >= len(h.curBucket())) {
+
+		// advance to next non-empty bucket
+		h.bucketIdx++
+		for (h.bucketIdx < len(h.hm.buckets)) && (len(h.curBucket()) == 0) {
+			h.bucketIdx++
+		}
+		if !(h.bucketIdx < len(h.hm.buckets)) {
+			return false
+		}
+
+		// point at first entry
+		h.entryIdx = 0
+	}
+
+	return true
+}
+
+func (h *HIterator) Get() *HEntry {
+	return h.curBucket()[h.entryIdx]
+}
+
+func (h *HIterator) curBucket() bucket {
+	return h.hm.buckets[h.bucketIdx]
 }

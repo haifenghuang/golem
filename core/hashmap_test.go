@@ -101,33 +101,48 @@ func TestStrHashMap(t *testing.T) {
 	ok(t, v, err, MakeStr("xyz"))
 }
 
-func TestHashMapIterator(t *testing.T) {
-	hm := NewHashMap([]*HEntry{
-		&HEntry{MakeStr("a"), MakeInt(1)},
-		&HEntry{MakeStr("b"), MakeInt(2)},
-		&HEntry{MakeStr("c"), MakeInt(3)}})
+func testIteratorEntries(t *testing.T, initial []*HEntry, expect []*HEntry) {
+
+	hm := NewHashMap(initial)
 
 	entries := []*HEntry{}
-	hm.Each(func(entry *HEntry) {
-		entries = append(entries, entry)
-	})
-
-	expect := []*HEntry{
-		&HEntry{MakeStr("b"), MakeInt(2)},
-		&HEntry{MakeStr("a"), MakeInt(1)},
-		&HEntry{MakeStr("c"), MakeInt(3)}}
+	itr := hm.Iterator()
+	for itr.Next() {
+		entries = append(entries, itr.Get())
+	}
 
 	if !reflect.DeepEqual(entries, expect) {
 		t.Error("iterator failed")
 	}
+}
 
-	hm = NewHashMap([]*HEntry{})
-	entries = []*HEntry{}
-	hm.Each(func(entry *HEntry) {
-		entries = append(entries, entry)
-	})
+func TestHashMapIterator(t *testing.T) {
 
-	if !reflect.DeepEqual(entries, []*HEntry{}) {
-		t.Error("iterator failed")
-	}
+	testIteratorEntries(t,
+		[]*HEntry{},
+		[]*HEntry{})
+
+	testIteratorEntries(t,
+		[]*HEntry{
+			&HEntry{MakeStr("a"), MakeInt(1)}},
+		[]*HEntry{
+			&HEntry{MakeStr("a"), MakeInt(1)}})
+
+	testIteratorEntries(t,
+		[]*HEntry{
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("b"), MakeInt(2)}},
+		[]*HEntry{
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("a"), MakeInt(1)}})
+
+	testIteratorEntries(t,
+		[]*HEntry{
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("c"), MakeInt(3)}},
+		[]*HEntry{
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("c"), MakeInt(3)}})
 }

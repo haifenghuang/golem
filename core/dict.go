@@ -41,35 +41,28 @@ func (d *dict) ToStr() (Str, Error) {
 	var buf bytes.Buffer
 	buf.WriteString("dict {")
 	idx := 0
-	var err Error = nil
-	var s Str = nil
-	d.hashMap.Each(func(entry *HEntry) {
-		if err != nil {
-			return
-		}
+	itr := d.hashMap.Iterator()
 
+	for itr.Next() {
+		entry := itr.Get()
 		if idx > 0 {
 			buf.WriteString(",")
 		}
 		idx++
 
 		buf.WriteString(" ")
-		s, err = entry.Key.ToStr()
+		s, err := entry.Key.ToStr()
 		if err != nil {
-			return
+			return s, err
 		}
 		buf.WriteString(s.String())
 
 		buf.WriteString(": ")
 		s, err = entry.Value.ToStr()
 		if err != nil {
-			return
+			return s, err
 		}
 		buf.WriteString(s.String())
-	})
-
-	if err != nil {
-		return nil, err
 	}
 
 	buf.WriteString(" }")
