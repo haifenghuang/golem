@@ -198,40 +198,4 @@ type (
 		Indexable
 		Lenable
 	}
-
-	//-----------------------------------------
-	// Func
-
-	Func interface {
-		Value
-	}
-
-	BytecodeFunc interface {
-		Func
-
-		Template() *Template
-		GetCapture(int) *Ref
-		PushCapture(*Ref)
-	}
-
-	NativeFunc interface {
-		Func
-
-		Invoke([]Value) (Value, Error)
-	}
 )
-
-//---------------------------------------------------------------
-// Ref
-
-type Ref struct {
-	Val Value
-}
-
-func NewRef(val Value) *Ref {
-	return &Ref{val}
-}
-
-func (r *Ref) String() string {
-	return fmt.Sprintf("Ref(%v)", r.Val)
-}

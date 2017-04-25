@@ -72,7 +72,7 @@ func (s str) Cmp(v Value) (Int, Error) {
 }
 
 func (s str) Add(v Value) (Value, Error) {
-	return strcat(s, v)
+	return Strcat(s, v)
 }
 
 func (s str) Get(index Value) (Value, Error) {
@@ -81,7 +81,6 @@ func (s str) Get(index Value) (Value, Error) {
 		return nil, err
 	}
 
-	// copy to avoid memory leaks
 	return str([]rune{s[idx.IntVal()]}), nil
 }
 
@@ -143,7 +142,7 @@ func fromValue(v Value) (str, Error) {
 	}
 }
 
-func strcat(a Value, b Value) (str, Error) {
+func Strcat(a Value, b Value) (str, Error) {
 
 	sa, err := fromValue(a)
 	if err != nil {

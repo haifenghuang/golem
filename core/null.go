@@ -41,7 +41,7 @@ func (n *null) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(n, t)
+		return Strcat(n, t)
 
 	default:
 		return nil, NullValueError()

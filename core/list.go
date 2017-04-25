@@ -80,7 +80,7 @@ func (ls *list) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(ls, t)
+		return Strcat(ls, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package core
+package fn
 
 import (
 	"bytes"
 	"fmt"
+	g "golem/core"
 )
 
+//---------------------------------------------------------------
+// Ref
+
 type Module struct {
-	Pool      []Value
+	Pool      []g.Value
 	Locals    []*Ref
-	ObjDefs   []*ObjDef
+	ObjDefs   []*g.ObjDef
 	Templates []*Template
 }
 
@@ -72,4 +76,19 @@ func (m *Module) String() string {
 	}
 
 	return buf.String()
+}
+
+//---------------------------------------------------------------
+// Ref
+
+type Ref struct {
+	Val g.Value
+}
+
+func NewRef(val g.Value) *Ref {
+	return &Ref{val}
+}
+
+func (r *Ref) String() string {
+	return fmt.Sprintf("Ref(%v)", r.Val)
 }

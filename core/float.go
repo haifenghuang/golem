@@ -106,7 +106,7 @@ func (f _float) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(f, t)
+		return Strcat(f, t)
 
 	case _int:
 		return f + _float(t), nil

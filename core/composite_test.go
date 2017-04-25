@@ -19,21 +19,6 @@ import (
 	"testing"
 )
 
-func TestFunc(t *testing.T) {
-
-	a := NewBytecodeFunc(&Template{})
-	b := NewBytecodeFunc(&Template{})
-
-	okType(t, a, TFUNC)
-
-	z, err := a.Eq(b)
-	ok(t, z, err, FALSE)
-	z, err = b.Eq(a)
-	ok(t, z, err, FALSE)
-	z, err = a.Eq(a)
-	ok(t, z, err, TRUE)
-}
-
 func newObj(fields map[string]Value) Obj {
 	o := NewObj()
 	def := &ObjDef{[]string{}}
@@ -166,26 +151,6 @@ func TestUninitialized(t *testing.T) {
 	uninitErr(t, e10)
 }
 
-func TestLineNumber(t *testing.T) {
-
-	tp := &Template{0, 0, 0, nil,
-		[]OpcLine{
-			OpcLine{0, 0},
-			OpcLine{1, 2},
-			OpcLine{11, 3},
-			OpcLine{20, 4},
-			OpcLine{29, 0}}}
-
-	assert(t, tp.LineNumber(0) == 0)
-	assert(t, tp.LineNumber(1) == 2)
-	assert(t, tp.LineNumber(10) == 2)
-	assert(t, tp.LineNumber(11) == 3)
-	assert(t, tp.LineNumber(19) == 3)
-	assert(t, tp.LineNumber(20) == 4)
-	assert(t, tp.LineNumber(28) == 4)
-	assert(t, tp.LineNumber(29) == 0)
-}
-
 func TestList(t *testing.T) {
 	ls := NewList([]Value{})
 	okType(t, ls, TLIST)
@@ -286,7 +251,7 @@ func TestList(t *testing.T) {
 }
 
 func TestCompositeHashCode(t *testing.T) {
-	h, err := NewBytecodeFunc(&Template{}).HashCode()
+	h, err := NewDict(NewHashMap([]*HEntry{})).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
 	h, err = NewList([]Value{}).HashCode()

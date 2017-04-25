@@ -90,7 +90,7 @@ func (d *dict) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(d, t)
+		return Strcat(d, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

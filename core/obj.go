@@ -129,7 +129,7 @@ func (o *obj) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return strcat(o, t)
+		return Strcat(o, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
