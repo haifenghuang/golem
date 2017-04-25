@@ -25,7 +25,7 @@ func (s str) String() string {
 }
 
 func MakeStr(str string) Str {
-	return fromString(str)
+	return toRunes(str)
 }
 
 func (s str) basicMarker() {}
@@ -122,49 +122,12 @@ func (s str) SliceTo(to Value) (Value, Error) {
 
 //--------------------------------------------------------------
 
-func fromString(s string) str {
+func toRunes(s string) str {
 	z := str{}
 	for _, r := range s {
 		z = append(z, r)
 	}
 	return z
-}
-
-func fromValue(v Value) (str, Error) {
-	if sv, ok := v.(str); ok {
-		return sv, nil
-	} else {
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		return fromString(s.String()), nil
-	}
-}
-
-func Strcat(a Value, b Value) (str, Error) {
-
-	sa, err := fromValue(a)
-	if err != nil {
-		return nil, err
-	}
-
-	sb, err := fromValue(b)
-	if err != nil {
-		return nil, err
-	}
-
-	// copy to avoid memory leaks
-	ca := make([]rune, len(sa))
-	copy(ca, sa)
-
-	cb := make([]rune, len(sb))
-	copy(cb, sb)
-
-	result := make(str, 0, len(ca)+len(cb))
-	result = append(result, ca...)
-	result = append(result, cb...)
-	return result, nil
 }
 
 func runesEq(a str, b str) bool {

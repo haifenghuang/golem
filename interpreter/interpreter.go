@@ -17,6 +17,7 @@ package interpreter
 import (
 	"fmt"
 	g "golem/core"
+	"golem/core/coll"
 	"golem/core/comp"
 	"golem/core/fn"
 )
@@ -245,15 +246,15 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 		case fn.NEW_DICT:
 
 			size := index(opc, ip)
-			entries := make([]*g.HEntry, 0, size)
+			entries := make([]*coll.HEntry, 0, size)
 
 			numVals := size * 2
 			for i := n - numVals + 1; i <= n; i += 2 {
-				entries = append(entries, &g.HEntry{s[i], s[i+1]})
+				entries = append(entries, &coll.HEntry{s[i], s[i+1]})
 			}
 
 			s = s[:n-numVals+1]
-			s = append(s, comp.NewDict(g.NewHashMap(entries)))
+			s = append(s, comp.NewDict(coll.NewHashMap(entries)))
 			ip += 3
 
 		case fn.GET_FIELD:

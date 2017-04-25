@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package core
+package coll
 
 import (
-//"fmt"
+	//"fmt"
+	g "golem/core"
 )
 
 // A Custom HashMap implementation.  This allows us
@@ -28,8 +29,8 @@ type (
 	}
 
 	HEntry struct {
-		Key   Value
-		Value Value
+		Key   g.Value
+		Value g.Value
 	}
 
 	bucket []*HEntry
@@ -46,12 +47,12 @@ func NewHashMap(entries []*HEntry) *HashMap {
 	return hm
 }
 
-func (hm *HashMap) Get(key Value) (value Value, err Error) {
+func (hm *HashMap) Get(key g.Value) (value g.Value, err g.Error) {
 
 	// panic-recover is the cleanest approach
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(Error); ok {
+			if e, ok := r.(g.Error); ok {
 				value = nil
 				err = e
 			}
@@ -62,18 +63,18 @@ func (hm *HashMap) Get(key Value) (value Value, err Error) {
 	b := hm.buckets[hm.hashBucket(key)]
 	n := indexOf(b, key)
 	if n == -1 {
-		return NULL, nil
+		return g.NULL, nil
 	} else {
 		return b[n].Value, nil
 	}
 }
 
-func (hm *HashMap) Put(key Value, value Value) (err Error) {
+func (hm *HashMap) Put(key g.Value, value g.Value) (err g.Error) {
 
 	// panic-recover is the cleanest approach
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(Error); ok {
+			if e, ok := r.(g.Error); ok {
 				err = e
 			}
 			panic(r)
@@ -97,13 +98,13 @@ func (hm *HashMap) Put(key Value, value Value) (err Error) {
 	return nil
 }
 
-func (hm *HashMap) Len() Int {
-	return MakeInt(int64(hm.size))
+func (hm *HashMap) Len() g.Int {
+	return g.MakeInt(int64(hm.size))
 }
 
 //--------------------------------------------------------------
 
-func indexOf(b bucket, key Value) int {
+func indexOf(b bucket, key g.Value) int {
 	for i, e := range b {
 
 		// panic-recover is the cleanest approach
@@ -137,7 +138,7 @@ func (hm *HashMap) rehash() {
 	}
 }
 
-func (hm *HashMap) hashBucket(key Value) int {
+func (hm *HashMap) hashBucket(key g.Value) int {
 
 	// panic-recover is the cleanest approach
 	hc, err := key.HashCode()

@@ -30,3 +30,40 @@ func ParseIndex(val Value, max int) (Int, Error) {
 		return nil, TypeMismatchError("Expected 'Int'")
 	}
 }
+
+func Strcat(a Value, b Value) (Str, Error) {
+
+	sa, err := fromValue(a)
+	if err != nil {
+		return nil, err
+	}
+
+	sb, err := fromValue(b)
+	if err != nil {
+		return nil, err
+	}
+
+	// copy to avoid memory leaks
+	ca := make([]rune, len(sa))
+	copy(ca, sa)
+
+	cb := make([]rune, len(sb))
+	copy(cb, sb)
+
+	result := make(str, 0, len(ca)+len(cb))
+	result = append(result, ca...)
+	result = append(result, cb...)
+	return result, nil
+}
+
+func fromValue(v Value) (str, Error) {
+	if sv, ok := v.(str); ok {
+		return sv, nil
+	} else {
+		s, err := v.ToStr()
+		if err != nil {
+			return nil, err
+		}
+		return toRunes(s.String()), nil
+	}
+}

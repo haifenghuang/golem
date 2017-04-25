@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
 go test golem/core
+go test golem/core/coll
 go test golem/core/comp
 go test golem/core/fn
 

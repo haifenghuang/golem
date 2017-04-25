@@ -17,6 +17,7 @@ package comp
 import (
 	//"fmt"
 	g "golem/core"
+	"golem/core/coll"
 	"reflect"
 	"testing"
 )
@@ -288,7 +289,7 @@ func TestList(t *testing.T) {
 }
 
 func TestCompositeHashCode(t *testing.T) {
-	h, err := NewDict(g.NewHashMap([]*g.HEntry{})).HashCode()
+	h, err := NewDict(coll.NewHashMap([]*coll.HEntry{})).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
 	h, err = NewList([]g.Value{}).HashCode()
@@ -299,14 +300,14 @@ func TestCompositeHashCode(t *testing.T) {
 }
 
 func TestDict(t *testing.T) {
-	d := NewDict(g.NewHashMap([]*g.HEntry{}))
+	d := NewDict(coll.NewHashMap([]*coll.HEntry{}))
 	okType(t, d, g.TDICT)
 
 	var v g.Value
 	v, err := d.ToStr()
 	ok(t, v, err, g.MakeStr("dict {}"))
 
-	v, err = d.Eq(NewDict(g.NewHashMap([]*g.HEntry{})))
+	v, err = d.Eq(NewDict(coll.NewHashMap([]*coll.HEntry{})))
 	ok(t, v, err, g.TRUE)
 
 	v, err = d.Eq(g.NULL)
@@ -324,11 +325,11 @@ func TestDict(t *testing.T) {
 	v, err = d.Get(g.MakeStr("a"))
 	ok(t, v, err, g.ONE)
 
-	v, err = d.Eq(NewDict(g.NewHashMap([]*g.HEntry{})))
+	v, err = d.Eq(NewDict(coll.NewHashMap([]*coll.HEntry{})))
 	ok(t, v, err, g.FALSE)
 
-	v, err = d.Eq(NewDict(g.NewHashMap([]*g.HEntry{
-		&g.HEntry{g.MakeStr("a"), g.ONE}})))
+	v, err = d.Eq(NewDict(coll.NewHashMap([]*coll.HEntry{
+		&coll.HEntry{g.MakeStr("a"), g.ONE}})))
 	ok(t, v, err, g.TRUE)
 
 	v, err = d.Len()
@@ -347,8 +348,8 @@ func TestDict(t *testing.T) {
 	ok(t, v, err, g.MakeStr("dict { b: 2, a: 1 }"))
 
 	tp := NewTuple([]g.Value{g.ONE, g.ZERO})
-	d = NewDict(g.NewHashMap([]*g.HEntry{
-		&g.HEntry{tp, g.TRUE}}))
+	d = NewDict(coll.NewHashMap([]*coll.HEntry{
+		&coll.HEntry{tp, g.TRUE}}))
 
 	v, err = d.ToStr()
 	ok(t, v, err, g.MakeStr("dict { (1, 0): true }"))

@@ -17,14 +17,15 @@ package comp
 import (
 	"bytes"
 	g "golem/core"
+	"golem/core/coll"
 	"reflect"
 )
 
 type dict struct {
-	hashMap *g.HashMap
+	hashMap *coll.HashMap
 }
 
-func NewDict(hashMap *g.HashMap) Dict {
+func NewDict(hashMap *coll.HashMap) Dict {
 	return &dict{hashMap}
 }
 
