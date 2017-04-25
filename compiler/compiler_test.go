@@ -19,6 +19,7 @@ import (
 	"golem/analyzer"
 	//"golem/ast"
 	g "golem/core"
+	"golem/core/comp"
 	"golem/core/fn"
 	"golem/parser"
 	"golem/scanner"
@@ -83,7 +84,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-2)),
 			g.MakeInt(int64(2))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -114,7 +115,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-4)),
 			g.MakeInt(int64(10))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -137,7 +138,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -162,7 +163,7 @@ func TestExpression(t *testing.T) {
 			g.MakeStr("a"),
 			g.MakeFloat(float64(12300))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -182,7 +183,7 @@ func TestExpression(t *testing.T) {
 		[]g.Value{
 			g.MakeStr("a")},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -201,7 +202,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -218,7 +219,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -236,7 +237,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -257,7 +258,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 1,
@@ -283,7 +284,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 1,
@@ -312,7 +313,7 @@ func TestAssignment(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 2,
@@ -361,7 +362,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(42)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 1,
@@ -395,7 +396,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 4,
@@ -432,7 +433,7 @@ func TestWhile(t *testing.T) {
 		[]g.Value{
 			g.MakeInt(2)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 2,
@@ -461,7 +462,7 @@ func TestWhile(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 3,
@@ -497,7 +498,7 @@ func TestReturn(t *testing.T) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 0,
@@ -519,7 +520,7 @@ func TestReturn(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 1,
@@ -569,7 +570,7 @@ let b = fn(x) {
 			g.MakeInt(42),
 			g.MakeInt(7)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{0, 0, 2,
 				[]byte{
@@ -646,7 +647,7 @@ c(2, 3);
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{0, 0, 3,
 				[]byte{
@@ -727,7 +728,7 @@ const accumGen = fn(n) {
 	ok(t, mod, &fn.Module{
 		[]g.Value{},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{0, 0, 1,
 				[]byte{
@@ -788,7 +789,7 @@ const accumGen = fn(n) {
 		[]g.Value{
 			g.MakeInt(2)},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{0, 0, 2,
 				[]byte{
@@ -860,12 +861,12 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 			g.MakeInt(4),
 			g.MakeInt(5)},
 		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{}},
-			&g.ObjDef{[]string{"a"}},
-			&g.ObjDef{[]string{"a", "b"}},
-			&g.ObjDef{[]string{"a", "b", "c"}},
-			&g.ObjDef{[]string{"d"}}},
+		[]*comp.ObjDef{
+			&comp.ObjDef{[]string{}},
+			&comp.ObjDef{[]string{"a"}},
+			&comp.ObjDef{[]string{"a", "b"}},
+			&comp.ObjDef{[]string{"a", "b", "c"}},
+			&comp.ObjDef{[]string{"d"}}},
 		[]*fn.Template{
 			&fn.Template{0, 0, 4,
 				[]byte{
@@ -913,8 +914,8 @@ x.a = 3;
 			g.MakeInt(3),
 			g.MakeStr("a")},
 		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{"a"}}},
+		[]*comp.ObjDef{
+			&comp.ObjDef{[]string{"a"}}},
 		[]*fn.Template{
 			&fn.Template{0, 0, 2,
 				[]byte{
@@ -966,8 +967,8 @@ let c = a.minus();
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{"x", "y", "plus", "minus"}}},
+		[]*comp.ObjDef{
+			&comp.ObjDef{[]string{"x", "y", "plus", "minus"}}},
 		[]*fn.Template{
 			&fn.Template{0, 0, 4,
 				[]byte{
@@ -1055,7 +1056,7 @@ let d = b--;
 			g.MakeInt(int64(10)),
 			g.MakeInt(int64(20))},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 4,
@@ -1107,7 +1108,7 @@ let d = b.y--;
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,
-		[]*g.ObjDef{},
+		[]*comp.ObjDef{},
 		[]*fn.Template{
 			&fn.Template{
 				0, 0, 4,

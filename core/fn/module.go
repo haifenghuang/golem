@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	g "golem/core"
+	"golem/core/comp"
 )
 
 //---------------------------------------------------------------
@@ -26,7 +27,7 @@ import (
 type Module struct {
 	Pool      []g.Value
 	Locals    []*Ref
-	ObjDefs   []*g.ObjDef
+	ObjDefs   []*comp.ObjDef
 	Templates []*Template
 }
 

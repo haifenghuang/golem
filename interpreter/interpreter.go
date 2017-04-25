@@ -17,6 +17,7 @@ package interpreter
 import (
 	"fmt"
 	g "golem/core"
+	"golem/core/comp"
 	"golem/core/fn"
 )
 
@@ -196,7 +197,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			ip += 3
 
 		case fn.NEW_OBJ:
-			s = append(s, g.NewObj())
+			s = append(s, comp.NewObj())
 			ip++
 
 		case fn.INIT_OBJ:
@@ -206,7 +207,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			size := len(def.Keys)
 
 			// get obj and values
-			obj, ok := s[n-size].(g.Obj)
+			obj, ok := s[n-size].(comp.Obj)
 			if !ok {
 				panic("Invalid INIT_OBJ")
 			}
@@ -228,7 +229,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			copy(vals, s[n-size+1:])
 
 			s = s[:n-size+1]
-			s = append(s, g.NewList(vals))
+			s = append(s, comp.NewList(vals))
 			ip += 3
 
 		case fn.NEW_TUPLE:
@@ -238,7 +239,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			copy(vals, s[n-size+1:])
 
 			s = s[:n-size+1]
-			s = append(s, g.NewTuple(vals))
+			s = append(s, comp.NewTuple(vals))
 			ip += 3
 
 		case fn.NEW_DICT:
@@ -252,7 +253,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			s = s[:n-numVals+1]
-			s = append(s, g.NewDict(g.NewHashMap(entries)))
+			s = append(s, comp.NewDict(g.NewHashMap(entries)))
 			ip += 3
 
 		case fn.GET_FIELD:
@@ -264,7 +265,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n].(g.Obj)
+			obj, ok := s[n].(comp.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -288,7 +289,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			obj, ok := s[n-1].(comp.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -316,7 +317,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			obj, ok := s[n-1].(comp.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -644,7 +645,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 		case fn.HAS:
 
 			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			obj, ok := s[n-1].(comp.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),

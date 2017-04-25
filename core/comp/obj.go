@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package core
+package comp
 
 import (
 	"bytes"
+	g "golem/core"
 	"reflect"
 )
 
@@ -33,7 +34,7 @@ type ObjDef struct {
 
 type obj struct {
 	// TODO replace this with a more efficient data structure
-	fields map[string]Value
+	fields map[string]g.Value
 	inited bool
 }
 
@@ -41,8 +42,8 @@ func NewObj() Obj {
 	return &obj{nil, false}
 }
 
-func (o *obj) Init(def *ObjDef, vals []Value) {
-	o.fields = make(map[string]Value)
+func (o *obj) Init(def *ObjDef, vals []g.Value) {
+	o.fields = make(map[string]g.Value)
 	for i, k := range def.Keys {
 		o.fields[k] = vals[i]
 	}
@@ -51,21 +52,21 @@ func (o *obj) Init(def *ObjDef, vals []Value) {
 
 func (o *obj) compositeMarker() {}
 
-func (o *obj) TypeOf() (Type, Error) {
+func (o *obj) TypeOf() (g.Type, g.Error) {
 	if !o.inited {
-		return TOBJ, UninitializedObjError()
+		return g.TOBJ, g.UninitializedObjError()
 	}
 
-	return TOBJ, nil
+	return g.TOBJ, nil
 }
 
-func (o *obj) ToStr() (Str, Error) {
+func (o *obj) ToStr() (g.Str, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
 	if len(o.fields) == 0 {
-		return MakeStr("obj {}"), nil
+		return g.MakeStr("obj {}"), nil
 	}
 
 	var buf bytes.Buffer
@@ -87,95 +88,95 @@ func (o *obj) ToStr() (Str, Error) {
 		buf.WriteString(s.String())
 	}
 	buf.WriteString(" }")
-	return MakeStr(buf.String()), nil
+	return g.MakeStr(buf.String()), nil
 }
 
-func (o *obj) HashCode() (Int, Error) {
+func (o *obj) HashCode() (g.Int, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
 	// TODO $hash()
-	return nil, TypeMismatchError("Expected Hashable Type")
+	return nil, g.TypeMismatchError("Expected Hashable Type")
 }
 
-func (o *obj) Eq(v Value) (Bool, Error) {
+func (o *obj) Eq(v g.Value) (g.Bool, g.Error) {
 	if !o.inited {
-		return FALSE, UninitializedObjError()
+		return g.FALSE, g.UninitializedObjError()
 	}
 
 	// TODO $eq()
 	switch t := v.(type) {
 	case *obj:
-		return MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
+		return g.MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
 	default:
-		return FALSE, nil
+		return g.FALSE, nil
 	}
 }
 
-func (o *obj) Cmp(v Value) (Int, Error) {
+func (o *obj) Cmp(v g.Value) (g.Int, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
-	return nil, TypeMismatchError("Expected Comparable Type")
+	return nil, g.TypeMismatchError("Expected Comparable Type")
 }
 
-func (o *obj) Add(v Value) (Value, Error) {
+func (o *obj) Add(v g.Value) (g.Value, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
 	switch t := v.(type) {
 
-	case Str:
-		return Strcat(o, t)
+	case g.Str:
+		return g.Strcat(o, t)
 
 	default:
-		return nil, TypeMismatchError("Expected Number Type")
+		return nil, g.TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (o *obj) Get(index Value) (Value, Error) {
+func (o *obj) Get(index g.Value) (g.Value, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
-	if s, ok := index.(Str); ok {
+	if s, ok := index.(g.Str); ok {
 		return o.GetField(s)
 	} else {
-		return nil, TypeMismatchError("Expected 'Str'")
+		return nil, g.TypeMismatchError("Expected 'Str'")
 	}
 }
 
-func (o *obj) Set(index Value, val Value) Error {
+func (o *obj) Set(index g.Value, val g.Value) g.Error {
 	if !o.inited {
-		return UninitializedObjError()
+		return g.UninitializedObjError()
 	}
 
-	if s, ok := index.(Str); ok {
+	if s, ok := index.(g.Str); ok {
 		return o.PutField(s, val)
 	} else {
-		return TypeMismatchError("Expected 'Str'")
+		return g.TypeMismatchError("Expected 'Str'")
 	}
 }
 
-func (o *obj) GetField(key Str) (Value, Error) {
+func (o *obj) GetField(key g.Str) (g.Value, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
 	v, ok := o.fields[key.String()]
 	if ok {
 		return v, nil
 	} else {
-		return nil, NoSuchFieldError(key.String())
+		return nil, g.NoSuchFieldError(key.String())
 	}
 }
 
-func (o *obj) PutField(key Str, val Value) Error {
+func (o *obj) PutField(key g.Str, val g.Value) g.Error {
 	if !o.inited {
-		return UninitializedObjError()
+		return g.UninitializedObjError()
 	}
 
 	_, ok := o.fields[key.String()]
@@ -183,19 +184,19 @@ func (o *obj) PutField(key Str, val Value) Error {
 		o.fields[key.String()] = val
 		return nil
 	} else {
-		return NoSuchFieldError(key.String())
+		return g.NoSuchFieldError(key.String())
 	}
 }
 
-func (o *obj) Has(key Value) (Bool, Error) {
+func (o *obj) Has(key g.Value) (g.Bool, g.Error) {
 	if !o.inited {
-		return nil, UninitializedObjError()
+		return nil, g.UninitializedObjError()
 	}
 
-	if s, ok := key.(Str); ok {
+	if s, ok := key.(g.Str); ok {
 		_, has := o.fields[s.String()]
-		return MakeBool(has), nil
+		return g.MakeBool(has), nil
 	} else {
-		return nil, TypeMismatchError("Expected 'Str'")
+		return nil, g.TypeMismatchError("Expected 'Str'")
 	}
 }

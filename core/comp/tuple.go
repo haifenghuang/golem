@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package core
+package comp
 
 import (
 	"bytes"
+	g "golem/core"
 	"reflect"
 )
 
@@ -23,10 +24,10 @@ import (
 // tuple
 
 type tuple struct {
-	array []Value
+	array []g.Value
 }
 
-func NewTuple(values []Value) Tuple {
+func NewTuple(values []g.Value) Tuple {
 	if len(values) < 2 {
 		panic("invalid tuple size")
 	}
@@ -35,11 +36,11 @@ func NewTuple(values []Value) Tuple {
 
 func (tp *tuple) compositeMarker() {}
 
-func (tp *tuple) TypeOf() (Type, Error) {
-	return TTUPLE, nil
+func (tp *tuple) TypeOf() (g.Type, g.Error) {
+	return g.TTUPLE, nil
 }
 
-func (tp *tuple) ToStr() (Str, Error) {
+func (tp *tuple) ToStr() (g.Str, g.Error) {
 	var buf bytes.Buffer
 	buf.WriteString("(")
 	for idx, v := range tp.array {
@@ -53,10 +54,10 @@ func (tp *tuple) ToStr() (Str, Error) {
 		buf.WriteString(s.String())
 	}
 	buf.WriteString(")")
-	return MakeStr(buf.String()), nil
+	return g.MakeStr(buf.String()), nil
 }
 
-func (tp *tuple) HashCode() (Int, Error) {
+func (tp *tuple) HashCode() (g.Int, g.Error) {
 
 	// https://en.wikipedia.org/wiki/Jenkins_hash_function
 	var hash int64 = 0
@@ -72,41 +73,41 @@ func (tp *tuple) HashCode() (Int, Error) {
 	hash += hash << 3
 	hash ^= hash >> 11
 	hash += hash << 15
-	return MakeInt(hash), nil
+	return g.MakeInt(hash), nil
 }
 
-func (tp *tuple) Eq(v Value) (Bool, Error) {
+func (tp *tuple) Eq(v g.Value) (g.Bool, g.Error) {
 	switch t := v.(type) {
 	case *tuple:
-		return MakeBool(reflect.DeepEqual(tp.array, t.array)), nil
+		return g.MakeBool(reflect.DeepEqual(tp.array, t.array)), nil
 	default:
-		return FALSE, nil
+		return g.FALSE, nil
 	}
 }
 
-func (tp *tuple) Cmp(v Value) (Int, Error) {
-	return nil, TypeMismatchError("Expected Comparable Type")
+func (tp *tuple) Cmp(v g.Value) (g.Int, g.Error) {
+	return nil, g.TypeMismatchError("Expected Comparable Type")
 }
 
-func (tp *tuple) Add(v Value) (Value, Error) {
+func (tp *tuple) Add(v g.Value) (g.Value, g.Error) {
 	switch t := v.(type) {
 
-	case Str:
-		return Strcat(tp, t)
+	case g.Str:
+		return g.Strcat(tp, t)
 
 	default:
-		return nil, TypeMismatchError("Expected Number Type")
+		return nil, g.TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (tp *tuple) Get(index Value) (Value, Error) {
-	idx, err := parseIndex(index, len(tp.array))
+func (tp *tuple) Get(index g.Value) (g.Value, g.Error) {
+	idx, err := g.ParseIndex(index, len(tp.array))
 	if err != nil {
 		return nil, err
 	}
 	return tp.array[idx.IntVal()], nil
 }
 
-func (tp *tuple) Len() (Int, Error) {
-	return MakeInt(int64(len(tp.array))), nil
+func (tp *tuple) Len() (g.Int, g.Error) {
+	return g.MakeInt(int64(len(tp.array))), nil
 }

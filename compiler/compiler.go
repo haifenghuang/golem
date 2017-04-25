@@ -19,6 +19,7 @@ import (
 	"golem/analyzer"
 	"golem/ast"
 	g "golem/core"
+	"golem/core/comp"
 	"golem/core/fn"
 	"strconv"
 )
@@ -36,7 +37,7 @@ type compiler struct {
 
 	funcs     []*ast.FnExpr
 	templates []*fn.Template
-	defs      []*g.ObjDef
+	defs      []*comp.ObjDef
 	idx       int
 }
 
@@ -44,7 +45,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*fn.Template{}
-	defs := []*g.ObjDef{}
+	defs := []*comp.ObjDef{}
 	return &compiler{anl, []g.Value{}, nil, nil, funcs, templates, defs, 0}
 }
 
@@ -619,7 +620,7 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 
 	// create ObjDef for keys
-	def := &g.ObjDef{make([]string, len(obj.Keys), len(obj.Keys))}
+	def := &comp.ObjDef{make([]string, len(obj.Keys), len(obj.Keys))}
 	for i, k := range obj.Keys {
 		def.Keys[i] = k.Text
 	}

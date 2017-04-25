@@ -19,6 +19,7 @@ import (
 	"golem/analyzer"
 	"golem/compiler"
 	g "golem/core"
+	"golem/core/comp"
 	"golem/core/fn"
 	"golem/parser"
 	"golem/scanner"
@@ -202,10 +203,10 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "'abcd'[1:3];", g.MakeStr("bc"))
 	ok_expr(t, "'abcd'[1:1];", g.MakeStr(""))
 
-	ok_expr(t, "[6,7,8][1:];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
-	ok_expr(t, "[6,7,8][:1];", g.NewList([]g.Value{g.MakeInt(6)}))
-	ok_expr(t, "[6,7,8,9][1:3];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
-	ok_expr(t, "[6,7,8,9][1:1];", g.NewList([]g.Value{}))
+	ok_expr(t, "[6,7,8][1:];", comp.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8][:1];", comp.NewList([]g.Value{g.MakeInt(6)}))
+	ok_expr(t, "[6,7,8,9][1:3];", comp.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8,9][1:1];", comp.NewList([]g.Value{}))
 
 	ok_expr(t, "obj{a: 1}['a'];", g.ONE)
 	ok_expr(t, "obj{a: 1} has 'a';", g.TRUE)
@@ -451,9 +452,9 @@ let y = a(1);
 
 }
 
-func newObj(fields map[string]g.Value) g.Obj {
-	o := g.NewObj()
-	def := &g.ObjDef{[]string{}}
+func newObj(fields map[string]g.Value) comp.Obj {
+	o := comp.NewObj()
+	def := &comp.ObjDef{[]string{}}
 	values := []g.Value{}
 	for k, v := range fields {
 		def.Keys = append(def.Keys, k)
@@ -622,9 +623,9 @@ let e = c[1]++;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewList([]g.Value{}))
-	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(33)}))
-	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
+	ok_ref(t, mod.Locals[0], comp.NewList([]g.Value{}))
+	ok_ref(t, mod.Locals[1], comp.NewList([]g.Value{g.MakeInt(33)}))
+	ok_ref(t, mod.Locals[2], comp.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
 	ok_ref(t, mod.Locals[3], g.TRUE)
 	ok_ref(t, mod.Locals[4], g.MakeInt(22))
 }
@@ -687,7 +688,7 @@ let c = a[1];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
+	ok_ref(t, mod.Locals[0], comp.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(4))
 	ok_ref(t, mod.Locals[2], g.MakeInt(5))
 }

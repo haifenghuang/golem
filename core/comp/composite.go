@@ -12,25 +12,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package core
+package comp
 
 import (
-	"testing"
+	g "golem/core"
 )
 
-func TestUtil(t *testing.T) {
-	i, err := ParseIndex(MakeInt(0), 2)
-	ok(t, i, err, MakeInt(0))
+type (
+	Composite interface {
+		g.Value
+		compositeMarker()
+	}
 
-	i, err = ParseIndex(MakeInt(1), 2)
-	ok(t, i, err, MakeInt(1))
+	List interface {
+		Composite
+		g.Indexable
+		g.Lenable
+		g.Sliceable
 
-	i, err = ParseIndex(MakeStr(""), 2)
-	fail(t, i, err, "TypeMismatch: Expected 'Int'")
+		Append(g.Value) g.Error
+	}
 
-	i, err = ParseIndex(MakeInt(-1), 2)
-	fail(t, i, err, "IndexOutOfBounds")
+	Tuple interface {
+		Composite
+		g.Getable
+		g.Lenable
+	}
 
-	i, err = ParseIndex(MakeInt(2), 2)
-	fail(t, i, err, "IndexOutOfBounds")
-}
+	Obj interface {
+		Composite
+		g.Indexable
+
+		Init(*ObjDef, []g.Value)
+
+		GetField(g.Str) (g.Value, g.Error)
+		PutField(g.Str, g.Value) g.Error
+		Has(g.Value) (g.Bool, g.Error)
+	}
+
+	Dict interface {
+		Composite
+		g.Indexable
+		g.Lenable
+	}
+)

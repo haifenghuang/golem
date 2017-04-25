@@ -17,8 +17,8 @@ package core
 import ()
 
 // Parse an index value.
-// The value must be between 0 (inclusive) and max (exclusive)
-func parseIndex(val Value, max int) (Int, Error) {
+// The value must be between 0 (inclusive) and max (exclusive).
+func ParseIndex(val Value, max int) (Int, Error) {
 	if i, ok := val.(Int); ok {
 		n := int(i.IntVal())
 		if (n < 0) || (n >= max) {

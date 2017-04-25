@@ -76,7 +76,7 @@ func (s str) Add(v Value) (Value, Error) {
 }
 
 func (s str) Get(index Value) (Value, Error) {
-	idx, err := parseIndex(index, len(s))
+	idx, err := ParseIndex(index, len(s))
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +90,12 @@ func (s str) Len() (Int, Error) {
 
 func (s str) Slice(from Value, to Value) (Value, Error) {
 
-	f, err := parseIndex(from, len(s))
+	f, err := ParseIndex(from, len(s))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := parseIndex(to, len(s)+1)
+	t, err := ParseIndex(to, len(s)+1)
 	if err != nil {
 		return nil, err
 	}

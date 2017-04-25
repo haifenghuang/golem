@@ -65,7 +65,7 @@ func (t Type) String() string {
 }
 
 //---------------------------------------------------------------
-// Various Functionality
+// Shared Interfaces
 
 type (
 	Getable interface {
@@ -107,14 +107,6 @@ type (
 		Value
 		basicMarker()
 	}
-
-	Composite interface {
-		Value
-		compositeMarker()
-	}
-
-	//-----------------------------------------
-	// Basic
 
 	Null interface {
 		Basic
@@ -161,41 +153,5 @@ type (
 		LeftShift(Value) (Int, Error)
 		RightShift(Value) (Int, Error)
 		Complement() (Int, Error)
-	}
-
-	//-----------------------------------------
-	// Composite
-
-	List interface {
-		Composite
-		Indexable
-		Lenable
-		Sliceable
-
-		Append(Value) Error
-	}
-
-	Tuple interface {
-		Composite
-
-		Getable
-		Lenable
-	}
-
-	Obj interface {
-		Composite
-		Indexable
-
-		Init(*ObjDef, []Value)
-
-		GetField(Str) (Value, Error)
-		PutField(Str, Value) Error
-		Has(Value) (Bool, Error)
-	}
-
-	Dict interface {
-		Composite
-		Indexable
-		Lenable
 	}
 )
