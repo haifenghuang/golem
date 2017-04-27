@@ -552,6 +552,15 @@ let a = divide(3, 0);
 		[]string{
 			"    at line 3",
 			"    at line 5"}})
+
+	source = `
+let foo = fn(n) { n + n; };
+let a = foo(5, 6);
+	`
+	fail(t, source, &ErrorStack{
+		g.ArityMismatchError("1", 2),
+		[]string{
+			"    at line 3"}})
 }
 
 func TestPostfix(t *testing.T) {

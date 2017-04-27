@@ -100,6 +100,15 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 				/////////////////////////////////
 				// invoke a bytecode-defined func
 
+				// check arity
+				arity := len(params)
+				if arity != fn.Template().Arity {
+					err := g.ArityMismatchError(
+						fmt.Sprintf("%d", fn.Template().Arity), arity)
+					return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+				}
+
+				// pop from stack, and advance instruction pointer
 				s = s[:n-idx]
 				ip += 3
 
@@ -118,7 +127,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 				/////////////////////////////////
 				// invoke a natively-defined func
 
-				val, err := fn.Invoke(params)
+				val, err := fn.Invoke(params) // Invoke() is responsible for arity check
 				if err != nil {
 					return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 				}
