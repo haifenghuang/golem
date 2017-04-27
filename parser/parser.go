@@ -871,7 +871,8 @@ func isBuiltIn(t *ast.Token) bool {
 		ast.FN_PRINT,
 		ast.FN_PRINTLN,
 		ast.FN_STR,
-		ast.FN_LEN:
+		ast.FN_LEN,
+		ast.FN_RANGE:
 		return true
 	default:
 		return false

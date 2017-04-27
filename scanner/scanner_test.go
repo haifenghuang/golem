@@ -287,12 +287,13 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.DICT, "dict", 1, 14)
 	ok(t, s, ast.EOF, "", 1, 18)
 
-	s = NewScanner("print println str len")
+	s = NewScanner("print println str len range")
 	ok(t, s, ast.FN_PRINT, "print", 1, 1)
 	ok(t, s, ast.FN_PRINTLN, "println", 1, 7)
 	ok(t, s, ast.FN_STR, "str", 1, 15)
 	ok(t, s, ast.FN_LEN, "len", 1, 19)
-	ok(t, s, ast.EOF, "", 1, 22)
+	ok(t, s, ast.FN_RANGE, "range", 1, 23)
+	ok(t, s, ast.EOF, "", 1, 28)
 }
 
 func TestComments(t *testing.T) {

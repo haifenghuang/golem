@@ -31,6 +31,7 @@ const (
 	TFLOAT
 	TFUNC
 	TLIST
+	TRANGE
 	TTUPLE
 	TDICT
 	TOBJ
@@ -52,6 +53,8 @@ func (t Type) String() string {
 		return "Func"
 	case TLIST:
 		return "List"
+	case TRANGE:
+		return "Range"
 	case TTUPLE:
 		return "Tuple"
 	case TDICT:

@@ -49,10 +49,10 @@ func TypeMismatchError(msg string) Error {
 	return &serror{"TypeMismatch", msg}
 }
 
-func ArityMismatchError(expected int, actual int) Error {
+func ArityMismatchError(expected string, actual int) Error {
 	return &serror{
 		"ArityMismatch",
-		fmt.Sprintf("Expected %d params, got %d", expected, actual)}
+		fmt.Sprintf("Expected %s params, got %d", expected, actual)}
 }
 
 func UninitializedObjError() Error {

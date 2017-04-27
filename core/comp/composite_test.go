@@ -35,7 +35,7 @@ func ok(t *testing.T, val g.Value, err g.Error, expect g.Value) {
 	}
 
 	if !reflect.DeepEqual(val, expect) {
-		panic("asdfasfad")
+		//fmt.Println(val, expect)
 		t.Error(val, " != ", expect)
 	}
 }
@@ -390,4 +390,77 @@ func TestTuple(t *testing.T) {
 
 	v, err = tp.Len()
 	ok(t, v, err, g.MakeInt(2))
+}
+
+func newRange(from int64, to int64, step int64) Range {
+	r, err := NewRange(from, to, step)
+	if err != nil {
+		panic("invalid range")
+	}
+	return r
+}
+
+func TestRange(t *testing.T) {
+	var v g.Value
+
+	r := newRange(0, 5, 1)
+	okType(t, r, g.TRANGE)
+
+	v, err := r.Eq(newRange(0, 5, 2))
+	ok(t, v, err, g.FALSE)
+
+	v, err = r.Eq(newRange(0, 5, 1))
+	ok(t, v, err, g.TRUE)
+
+	v, err = r.Eq(g.NULL)
+	ok(t, v, err, g.FALSE)
+
+	v, err = r.Len()
+	ok(t, v, err, g.MakeInt(5))
+
+	v, err = newRange(0, 6, 3).Len()
+	ok(t, v, err, g.MakeInt(2))
+	v, err = newRange(0, 7, 3).Len()
+	ok(t, v, err, g.MakeInt(2))
+	v, err = newRange(0, 8, 3).Len()
+	ok(t, v, err, g.MakeInt(2))
+	v, err = newRange(0, 9, 3).Len()
+	ok(t, v, err, g.MakeInt(3))
+
+	v, err = newRange(0, 0, 3).Len()
+	ok(t, v, err, g.MakeInt(0))
+	v, err = newRange(1, 0, 1).Len()
+	ok(t, v, err, g.MakeInt(0))
+
+	v, err = NewRange(1, 0, 0)
+	fail(t, v, err, "InvalidArgument: step cannot be 0")
+
+	v, err = newRange(0, -5, -1).Len()
+	ok(t, v, err, g.MakeInt(5))
+	v, err = newRange(-1, -8, -3).Len()
+	ok(t, v, err, g.MakeInt(2))
+
+	r = newRange(0, 5, 1)
+	v, err = r.Get(g.ONE)
+	ok(t, v, err, g.MakeInt(1))
+
+	r = newRange(3, 9, 2)
+	v, err = r.Get(g.MakeInt(2))
+	ok(t, v, err, g.MakeInt(7))
+
+	r = newRange(-9, -13, -1)
+	v, err = r.Get(g.ONE)
+	ok(t, v, err, g.MakeInt(-10))
+
+	r = newRange(0, 5, 1)
+	v, err = r.Slice(g.ONE, g.MakeInt(3))
+	ok(t, v, err, newRange(1, 3, 1))
+	v, err = r.SliceFrom(g.ONE)
+	ok(t, v, err, newRange(1, 5, 1))
+	v, err = r.SliceTo(g.MakeInt(3))
+	ok(t, v, err, newRange(0, 3, 1))
+
+	ok(t, r.From(), nil, g.ZERO)
+	ok(t, r.To(), nil, g.MakeInt(5))
+	ok(t, r.Step(), nil, g.ONE)
 }

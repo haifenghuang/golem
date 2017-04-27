@@ -17,6 +17,7 @@ package fn
 import (
 	"fmt"
 	g "golem/core"
+	"golem/core/comp"
 )
 
 const (
@@ -24,18 +25,21 @@ const (
 	PRINTLN
 	STR
 	LEN
+	RANGE
 )
 
 var Builtins = []NativeFunc{
 	&_print{&_nativeFunc{}},
 	&_println{&_nativeFunc{}},
 	&_str{&_nativeFunc{}},
-	&_len{&_nativeFunc{}}}
+	&_len{&_nativeFunc{}},
+	&_range{&_nativeFunc{}}}
 
 type _print struct{ *_nativeFunc }
 type _println struct{ *_nativeFunc }
 type _str struct{ *_nativeFunc }
 type _len struct{ *_nativeFunc }
+type _range struct{ *_nativeFunc }
 
 func (builtin *_print) Invoke(values []g.Value) (g.Value, g.Error) {
 	for _, v := range values {
@@ -64,7 +68,7 @@ func (builtin *_println) Invoke(values []g.Value) (g.Value, g.Error) {
 
 func (builtin *_str) Invoke(values []g.Value) (g.Value, g.Error) {
 	if len(values) != 1 {
-		return nil, g.ArityMismatchError(1, len(values))
+		return nil, g.ArityMismatchError("1", len(values))
 	}
 
 	return values[0].ToStr()
@@ -72,7 +76,7 @@ func (builtin *_str) Invoke(values []g.Value) (g.Value, g.Error) {
 
 func (builtin *_len) Invoke(values []g.Value) (g.Value, g.Error) {
 	if len(values) != 1 {
-		return nil, g.ArityMismatchError(1, len(values))
+		return nil, g.ArityMismatchError("1", len(values))
 	}
 
 	if ln, ok := values[0].(g.Lenable); ok {
@@ -80,4 +84,30 @@ func (builtin *_len) Invoke(values []g.Value) (g.Value, g.Error) {
 	} else {
 		return nil, g.TypeMismatchError("Expected Lenable Type")
 	}
+}
+
+func (builtin *_range) Invoke(values []g.Value) (g.Value, g.Error) {
+	if len(values) < 2 || len(values) > 3 {
+		return nil, g.ArityMismatchError("2 or 3", len(values))
+	}
+
+	from, ok := values[0].(g.Int)
+	if !ok {
+		return nil, g.TypeMismatchError("Expected 'Int'")
+	}
+
+	to, ok := values[1].(g.Int)
+	if !ok {
+		return nil, g.TypeMismatchError("Expected 'Int'")
+	}
+
+	step := g.ONE
+	if len(values) == 3 {
+		step, ok = values[2].(g.Int)
+		if !ok {
+			return nil, g.TypeMismatchError("Expected 'Int'")
+		}
+	}
+
+	return comp.NewRange(from.IntVal(), to.IntVal(), step.IntVal())
 }

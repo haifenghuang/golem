@@ -588,6 +588,9 @@ func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
 	case ast.FN_LEN:
 		high, low := index(fn.LEN)
 		c.push(blt.Fn.Position, fn.LOAD_BUILTIN, high, low)
+	case ast.FN_RANGE:
+		high, low := index(fn.RANGE)
+		c.push(blt.Fn.Position, fn.LOAD_BUILTIN, high, low)
 
 	default:
 		panic("unknown builtin function")

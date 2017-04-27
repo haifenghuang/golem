@@ -146,7 +146,7 @@ func (bf *_bytecodeFunc) PushCapture(ref *Ref) {
 }
 
 func (bf *_bytecodeFunc) bytecodeStr() string {
-	return fmt.Sprintf("func(%p)", bf)
+	return fmt.Sprintf("func<%p>", bf)
 }
 
 //---------------------------------------------------------------
@@ -184,5 +184,5 @@ func (nf *_nativeFunc) Add(v g.Value) (g.Value, g.Error) {
 }
 
 func (nf *_nativeFunc) nativeStr() string {
-	return fmt.Sprintf("nativeFunc(%p)", nf)
+	return fmt.Sprintf("nativeFunc<%p>", nf)
 }

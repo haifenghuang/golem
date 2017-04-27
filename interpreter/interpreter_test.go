@@ -651,11 +651,21 @@ let d = a['x'];
 	ok_ref(t, mod.Locals[3], g.NEG_ONE)
 }
 
+func newRange(from int64, to int64, step int64) comp.Range {
+	r, err := comp.NewRange(from, to, step)
+	if err != nil {
+		panic("invalid range")
+	}
+	return r
+}
+
 func TestBuiltin(t *testing.T) {
 
 	source := `
 let a = len([4,5,6]);
 let b = str([4,5,6]);
+let c = range(0, 5);
+let d = range(0, 5, 2);
 print();
 println();
 print(a);
@@ -672,6 +682,8 @@ println(a,b);
 
 	ok_ref(t, mod.Locals[0], g.MakeInt(3))
 	ok_ref(t, mod.Locals[1], g.MakeStr("[ 4, 5, 6 ]"))
+	ok_ref(t, mod.Locals[2], newRange(0, 5, 1))
+	ok_ref(t, mod.Locals[3], newRange(0, 5, 2))
 }
 
 func TestTuple(t *testing.T) {

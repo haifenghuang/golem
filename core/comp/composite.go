@@ -33,6 +33,17 @@ type (
 		Append(g.Value) g.Error
 	}
 
+	Range interface {
+		Composite
+		g.Getable
+		g.Lenable
+		g.Sliceable
+
+		From() g.Int
+		To() g.Int
+		Step() g.Int
+	}
+
 	Tuple interface {
 		Composite
 		g.Getable

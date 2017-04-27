@@ -124,6 +124,7 @@ const (
 	FN_PRINTLN
 	FN_STR
 	FN_LEN
+	FN_RANGE
 )
 
 func (t TokenKind) String() string {
@@ -255,6 +256,8 @@ func (t TokenKind) String() string {
 		return "FN_STR"
 	case FN_LEN:
 		return "FN_LEN"
+	case FN_RANGE:
+		return "FN_RANGE"
 
 	default:
 		panic("unreachable")

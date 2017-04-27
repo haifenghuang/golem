@@ -377,6 +377,8 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.FN_STR, text, pos}
 	case "len":
 		return &ast.Token{ast.FN_LEN, text, pos}
+	case "range":
+		return &ast.Token{ast.FN_RANGE, text, pos}
 
 	default:
 		return &ast.Token{ast.IDENT, text, pos}
