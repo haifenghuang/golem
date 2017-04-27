@@ -873,7 +873,7 @@ func (inp *Interpreter) stringFrames(
 	instPtr int) []string {
 
 	n := len(inp.frames)
-	stack := make([]string, n+1)
+	stack := []string{}
 
 	lineNum := curFunc.Template().LineNumber(instPtr)
 	stack = append(stack, fmt.Sprintf("    at line %d", lineNum))

@@ -102,7 +102,7 @@ func fail(t *testing.T, source string, expect *ErrorStack) {
 		panic(result)
 	}
 
-	if reflect.DeepEqual(errStack, expect) {
+	if !reflect.DeepEqual(errStack, expect) {
 		t.Error(errStack, " != ", expect)
 	}
 }
