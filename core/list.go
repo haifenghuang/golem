@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package comp
+package core
 
 import (
 	"bytes"
-	g "golem/core"
 	"reflect"
 )
 
@@ -24,23 +23,23 @@ import (
 // list
 
 type list struct {
-	array []g.Value
+	array []Value
 }
 
-func NewList(values []g.Value) List {
+func NewList(values []Value) List {
 	return &list{values}
 }
 
 func (ls *list) compositeMarker() {}
 
-func (ls *list) TypeOf() (g.Type, g.Error) {
-	return g.TLIST, nil
+func (ls *list) TypeOf() (Type, Error) {
+	return TLIST, nil
 }
 
-func (ls *list) ToStr() (g.Str, g.Error) {
+func (ls *list) ToStr() (Str, Error) {
 
 	if len(ls.array) == 0 {
-		return g.MakeStr("[]"), nil
+		return MakeStr("[]"), nil
 	}
 
 	var buf bytes.Buffer
@@ -57,47 +56,47 @@ func (ls *list) ToStr() (g.Str, g.Error) {
 		buf.WriteString(s.String())
 	}
 	buf.WriteString(" ]")
-	return g.MakeStr(buf.String()), nil
+	return MakeStr(buf.String()), nil
 }
 
-func (ls *list) HashCode() (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Hashable Type")
+func (ls *list) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (ls *list) Eq(v g.Value) (g.Bool, g.Error) {
+func (ls *list) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *list:
-		return g.MakeBool(reflect.DeepEqual(ls.array, t.array)), nil
+		return MakeBool(reflect.DeepEqual(ls.array, t.array)), nil
 	default:
-		return g.FALSE, nil
+		return FALSE, nil
 	}
 }
 
-func (ls *list) Cmp(v g.Value) (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Comparable Type")
+func (ls *list) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (ls *list) Add(v g.Value) (g.Value, g.Error) {
+func (ls *list) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
-	case g.Str:
-		return g.Strcat(ls, t)
+	case Str:
+		return Strcat(ls, t)
 
 	default:
-		return nil, g.TypeMismatchError("Expected Number Type")
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (ls *list) Get(index g.Value) (g.Value, g.Error) {
-	idx, err := g.ParseIndex(index, len(ls.array))
+func (ls *list) Get(index Value) (Value, Error) {
+	idx, err := ParseIndex(index, len(ls.array))
 	if err != nil {
 		return nil, err
 	}
 	return ls.array[idx.IntVal()], nil
 }
 
-func (ls *list) Set(index g.Value, val g.Value) g.Error {
-	idx, err := g.ParseIndex(index, len(ls.array))
+func (ls *list) Set(index Value, val Value) Error {
+	idx, err := ParseIndex(index, len(ls.array))
 	if err != nil {
 		return err
 	}
@@ -106,42 +105,42 @@ func (ls *list) Set(index g.Value, val g.Value) g.Error {
 	return nil
 }
 
-func (ls *list) Append(val g.Value) g.Error {
+func (ls *list) Append(val Value) Error {
 	ls.array = append(ls.array, val)
 	return nil
 }
 
-func (ls *list) Len() (g.Int, g.Error) {
-	return g.MakeInt(int64(len(ls.array))), nil
+func (ls *list) Len() (Int, Error) {
+	return MakeInt(int64(len(ls.array))), nil
 }
 
-func (ls *list) Slice(from g.Value, to g.Value) (g.Value, g.Error) {
+func (ls *list) Slice(from Value, to Value) (Value, Error) {
 
-	f, err := g.ParseIndex(from, len(ls.array))
+	f, err := ParseIndex(from, len(ls.array))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := g.ParseIndex(to, len(ls.array)+1)
+	t, err := ParseIndex(to, len(ls.array)+1)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO do we want a different error here?
 	if t.IntVal() < f.IntVal() {
-		return nil, g.IndexOutOfBoundsError()
+		return nil, IndexOutOfBoundsError()
 	}
 
 	a := ls.array[f.IntVal():t.IntVal()]
-	b := make([]g.Value, len(a))
+	b := make([]Value, len(a))
 	copy(b, a)
 	return NewList(b), nil
 }
 
-func (ls *list) SliceFrom(from g.Value) (g.Value, g.Error) {
-	return ls.Slice(from, g.MakeInt(int64(len(ls.array))))
+func (ls *list) SliceFrom(from Value) (Value, Error) {
+	return ls.Slice(from, MakeInt(int64(len(ls.array))))
 }
 
-func (ls *list) SliceTo(to g.Value) (g.Value, g.Error) {
-	return ls.Slice(g.ZERO, to)
+func (ls *list) SliceTo(to Value) (Value, Error) {
+	return ls.Slice(ZERO, to)
 }

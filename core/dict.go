@@ -12,32 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package comp
+package core
 
 import (
 	"bytes"
-	g "golem/core"
-	"golem/core/coll"
 	"reflect"
 )
 
 type dict struct {
-	hashMap *coll.HashMap
+	hashMap *HashMap
 }
 
-func NewDict(hashMap *coll.HashMap) Dict {
+func NewDict(hashMap *HashMap) Dict {
 	return &dict{hashMap}
 }
 
 func (d *dict) compositeMarker() {}
 
-func (d *dict) TypeOf() (g.Type, g.Error) {
-	return g.TDICT, nil
+func (d *dict) TypeOf() (Type, Error) {
+	return TDICT, nil
 }
 
-func (d *dict) ToStr() (g.Str, g.Error) {
+func (d *dict) ToStr() (Str, Error) {
 	if d.hashMap.Len().IntVal() == 0 {
-		return g.MakeStr("dict {}"), nil
+		return MakeStr("dict {}"), nil
 	}
 
 	var buf bytes.Buffer
@@ -68,45 +66,45 @@ func (d *dict) ToStr() (g.Str, g.Error) {
 	}
 
 	buf.WriteString(" }")
-	return g.MakeStr(buf.String()), nil
+	return MakeStr(buf.String()), nil
 }
 
-func (d *dict) HashCode() (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Hashable Type")
+func (d *dict) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (d *dict) Eq(v g.Value) (g.Bool, g.Error) {
+func (d *dict) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *dict:
-		return g.MakeBool(reflect.DeepEqual(d.hashMap, t.hashMap)), nil
+		return MakeBool(reflect.DeepEqual(d.hashMap, t.hashMap)), nil
 	default:
-		return g.FALSE, nil
+		return FALSE, nil
 	}
 }
 
-func (d *dict) Cmp(v g.Value) (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Comparable Type")
+func (d *dict) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (d *dict) Add(v g.Value) (g.Value, g.Error) {
+func (d *dict) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
-	case g.Str:
-		return g.Strcat(d, t)
+	case Str:
+		return Strcat(d, t)
 
 	default:
-		return nil, g.TypeMismatchError("Expected Number Type")
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (d *dict) Get(key g.Value) (g.Value, g.Error) {
+func (d *dict) Get(key Value) (Value, Error) {
 	return d.hashMap.Get(key)
 }
 
-func (d *dict) Set(key g.Value, val g.Value) g.Error {
+func (d *dict) Set(key Value, val Value) Error {
 	return d.hashMap.Put(key, val)
 }
 
-func (d *dict) Len() (g.Int, g.Error) {
+func (d *dict) Len() (Int, Error) {
 	return d.hashMap.Len(), nil
 }

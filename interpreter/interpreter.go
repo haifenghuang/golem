@@ -17,17 +17,14 @@ package interpreter
 import (
 	"fmt"
 	g "golem/core"
-	"golem/core/coll"
-	"golem/core/comp"
-	"golem/core/fn"
 )
 
 //---------------------------------------------------------------
 // An execution environment, a.k.a 'stack frame'.
 
 type frame struct {
-	function fn.BytecodeFunc
-	locals   []*fn.Ref
+	function g.BytecodeFunc
+	locals   []*g.Ref
 	stack    []g.Value
 	instPtr  int
 }
@@ -44,11 +41,11 @@ type ErrorStack struct {
 // The Interpreter
 
 type Interpreter struct {
-	mod    *fn.Module
+	mod    *g.Module
 	frames []*frame
 }
 
-func NewInterpreter(mod *fn.Module) *Interpreter {
+func NewInterpreter(mod *g.Module) *Interpreter {
 	tpl := mod.Templates[0]
 	if tpl.Arity != 0 || tpl.NumCaptures != 0 {
 		panic("TODO")
@@ -67,13 +64,13 @@ func (inp *Interpreter) Init() (g.Value, *ErrorStack) {
 	inp.mod.Locals = locals
 
 	// make func
-	curFunc := fn.NewBytecodeFunc(tpl)
+	curFunc := g.NewBytecodeFunc(tpl)
 
 	// go
 	return inp.invoke(curFunc, locals)
 }
 
-func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Value, *ErrorStack) {
+func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value, *ErrorStack) {
 
 	pool := inp.mod.Pool
 	defs := inp.mod.ObjDefs
@@ -89,13 +86,13 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 
 		switch opc[ip] {
 
-		case fn.INVOKE:
+		case g.INVOKE:
 
 			idx := index(opc, ip)
 			params := s[n-idx+1:]
 
 			switch fn := s[n-idx].(type) {
-			case fn.BytecodeFunc:
+			case g.BytecodeFunc:
 
 				/////////////////////////////////
 				// invoke a bytecode-defined func
@@ -122,7 +119,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 				s = []g.Value{}
 				ip = 0
 
-			case fn.NativeFunc:
+			case g.NativeFunc:
 
 				/////////////////////////////////
 				// invoke a natively-defined func
@@ -142,7 +139,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-		case fn.RETURN:
+		case g.RETURN:
 
 			// get result from top of stack
 			result := s[n]
@@ -167,19 +164,19 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			// push the result
 			s = append(s, result)
 
-		case fn.NEW_FUNC:
+		case g.NEW_FUNC:
 
 			// push a function
 			idx := index(opc, ip)
 			tpl := inp.mod.Templates[idx]
-			nf := fn.NewBytecodeFunc(tpl)
+			nf := g.NewBytecodeFunc(tpl)
 			s = append(s, nf)
 			ip += 3
 
-		case fn.FUNC_LOCAL:
+		case g.FUNC_LOCAL:
 
 			// get function from stack
-			fn, ok := s[n].(fn.BytecodeFunc)
+			fn, ok := s[n].(g.BytecodeFunc)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'BytecodeFunc'"),
@@ -191,10 +188,10 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			fn.PushCapture(locals[idx])
 			ip += 3
 
-		case fn.FUNC_CAPTURE:
+		case g.FUNC_CAPTURE:
 
 			// get function from stack
-			fn, ok := s[n].(fn.BytecodeFunc)
+			fn, ok := s[n].(g.BytecodeFunc)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'BytecodeFunc'"),
@@ -206,18 +203,18 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			fn.PushCapture(curFunc.GetCapture(idx))
 			ip += 3
 
-		case fn.NEW_OBJ:
-			s = append(s, comp.NewObj())
+		case g.NEW_OBJ:
+			s = append(s, g.NewObj())
 			ip++
 
-		case fn.INIT_OBJ:
+		case g.INIT_OBJ:
 
 			// look up ObjDef
 			def := defs[index(opc, ip)]
 			size := len(def.Keys)
 
 			// get obj and values
-			obj, ok := s[n-size].(comp.Obj)
+			obj, ok := s[n-size].(g.Obj)
 			if !ok {
 				panic("Invalid INIT_OBJ")
 			}
@@ -232,41 +229,41 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			// done
 			ip += 3
 
-		case fn.NEW_LIST:
+		case g.NEW_LIST:
 
 			size := index(opc, ip)
 			vals := make([]g.Value, size)
 			copy(vals, s[n-size+1:])
 
 			s = s[:n-size+1]
-			s = append(s, comp.NewList(vals))
+			s = append(s, g.NewList(vals))
 			ip += 3
 
-		case fn.NEW_TUPLE:
+		case g.NEW_TUPLE:
 
 			size := index(opc, ip)
 			vals := make([]g.Value, size)
 			copy(vals, s[n-size+1:])
 
 			s = s[:n-size+1]
-			s = append(s, comp.NewTuple(vals))
+			s = append(s, g.NewTuple(vals))
 			ip += 3
 
-		case fn.NEW_DICT:
+		case g.NEW_DICT:
 
 			size := index(opc, ip)
-			entries := make([]*coll.HEntry, 0, size)
+			entries := make([]*g.HEntry, 0, size)
 
 			numVals := size * 2
 			for i := n - numVals + 1; i <= n; i += 2 {
-				entries = append(entries, &coll.HEntry{s[i], s[i+1]})
+				entries = append(entries, &g.HEntry{s[i], s[i+1]})
 			}
 
 			s = s[:n-numVals+1]
-			s = append(s, comp.NewDict(coll.NewHashMap(entries)))
+			s = append(s, g.NewDict(g.NewHashMap(entries)))
 			ip += 3
 
-		case fn.GET_FIELD:
+		case g.GET_FIELD:
 
 			idx := index(opc, ip)
 			key, ok := pool[idx].(g.Str)
@@ -275,7 +272,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n].(comp.Obj)
+			obj, ok := s[n].(g.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -290,7 +287,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n] = result
 			ip += 3
 
-		case fn.PUT_FIELD:
+		case g.PUT_FIELD:
 
 			idx := index(opc, ip)
 			key, ok := pool[idx].(g.Str)
@@ -299,7 +296,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n-1].(comp.Obj)
+			obj, ok := s[n-1].(g.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -318,7 +315,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n]
 			ip += 3
 
-		case fn.INC_FIELD:
+		case g.INC_FIELD:
 
 			idx := index(opc, ip)
 			key, ok := pool[idx].(g.Str)
@@ -327,7 +324,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			}
 
 			// get obj from stack
-			obj, ok := s[n-1].(comp.Obj)
+			obj, ok := s[n-1].(g.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -356,7 +353,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n]
 			ip += 3
 
-		case fn.GET_INDEX:
+		case g.GET_INDEX:
 
 			// get Getable from stack
 			gtb, ok := s[n-1].(g.Getable)
@@ -378,7 +375,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n]
 			ip++
 
-		case fn.SET_INDEX:
+		case g.SET_INDEX:
 
 			// get Indexable from stack
 			ibl, ok := s[n-2].(g.Indexable)
@@ -403,7 +400,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n-1]
 			ip++
 
-		case fn.INC_INDEX:
+		case g.INC_INDEX:
 
 			// get Indexable from stack
 			ibl, ok := s[n-2].(g.Indexable)
@@ -438,7 +435,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n-1]
 			ip++
 
-		case fn.SLICE:
+		case g.SLICE:
 
 			// get Sliceable from stack
 			slb, ok := s[n-2].(g.Sliceable)
@@ -461,7 +458,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n-1]
 			ip++
 
-		case fn.SLICE_FROM:
+		case g.SLICE_FROM:
 
 			// get Sliceable from stack
 			slb, ok := s[n-1].(g.Sliceable)
@@ -483,7 +480,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n]
 			ip++
 
-		case fn.SLICE_TO:
+		case g.SLICE_TO:
 
 			// get Sliceable from stack
 			slb, ok := s[n-1].(g.Sliceable)
@@ -505,61 +502,61 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s = s[:n]
 			ip++
 
-		case fn.LOAD_NULL:
+		case g.LOAD_NULL:
 			s = append(s, g.NULL)
 			ip++
-		case fn.LOAD_TRUE:
+		case g.LOAD_TRUE:
 			s = append(s, g.TRUE)
 			ip++
-		case fn.LOAD_FALSE:
+		case g.LOAD_FALSE:
 			s = append(s, g.FALSE)
 			ip++
-		case fn.LOAD_ZERO:
+		case g.LOAD_ZERO:
 			s = append(s, g.ZERO)
 			ip++
-		case fn.LOAD_ONE:
+		case g.LOAD_ONE:
 			s = append(s, g.ONE)
 			ip++
-		case fn.LOAD_NEG_ONE:
+		case g.LOAD_NEG_ONE:
 			s = append(s, g.NEG_ONE)
 			ip++
 
-		case fn.LOAD_BUILTIN:
+		case g.LOAD_BUILTIN:
 			idx := index(opc, ip)
-			s = append(s, fn.Builtins[idx])
+			s = append(s, g.Builtins[idx])
 			ip += 3
 
-		case fn.LOAD_CONST:
+		case g.LOAD_CONST:
 			idx := index(opc, ip)
 			s = append(s, pool[idx])
 			ip += 3
 
-		case fn.LOAD_LOCAL:
+		case g.LOAD_LOCAL:
 			idx := index(opc, ip)
 			s = append(s, locals[idx].Val)
 			ip += 3
 
-		case fn.LOAD_CAPTURE:
+		case g.LOAD_CAPTURE:
 			idx := index(opc, ip)
 			s = append(s, curFunc.GetCapture(idx).Val)
 			ip += 3
 
-		case fn.STORE_LOCAL:
+		case g.STORE_LOCAL:
 			idx := index(opc, ip)
 			locals[idx].Val = s[n]
 			s = s[:n]
 			ip += 3
 
-		case fn.STORE_CAPTURE:
+		case g.STORE_CAPTURE:
 			idx := index(opc, ip)
 			curFunc.GetCapture(idx).Val = s[n]
 			s = s[:n]
 			ip += 3
 
-		case fn.JUMP:
+		case g.JUMP:
 			ip = index(opc, ip)
 
-		case fn.JUMP_TRUE:
+		case g.JUMP_TRUE:
 			b, ok := s[n].(g.Bool)
 			if !ok {
 				return nil, &ErrorStack{
@@ -574,7 +571,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 				ip += 3
 			}
 
-		case fn.JUMP_FALSE:
+		case g.JUMP_FALSE:
 			b, ok := s[n].(g.Bool)
 			if !ok {
 				return nil, &ErrorStack{
@@ -589,7 +586,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 				ip = index(opc, ip)
 			}
 
-		case fn.EQ:
+		case g.EQ:
 			b, err := s[n-1].Eq(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -598,7 +595,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = b
 			ip++
 
-		case fn.NE:
+		case g.NE:
 			b, err := s[n-1].Eq(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -607,7 +604,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = b.Not()
 			ip++
 
-		case fn.LT:
+		case g.LT:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -616,7 +613,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = g.MakeBool(val.IntVal() < 0)
 			ip++
 
-		case fn.LTE:
+		case g.LTE:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -625,7 +622,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = g.MakeBool(val.IntVal() <= 0)
 			ip++
 
-		case fn.GT:
+		case g.GT:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -634,7 +631,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = g.MakeBool(val.IntVal() > 0)
 			ip++
 
-		case fn.GTE:
+		case g.GTE:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -643,7 +640,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = g.MakeBool(val.IntVal() >= 0)
 			ip++
 
-		case fn.CMP:
+		case g.CMP:
 			val, err := s[n-1].Cmp(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -652,10 +649,10 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.HAS:
+		case g.HAS:
 
 			// get obj from stack
-			obj, ok := s[n-1].(comp.Obj)
+			obj, ok := s[n-1].(g.Obj)
 			if !ok {
 				return nil, &ErrorStack{
 					g.TypeMismatchError("Expected 'Obj'"),
@@ -670,7 +667,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.ADD:
+		case g.ADD:
 			val, err := s[n-1].Add(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
@@ -679,7 +676,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.NOT:
+		case g.NOT:
 			b, ok := s[n].(g.Bool)
 			if !ok {
 				return nil, &ErrorStack{
@@ -690,7 +687,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n] = b.Not()
 			ip++
 
-		case fn.SUB:
+		case g.SUB:
 			z, ok := s[n-1].(g.Number)
 			if !ok {
 				return nil, &ErrorStack{
@@ -706,7 +703,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.MUL:
+		case g.MUL:
 			z, ok := s[n-1].(g.Number)
 			if !ok {
 				return nil, &ErrorStack{
@@ -722,7 +719,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.DIV:
+		case g.DIV:
 			z, ok := s[n-1].(g.Number)
 			if !ok {
 				return nil, &ErrorStack{
@@ -738,7 +735,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.NEGATE:
+		case g.NEGATE:
 			z, ok := s[n-1].(g.Number)
 			if !ok {
 				return nil, &ErrorStack{
@@ -753,7 +750,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n] = val
 			ip++
 
-		case fn.REM:
+		case g.REM:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -769,7 +766,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.BIT_AND:
+		case g.BIT_AND:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -785,7 +782,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.BIT_OR:
+		case g.BIT_OR:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -801,7 +798,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.BIT_XOR:
+		case g.BIT_XOR:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -817,7 +814,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.LEFT_SHIFT:
+		case g.LEFT_SHIFT:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -833,7 +830,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.RIGHT_SHIFT:
+		case g.RIGHT_SHIFT:
 			z, ok := s[n-1].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -849,7 +846,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n-1] = val
 			ip++
 
-		case fn.COMPLEMENT:
+		case g.COMPLEMENT:
 			z, ok := s[n].(g.Int)
 			if !ok {
 				return nil, &ErrorStack{
@@ -864,7 +861,7 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 			s[n] = val
 			ip++
 
-		case fn.DUP:
+		case g.DUP:
 			s = append(s, s[n])
 			ip++
 
@@ -876,8 +873,8 @@ func (inp *Interpreter) invoke(curFunc fn.BytecodeFunc, locals []*fn.Ref) (g.Val
 
 // Create a stack of string-representations from the current stack of execution frames
 func (inp *Interpreter) stringFrames(
-	curFunc fn.BytecodeFunc,
-	locals []*fn.Ref,
+	curFunc g.BytecodeFunc,
+	locals []*g.Ref,
 	valueStack []g.Value,
 	instPtr int) []string {
 
@@ -902,14 +899,14 @@ func index(opcodes []byte, ip int) int {
 	return int(high)<<8 + int(low)
 }
 
-func newLocals(numLocals int, params []g.Value) []*fn.Ref {
+func newLocals(numLocals int, params []g.Value) []*g.Ref {
 	p := len(params)
-	locals := make([]*fn.Ref, numLocals, numLocals)
+	locals := make([]*g.Ref, numLocals, numLocals)
 	for i := 0; i < numLocals; i++ {
 		if i < p {
-			locals[i] = &fn.Ref{params[i]}
+			locals[i] = &g.Ref{params[i]}
 		} else {
-			locals[i] = &fn.Ref{g.NULL}
+			locals[i] = &g.Ref{g.NULL}
 		}
 	}
 	return locals

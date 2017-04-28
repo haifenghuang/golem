@@ -19,15 +19,13 @@ import (
 	"golem/analyzer"
 	//"golem/ast"
 	g "golem/core"
-	"golem/core/comp"
-	"golem/core/fn"
 	"golem/parser"
 	"golem/scanner"
 	"reflect"
 	"testing"
 )
 
-func ok(t *testing.T, mod *fn.Module, expect *fn.Module) {
+func ok(t *testing.T, mod *g.Module, expect *g.Module) {
 
 	if !reflect.DeepEqual(mod.Pool, expect.Pool) {
 		t.Error(mod, " != ", expect)
@@ -79,261 +77,261 @@ func newAnalyzer(source string) analyzer.Analyzer {
 func TestExpression(t *testing.T) {
 
 	mod := NewCompiler(newAnalyzer("-2 + -1 + -0 + 0 + 1 + 2;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(int64(-2)),
 			g.MakeInt(int64(2))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_NEG_ONE,
-					fn.ADD,
-					fn.LOAD_ZERO,
-					fn.ADD,
-					fn.LOAD_ZERO,
-					fn.ADD,
-					fn.LOAD_ONE,
-					fn.ADD,
-					fn.LOAD_CONST, 0, 1,
-					fn.ADD,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{16, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_NEG_ONE,
+					g.ADD,
+					g.LOAD_ZERO,
+					g.ADD,
+					g.LOAD_ZERO,
+					g.ADD,
+					g.LOAD_ONE,
+					g.ADD,
+					g.LOAD_CONST, 0, 1,
+					g.ADD,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{16, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("(2 + 3) * -4 / 10;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3)),
 			g.MakeInt(int64(-4)),
 			g.MakeInt(int64(10))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.ADD,
-					fn.LOAD_CONST, 0, 2,
-					fn.MUL,
-					fn.LOAD_CONST, 0, 3,
-					fn.DIV,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{16, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.ADD,
+					g.LOAD_CONST, 0, 2,
+					g.MUL,
+					g.LOAD_CONST, 0, 3,
+					g.DIV,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{16, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("null / true + \nfalse;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_NULL,
-					fn.LOAD_TRUE,
-					fn.DIV,
-					fn.LOAD_FALSE,
-					fn.ADD,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{4, 2},
-					fn.OpcLine{5, 1},
-					fn.OpcLine{6, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_NULL,
+					g.LOAD_TRUE,
+					g.DIV,
+					g.LOAD_FALSE,
+					g.ADD,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{4, 2},
+					g.OpcLine{5, 1},
+					g.OpcLine{6, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("'a' * 1.23e4;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("a"),
 			g.MakeFloat(float64(12300))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.MUL,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{8, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.MUL,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{8, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("'a' == true;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("a")},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_TRUE,
-					fn.EQ,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{6, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_TRUE,
+					g.EQ,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{6, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true != false;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.NE,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{4, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.NE,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{4, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true > false; true >= false;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.GT,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.GTE,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{7, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.GT,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.GTE,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{7, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("true < false; true <= false; true <=> false;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.LT,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.LTE,
-					fn.LOAD_TRUE, fn.LOAD_FALSE, fn.CMP,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{10, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.LT,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.LTE,
+					g.LOAD_TRUE, g.LOAD_FALSE, g.CMP,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{10, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 && 3;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.JUMP_FALSE, 0, 17,
-					fn.LOAD_CONST, 0, 1,
-					fn.JUMP_FALSE, 0, 17,
-					fn.LOAD_TRUE,
-					fn.JUMP, 0, 18,
-					fn.LOAD_FALSE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{21, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.JUMP_FALSE, 0, 17,
+					g.LOAD_CONST, 0, 1,
+					g.JUMP_FALSE, 0, 17,
+					g.LOAD_TRUE,
+					g.JUMP, 0, 18,
+					g.LOAD_FALSE,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{21, 0}}}}})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 || 3;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.JUMP_TRUE, 0, 13,
-					fn.LOAD_CONST, 0, 1,
-					fn.JUMP_FALSE, 0, 17,
-					fn.LOAD_TRUE,
-					fn.JUMP, 0, 18,
-					fn.LOAD_FALSE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{21, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.JUMP_TRUE, 0, 13,
+					g.LOAD_CONST, 0, 1,
+					g.JUMP_FALSE, 0, 17,
+					g.LOAD_TRUE,
+					g.JUMP, 0, 18,
+					g.LOAD_FALSE,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{21, 0}}}}})
 }
 
 func TestAssignment(t *testing.T) {
 
 	mod := NewCompiler(newAnalyzer("let a = 1;\nconst b = \n2;a = 3;")).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_ONE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_CONST, 0, 1,
-					fn.DUP,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{5, 3},
-					fn.OpcLine{8, 2},
-					fn.OpcLine{11, 3},
-					fn.OpcLine{18, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_ONE,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_CONST, 0, 1,
+					g.DUP,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{5, 3},
+					g.OpcLine{8, 2},
+					g.OpcLine{11, 3},
+					g.OpcLine{18, 0}}}}})
 }
 
 func TestShift(t *testing.T) {
@@ -356,29 +354,29 @@ func TestIf(t *testing.T) {
 	source := "if (3 == 2) { let a = 42; }"
 	anl := newAnalyzer(source)
 	mod := NewCompiler(anl).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(3),
 			g.MakeInt(2),
 			g.MakeInt(42)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.EQ,
-					fn.JUMP_FALSE, 0, 17,
-					fn.LOAD_CONST, 0, 2,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{17, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.EQ,
+					g.JUMP_FALSE, 0, 17,
+					g.LOAD_CONST, 0, 2,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{17, 0}}}}})
 
 	source = `let a = 1;
 		if (false) {
@@ -390,103 +388,103 @@ func TestIf(t *testing.T) {
 
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 4,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_ONE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_FALSE,
-					fn.JUMP_FALSE, 0, 18,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.JUMP, 0, 24,
-					fn.LOAD_CONST, 0, 1,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_CONST, 0, 2,
-					fn.STORE_LOCAL, 0, 3,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{5, 2},
-					fn.OpcLine{9, 3},
-					fn.OpcLine{15, 4},
-					fn.OpcLine{18, 5},
-					fn.OpcLine{24, 7},
-					fn.OpcLine{30, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_ONE,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_FALSE,
+					g.JUMP_FALSE, 0, 18,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.JUMP, 0, 24,
+					g.LOAD_CONST, 0, 1,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_CONST, 0, 2,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{5, 2},
+					g.OpcLine{9, 3},
+					g.OpcLine{15, 4},
+					g.OpcLine{18, 5},
+					g.OpcLine{24, 7},
+					g.OpcLine{30, 0}}}}})
 }
 
 func TestWhile(t *testing.T) {
 
 	source := "let a = 1; while (0 < 1) { let b = 2; }"
 	mod := NewCompiler(newAnalyzer(source)).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_ONE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_ZERO,
-					fn.LOAD_ONE,
-					fn.LT,
-					fn.JUMP_FALSE, 0, 20,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.JUMP, 0, 5,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{20, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_ONE,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_ZERO,
+					g.LOAD_ONE,
+					g.LT,
+					g.JUMP_FALSE, 0, 20,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.JUMP, 0, 5,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{20, 0}}}}})
 
 	source = "let a = 'z'; while (0 < 1) \n{ break; continue; let b = 2; } let c = 3;"
 	mod = NewCompiler(newAnalyzer(source)).Compile()
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("z"),
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 3,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_ZERO,
-					fn.LOAD_ONE,
-					fn.LT,
-					fn.JUMP_FALSE, 0, 28,
-					fn.JUMP, 0, 28,
-					fn.JUMP, 0, 7,
-					fn.LOAD_CONST, 0, 1,
-					fn.STORE_LOCAL, 0, 1,
-					fn.JUMP, 0, 7,
-					fn.LOAD_CONST, 0, 2,
-					fn.STORE_LOCAL, 0, 2,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{13, 2},
-					fn.OpcLine{34, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_ZERO,
+					g.LOAD_ONE,
+					g.LT,
+					g.JUMP_FALSE, 0, 28,
+					g.JUMP, 0, 28,
+					g.JUMP, 0, 7,
+					g.LOAD_CONST, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.JUMP, 0, 7,
+					g.LOAD_CONST, 0, 2,
+					g.STORE_LOCAL, 0, 2,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{13, 2},
+					g.OpcLine{34, 0}}}}})
 }
 
 func TestReturn(t *testing.T) {
@@ -495,54 +493,54 @@ func TestReturn(t *testing.T) {
 	anl := newAnalyzer(source)
 	mod := NewCompiler(anl).Compile()
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{2, 0}}}}})
+					g.LOAD_NULL,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{2, 0}}}}})
 
 	source = "let a = 1; return a \n- 2; a = 3;"
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_ONE,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 0,
-					fn.SUB,
-					fn.RETURN,
-					fn.LOAD_CONST, 0, 1,
-					fn.DUP,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 1},
-					fn.OpcLine{8, 2},
-					fn.OpcLine{12, 1},
-					fn.OpcLine{13, 2},
-					fn.OpcLine{20, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_ONE,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 0,
+					g.SUB,
+					g.RETURN,
+					g.LOAD_CONST, 0, 1,
+					g.DUP,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 1},
+					g.OpcLine{8, 2},
+					g.OpcLine{12, 1},
+					g.OpcLine{13, 2},
+					g.OpcLine{20, 0}}}}})
 }
 
 func TestFunc(t *testing.T) {
@@ -565,64 +563,64 @@ let b = fn(x) {
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(42),
 			g.MakeInt(7)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{0, 0, 2,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{0, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 1,
-					fn.STORE_LOCAL, 0, 0,
-					fn.NEW_FUNC, 0, 2,
-					fn.STORE_LOCAL, 0, 1,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{7, 3},
-					fn.OpcLine{13, 0}}},
-			&fn.Template{0, 0, 0,
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 1,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_FUNC, 0, 2,
+					g.STORE_LOCAL, 0, 1,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 0}}},
+			&g.Template{0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{4, 0}}},
-			&fn.Template{1, 0, 2,
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{4, 0}}},
+			&g.Template{1, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 3,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.MUL,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.INVOKE, 0, 1,
-					fn.ADD,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 4},
-					fn.OpcLine{7, 7},
-					fn.OpcLine{24, 0}}},
-			&fn.Template{1, 0, 1,
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 3,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_LOCAL, 0, 0,
+					g.MUL,
+					g.LOAD_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.INVOKE, 0, 1,
+					g.ADD,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{7, 7},
+					g.OpcLine{24, 0}}},
+			&g.Template{1, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.MUL,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 5},
-					fn.OpcLine{8, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.MUL,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{8, 0}}}}})
 
 	source = `
 let a = fn() { };
@@ -641,75 +639,75 @@ c(2, 3);
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{0, 0, 3,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{0, 0, 3,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 1,
-					fn.STORE_LOCAL, 0, 0,
-					fn.NEW_FUNC, 0, 2,
-					fn.STORE_LOCAL, 0, 1,
-					fn.NEW_FUNC, 0, 3,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.INVOKE, 0, 0,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.LOAD_ONE,
-					fn.INVOKE, 0, 1,
-					fn.LOAD_LOCAL, 0, 2,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.INVOKE, 0, 2,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{7, 3},
-					fn.OpcLine{13, 4},
-					fn.OpcLine{19, 5},
-					fn.OpcLine{25, 6},
-					fn.OpcLine{32, 7},
-					fn.OpcLine{44, 0}}},
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 1,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_FUNC, 0, 2,
+					g.STORE_LOCAL, 0, 1,
+					g.NEW_FUNC, 0, 3,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 0,
+					g.INVOKE, 0, 0,
+					g.LOAD_LOCAL, 0, 1,
+					g.LOAD_ONE,
+					g.INVOKE, 0, 1,
+					g.LOAD_LOCAL, 0, 2,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.INVOKE, 0, 2,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 4},
+					g.OpcLine{19, 5},
+					g.OpcLine{25, 6},
+					g.OpcLine{32, 7},
+					g.OpcLine{44, 0}}},
 
-			&fn.Template{0, 0, 0,
+			&g.Template{0, 0, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0}}},
+					g.LOAD_NULL,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0}}},
 
-			&fn.Template{1, 0, 1,
+			&g.Template{1, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 3},
-					fn.OpcLine{4, 0}}},
+					g.LOAD_NULL,
+					g.LOAD_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 3},
+					g.OpcLine{4, 0}}},
 
-			&fn.Template{2, 0, 3,
+			&g.Template{2, 0, 3,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 2,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.MUL,
-					fn.LOAD_LOCAL, 0, 2,
-					fn.MUL,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 4},
-					fn.OpcLine{18, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 2,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_LOCAL, 0, 1,
+					g.MUL,
+					g.LOAD_LOCAL, 0, 2,
+					g.MUL,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{18, 0}}}}})
 }
 
 func TestCapture(t *testing.T) {
@@ -725,48 +723,48 @@ const accumGen = fn(n) {
 	anl := newAnalyzer(source)
 	mod := NewCompiler(anl).Compile()
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{0, 0, 1,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{0, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 1,
-					fn.STORE_LOCAL, 0, 0,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{7, 0}}},
-			&fn.Template{1, 0, 1,
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 1,
+					g.STORE_LOCAL, 0, 0,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 0}}},
+			&g.Template{1, 0, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 2,
-					fn.FUNC_LOCAL, 0, 0,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 3},
-					fn.OpcLine{8, 0}}},
-			&fn.Template{1, 1, 1,
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 2,
+					g.FUNC_LOCAL, 0, 0,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 3},
+					g.OpcLine{8, 0}}},
+			&g.Template{1, 1, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.ADD,
-					fn.DUP,
-					fn.STORE_CAPTURE, 0, 0,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 4},
-					fn.OpcLine{12, 5},
-					fn.OpcLine{16, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.LOAD_LOCAL, 0, 0,
+					g.ADD,
+					g.DUP,
+					g.STORE_CAPTURE, 0, 0,
+					g.LOAD_CAPTURE, 0, 0,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{12, 5},
+					g.OpcLine{16, 0}}}}})
 
 	source = `
 let z = 2;
@@ -785,56 +783,56 @@ const accumGen = fn(n) {
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2)},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{0, 0, 2,
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{0, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.NEW_FUNC, 0, 1,
-					fn.FUNC_LOCAL, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{7, 3},
-					fn.OpcLine{16, 0}}},
-			&fn.Template{1, 1, 1,
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_FUNC, 0, 1,
+					g.FUNC_LOCAL, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{16, 0}}},
+			&g.Template{1, 1, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_FUNC, 0, 2,
-					fn.FUNC_LOCAL, 0, 0,
-					fn.FUNC_CAPTURE, 0, 0,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 4},
-					fn.OpcLine{11, 0}}},
-			&fn.Template{1, 2, 1,
+					g.LOAD_NULL,
+					g.NEW_FUNC, 0, 2,
+					g.FUNC_LOCAL, 0, 0,
+					g.FUNC_CAPTURE, 0, 0,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 4},
+					g.OpcLine{11, 0}}},
+			&g.Template{1, 2, 1,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.ADD,
-					fn.LOAD_CAPTURE, 0, 1,
-					fn.ADD,
-					fn.DUP,
-					fn.STORE_CAPTURE, 0, 0,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 5},
-					fn.OpcLine{16, 6},
-					fn.OpcLine{20, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.LOAD_LOCAL, 0, 0,
+					g.ADD,
+					g.LOAD_CAPTURE, 0, 1,
+					g.ADD,
+					g.DUP,
+					g.STORE_CAPTURE, 0, 0,
+					g.LOAD_CAPTURE, 0, 0,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{16, 6},
+					g.OpcLine{20, 0}}}}})
 }
 
 func TestObj(t *testing.T) {
@@ -854,51 +852,51 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4),
 			g.MakeInt(5)},
 		nil,
-		[]*comp.ObjDef{
-			&comp.ObjDef{[]string{}},
-			&comp.ObjDef{[]string{"a"}},
-			&comp.ObjDef{[]string{"a", "b"}},
-			&comp.ObjDef{[]string{"a", "b", "c"}},
-			&comp.ObjDef{[]string{"d"}}},
-		[]*fn.Template{
-			&fn.Template{0, 0, 4,
+		[]*g.ObjDef{
+			&g.ObjDef{[]string{}},
+			&g.ObjDef{[]string{"a"}},
+			&g.ObjDef{[]string{"a", "b"}},
+			&g.ObjDef{[]string{"a", "b", "c"}},
+			&g.ObjDef{[]string{"d"}}},
+		[]*g.Template{
+			&g.Template{0, 0, 4,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_OBJ,
-					fn.INIT_OBJ, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.NEW_OBJ,
-					fn.LOAD_ZERO,
-					fn.INIT_OBJ, 0, 1,
-					fn.STORE_LOCAL, 0, 1,
-					fn.NEW_OBJ,
-					fn.LOAD_ONE,
-					fn.LOAD_CONST, 0, 0,
-					fn.INIT_OBJ, 0, 2,
-					fn.STORE_LOCAL, 0, 2,
-					fn.NEW_OBJ,
-					fn.LOAD_CONST, 0, 1,
-					fn.LOAD_CONST, 0, 2,
-					fn.NEW_OBJ,
-					fn.LOAD_CONST, 0, 3,
-					fn.INIT_OBJ, 0, 4,
-					fn.INIT_OBJ, 0, 3,
-					fn.STORE_LOCAL, 0, 3,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{8, 3},
-					fn.OpcLine{16, 4},
-					fn.OpcLine{27, 5},
-					fn.OpcLine{47, 0}}}}})
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_OBJ,
+					g.LOAD_ZERO,
+					g.INIT_OBJ, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.NEW_OBJ,
+					g.LOAD_ONE,
+					g.LOAD_CONST, 0, 0,
+					g.INIT_OBJ, 0, 2,
+					g.STORE_LOCAL, 0, 2,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 1,
+					g.LOAD_CONST, 0, 2,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 3,
+					g.INIT_OBJ, 0, 4,
+					g.INIT_OBJ, 0, 3,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{8, 3},
+					g.OpcLine{16, 4},
+					g.OpcLine{27, 5},
+					g.OpcLine{47, 0}}}}})
 
 	source = `
 let x = obj { a: 0 };
@@ -908,35 +906,35 @@ x.a = 3;
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeStr("a"),
 			g.MakeInt(3),
 			g.MakeStr("a")},
 		nil,
-		[]*comp.ObjDef{
-			&comp.ObjDef{[]string{"a"}}},
-		[]*fn.Template{
-			&fn.Template{0, 0, 2,
+		[]*g.ObjDef{
+			&g.ObjDef{[]string{"a"}}},
+		[]*g.Template{
+			&g.Template{0, 0, 2,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_OBJ,
-					fn.LOAD_ZERO,
-					fn.INIT_OBJ, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.GET_FIELD, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.PUT_FIELD, 0, 2,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{9, 3},
-					fn.OpcLine{18, 4},
-					fn.OpcLine{27, 0}}}}})
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.LOAD_ZERO,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_LOCAL, 0, 0,
+					g.GET_FIELD, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.PUT_FIELD, 0, 2,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{9, 3},
+					g.OpcLine{18, 4},
+					g.OpcLine{27, 0}}}}})
 
 	source = `
 let a = obj {
@@ -956,7 +954,7 @@ let c = a.minus();
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(8),
 			g.MakeInt(5),
@@ -967,72 +965,72 @@ let c = a.minus();
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,
-		[]*comp.ObjDef{
-			&comp.ObjDef{[]string{"x", "y", "plus", "minus"}}},
-		[]*fn.Template{
-			&fn.Template{0, 0, 4,
+		[]*g.ObjDef{
+			&g.ObjDef{[]string{"x", "y", "plus", "minus"}}},
+		[]*g.Template{
+			&g.Template{0, 0, 4,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_OBJ,
-					fn.DUP,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.NEW_FUNC, 0, 1,
-					fn.FUNC_LOCAL, 0, 0,
-					fn.NEW_FUNC, 0, 2,
-					fn.FUNC_LOCAL, 0, 0,
-					fn.INIT_OBJ, 0, 0,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.GET_FIELD, 0, 2,
-					fn.INVOKE, 0, 0,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.GET_FIELD, 0, 3,
-					fn.INVOKE, 0, 0,
-					fn.STORE_LOCAL, 0, 3,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{6, 3},
-					fn.OpcLine{9, 4},
-					fn.OpcLine{12, 5},
-					fn.OpcLine{18, 6},
-					fn.OpcLine{24, 7},
-					fn.OpcLine{27, 2},
-					fn.OpcLine{30, 8},
-					fn.OpcLine{42, 9},
-					fn.OpcLine{54, 0}}},
-			&fn.Template{0, 1, 0,
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.DUP,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.NEW_FUNC, 0, 1,
+					g.FUNC_LOCAL, 0, 0,
+					g.NEW_FUNC, 0, 2,
+					g.FUNC_LOCAL, 0, 0,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 1,
+					g.GET_FIELD, 0, 2,
+					g.INVOKE, 0, 0,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.GET_FIELD, 0, 3,
+					g.INVOKE, 0, 0,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{6, 3},
+					g.OpcLine{9, 4},
+					g.OpcLine{12, 5},
+					g.OpcLine{18, 6},
+					g.OpcLine{24, 7},
+					g.OpcLine{27, 2},
+					g.OpcLine{30, 8},
+					g.OpcLine{42, 9},
+					g.OpcLine{54, 0}}},
+			&g.Template{0, 1, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.GET_FIELD, 0, 4,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.GET_FIELD, 0, 5,
-					fn.ADD,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 5},
-					fn.OpcLine{15, 0}}},
-			&fn.Template{0, 1, 0,
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.GET_FIELD, 0, 4,
+					g.LOAD_CAPTURE, 0, 0,
+					g.GET_FIELD, 0, 5,
+					g.ADD,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 5},
+					g.OpcLine{15, 0}}},
+			&g.Template{0, 1, 0,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.GET_FIELD, 0, 6,
-					fn.LOAD_CAPTURE, 0, 0,
-					fn.GET_FIELD, 0, 7,
-					fn.SUB,
-					fn.RETURN,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 6},
-					fn.OpcLine{15, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CAPTURE, 0, 0,
+					g.GET_FIELD, 0, 6,
+					g.LOAD_CAPTURE, 0, 0,
+					g.GET_FIELD, 0, 7,
+					g.SUB,
+					g.RETURN,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 6},
+					g.OpcLine{15, 0}}}}})
 }
 
 func TestPostfix(t *testing.T) {
@@ -1051,41 +1049,41 @@ let d = b--;
 	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(int64(10)),
 			g.MakeInt(int64(20))},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 4,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.LOAD_CONST, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.LOAD_CONST, 0, 1,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.DUP,
-					fn.LOAD_ONE,
-					fn.ADD,
-					fn.STORE_LOCAL, 0, 0,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.DUP,
-					fn.LOAD_NEG_ONE,
-					fn.ADD,
-					fn.STORE_LOCAL, 0, 1,
-					fn.STORE_LOCAL, 0, 3,
-					fn.RETURN},
-				[]fn.OpcLine{
-					fn.OpcLine{0, 0},
-					fn.OpcLine{1, 2},
-					fn.OpcLine{7, 3},
-					fn.OpcLine{13, 4},
-					fn.OpcLine{25, 5},
-					fn.OpcLine{37, 0}}}}})
+					g.LOAD_NULL,
+					g.LOAD_CONST, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.LOAD_CONST, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.DUP,
+					g.LOAD_ONE,
+					g.ADD,
+					g.STORE_LOCAL, 0, 0,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.DUP,
+					g.LOAD_NEG_ONE,
+					g.ADD,
+					g.STORE_LOCAL, 0, 1,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
+				[]g.OpcLine{
+					g.OpcLine{0, 0},
+					g.OpcLine{1, 2},
+					g.OpcLine{7, 3},
+					g.OpcLine{13, 4},
+					g.OpcLine{25, 5},
+					g.OpcLine{37, 0}}}}})
 
 	source = `
 let a = obj { x: 10 };
@@ -1101,36 +1099,36 @@ let d = b.y--;
 	////fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	//fmt.Println(mod)
 
-	ok(t, mod, &fn.Module{
+	ok(t, mod, &g.Module{
 		[]g.Value{
 			g.MakeInt(10),
 			g.MakeInt(20),
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,
-		[]*comp.ObjDef{},
-		[]*fn.Template{
-			&fn.Template{
+		[]*g.ObjDef{},
+		[]*g.Template{
+			&g.Template{
 				0, 0, 4,
 				[]byte{
-					fn.LOAD_NULL,
-					fn.NEW_OBJ,
-					fn.LOAD_CONST, 0, 0,
-					fn.INIT_OBJ, 0, 0,
-					fn.STORE_LOCAL, 0, 0,
-					fn.NEW_OBJ,
-					fn.LOAD_CONST, 0, 1,
-					fn.INIT_OBJ, 0, 1,
-					fn.STORE_LOCAL, 0, 1,
-					fn.LOAD_LOCAL, 0, 0,
-					fn.LOAD_ONE,
-					fn.INC_FIELD, 0, 2,
-					fn.STORE_LOCAL, 0, 2,
-					fn.LOAD_LOCAL, 0, 1,
-					fn.LOAD_NEG_ONE,
-					fn.INC_FIELD, 0, 3,
-					fn.STORE_LOCAL, 0, 3,
-					fn.RETURN},
+					g.LOAD_NULL,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 0,
+					g.INIT_OBJ, 0, 0,
+					g.STORE_LOCAL, 0, 0,
+					g.NEW_OBJ,
+					g.LOAD_CONST, 0, 1,
+					g.INIT_OBJ, 0, 1,
+					g.STORE_LOCAL, 0, 1,
+					g.LOAD_LOCAL, 0, 0,
+					g.LOAD_ONE,
+					g.INC_FIELD, 0, 2,
+					g.STORE_LOCAL, 0, 2,
+					g.LOAD_LOCAL, 0, 1,
+					g.LOAD_NEG_ONE,
+					g.INC_FIELD, 0, 3,
+					g.STORE_LOCAL, 0, 3,
+					g.RETURN},
 				nil}}})
 }
 

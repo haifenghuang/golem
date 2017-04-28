@@ -19,8 +19,6 @@ import (
 	"golem/analyzer"
 	"golem/compiler"
 	g "golem/core"
-	"golem/core/comp"
-	"golem/core/fn"
 	"golem/parser"
 	"golem/scanner"
 	"reflect"
@@ -45,7 +43,7 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 	}
 }
 
-func ok_ref(t *testing.T, ref *fn.Ref, expect g.Value) {
+func ok_ref(t *testing.T, ref *g.Ref, expect g.Value) {
 	b, err := ref.Val.Eq(expect)
 	if err != nil {
 		panic(err)
@@ -55,7 +53,7 @@ func ok_ref(t *testing.T, ref *fn.Ref, expect g.Value) {
 	}
 }
 
-func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*fn.Ref) {
+func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g.Ref) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
@@ -123,7 +121,7 @@ func newCompiler(source string) compiler.Compiler {
 	return compiler.NewCompiler(anl)
 }
 
-func interpret(mod *fn.Module) {
+func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
 	_, err := intp.Init()
 	if err != nil {
@@ -203,10 +201,10 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "'abcd'[1:3];", g.MakeStr("bc"))
 	ok_expr(t, "'abcd'[1:1];", g.MakeStr(""))
 
-	ok_expr(t, "[6,7,8][1:];", comp.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
-	ok_expr(t, "[6,7,8][:1];", comp.NewList([]g.Value{g.MakeInt(6)}))
-	ok_expr(t, "[6,7,8,9][1:3];", comp.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
-	ok_expr(t, "[6,7,8,9][1:1];", comp.NewList([]g.Value{}))
+	ok_expr(t, "[6,7,8][1:];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8][:1];", g.NewList([]g.Value{g.MakeInt(6)}))
+	ok_expr(t, "[6,7,8,9][1:3];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
+	ok_expr(t, "[6,7,8,9][1:1];", g.NewList([]g.Value{}))
 
 	ok_expr(t, "obj{a: 1}['a'];", g.ONE)
 	ok_expr(t, "obj{a: 1} has 'a';", g.TRUE)
@@ -223,9 +221,9 @@ const B = 2;
 a = a + B;
 `,
 		g.MakeInt(3),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(3)},
-			&fn.Ref{g.MakeInt(2)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(2)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -235,10 +233,10 @@ let c = B + 3;
 c = (c + a)/13;
 `,
 		g.MakeInt(4),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(42)},
-			&fn.Ref{g.MakeInt(7)},
-			&fn.Ref{g.MakeInt(4)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(42)},
+			&g.Ref{g.MakeInt(7)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -249,10 +247,10 @@ c <<= 4;
 b *= 2;
 `,
 		g.MakeInt(8),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(4)},
-			&fn.Ref{g.MakeInt(8)},
-			&fn.Ref{g.MakeInt(16)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(4)},
+			&g.Ref{g.MakeInt(8)},
+			&g.Ref{g.MakeInt(16)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -261,32 +259,32 @@ a = b = 11;
 b = a %= 4;
 `,
 		g.MakeInt(3),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(3)},
-			&fn.Ref{g.MakeInt(3)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(3)}})
 }
 
 func TestIf(t *testing.T) {
 
 	ok_mod(t, "let a = 1; if (true) { a = 2; }",
 		g.MakeInt(2),
-		[]*fn.Ref{&fn.Ref{g.MakeInt(2)}})
+		[]*g.Ref{&g.Ref{g.MakeInt(2)}})
 
 	ok_mod(t, "let a = 1; if (false) { a = 2; }",
 		g.NULL,
-		[]*fn.Ref{&fn.Ref{g.MakeInt(1)}})
+		[]*g.Ref{&g.Ref{g.MakeInt(1)}})
 
 	ok_mod(t, "let a = 1; if (1 == 1) { a = 2; } else { a = 3; } let b = 4;",
 		g.MakeInt(2),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(2)},
-			&fn.Ref{g.MakeInt(4)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(2)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, "let a = 1; if (1 == 2) { a = 2; } else { a = 3; } const b = 4;",
 		g.MakeInt(3),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(3)},
-			&fn.Ref{g.MakeInt(4)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(3)},
+			&g.Ref{g.MakeInt(4)}})
 }
 
 func TestWhile(t *testing.T) {
@@ -308,7 +306,7 @@ while (a < 3) {
     a = a + 1;
 }`,
 		g.MakeInt(3),
-		[]*fn.Ref{&fn.Ref{g.MakeInt(3)}})
+		[]*g.Ref{&g.Ref{g.MakeInt(3)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -317,7 +315,7 @@ while (a < 11) {
     a = a + 1;
 }`,
 		g.MakeInt(6),
-		[]*fn.Ref{&fn.Ref{g.MakeInt(6)}})
+		[]*g.Ref{&g.Ref{g.MakeInt(6)}})
 
 	ok_mod(t, `
 let a = 1;
@@ -328,18 +326,18 @@ while (a < 11) {
     b = b + 1;
 }`,
 		g.MakeInt(11),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(11)},
-			&fn.Ref{g.MakeInt(4)}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(11)},
+			&g.Ref{g.MakeInt(4)}})
 
 	ok_mod(t, `
 let a = 1;
 return a + 2;
 let b = 5;`,
 		g.MakeInt(3),
-		[]*fn.Ref{
-			&fn.Ref{g.MakeInt(1)},
-			&fn.Ref{g.NULL}})
+		[]*g.Ref{
+			&g.Ref{g.MakeInt(1)},
+			&g.Ref{g.NULL}})
 }
 
 func TestFunc(t *testing.T) {
@@ -452,9 +450,9 @@ let y = a(1);
 
 }
 
-func newObj(fields map[string]g.Value) comp.Obj {
-	o := comp.NewObj()
-	def := &comp.ObjDef{[]string{}}
+func newObj(fields map[string]g.Value) g.Obj {
+	o := g.NewObj()
+	def := &g.ObjDef{[]string{}}
 	values := []g.Value{}
 	for k, v := range fields {
 		def.Keys = append(def.Keys, k)
@@ -632,9 +630,9 @@ let e = c[1]++;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], comp.NewList([]g.Value{}))
-	ok_ref(t, mod.Locals[1], comp.NewList([]g.Value{g.MakeInt(33)}))
-	ok_ref(t, mod.Locals[2], comp.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
+	ok_ref(t, mod.Locals[0], g.NewList([]g.Value{}))
+	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(33)}))
+	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
 	ok_ref(t, mod.Locals[3], g.TRUE)
 	ok_ref(t, mod.Locals[4], g.MakeInt(22))
 }
@@ -660,8 +658,8 @@ let d = a['x'];
 	ok_ref(t, mod.Locals[3], g.NEG_ONE)
 }
 
-func newRange(from int64, to int64, step int64) comp.Range {
-	r, err := comp.NewRange(from, to, step)
+func newRange(from int64, to int64, step int64) g.Range {
+	r, err := g.NewRange(from, to, step)
 	if err != nil {
 		panic("invalid range")
 	}
@@ -709,7 +707,7 @@ let c = a[1];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], comp.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
+	ok_ref(t, mod.Locals[0], g.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(4))
 	ok_ref(t, mod.Locals[2], g.MakeInt(5))
 }

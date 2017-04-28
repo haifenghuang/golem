@@ -12,63 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fn
+package core
 
 import (
 	//"fmt"
-	g "golem/core"
-	"reflect"
 	"testing"
 )
-
-func assert(t *testing.T, flag bool) {
-	if !flag {
-		t.Error("assertion failure")
-	}
-}
-
-func ok(t *testing.T, val g.Value, err g.Error, expect g.Value) {
-
-	if err != nil {
-		t.Error(err, " != ", nil)
-	}
-
-	if !reflect.DeepEqual(val, expect) {
-		panic("asdfasfad")
-		t.Error(val, " != ", expect)
-	}
-}
-
-func fail(t *testing.T, val g.Value, err g.Error, expect string) {
-
-	if val != nil {
-		t.Error(val, " != ", nil)
-	}
-
-	if err.Error() != expect {
-		t.Error(err.Error(), " != ", expect)
-	}
-}
-
-func okType(t *testing.T, val g.Value, expected g.Type) {
-	tp, err := val.TypeOf()
-	assert(t, tp == expected)
-	assert(t, err == nil)
-}
 
 func TestFunc(t *testing.T) {
 
 	a := NewBytecodeFunc(&Template{})
 	b := NewBytecodeFunc(&Template{})
 
-	okType(t, a, g.TFUNC)
+	okType(t, a, TFUNC)
 
 	z, err := a.Eq(b)
-	ok(t, z, err, g.FALSE)
+	ok(t, z, err, FALSE)
 	z, err = b.Eq(a)
-	ok(t, z, err, g.FALSE)
+	ok(t, z, err, FALSE)
 	z, err = a.Eq(a)
-	ok(t, z, err, g.TRUE)
+	ok(t, z, err, TRUE)
 }
 
 func TestLineNumber(t *testing.T) {

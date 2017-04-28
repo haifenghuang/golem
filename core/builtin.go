@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fn
+package core
 
 import (
 	"fmt"
-	g "golem/core"
-	"golem/core/comp"
 )
 
 const (
@@ -41,7 +39,7 @@ type _str struct{ *_nativeFunc }
 type _len struct{ *_nativeFunc }
 type _range struct{ *_nativeFunc }
 
-func (builtin *_print) Invoke(values []g.Value) (g.Value, g.Error) {
+func (builtin *_print) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
 		s, err := v.ToStr()
 		if err != nil {
@@ -50,10 +48,10 @@ func (builtin *_print) Invoke(values []g.Value) (g.Value, g.Error) {
 		fmt.Print(s.String())
 	}
 
-	return g.NULL, nil
+	return NULL, nil
 }
 
-func (builtin *_println) Invoke(values []g.Value) (g.Value, g.Error) {
+func (builtin *_println) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
 		s, err := v.ToStr()
 		if err != nil {
@@ -63,51 +61,51 @@ func (builtin *_println) Invoke(values []g.Value) (g.Value, g.Error) {
 	}
 	fmt.Println()
 
-	return g.NULL, nil
+	return NULL, nil
 }
 
-func (builtin *_str) Invoke(values []g.Value) (g.Value, g.Error) {
+func (builtin *_str) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
-		return nil, g.ArityMismatchError("1", len(values))
+		return nil, ArityMismatchError("1", len(values))
 	}
 
 	return values[0].ToStr()
 }
 
-func (builtin *_len) Invoke(values []g.Value) (g.Value, g.Error) {
+func (builtin *_len) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
-		return nil, g.ArityMismatchError("1", len(values))
+		return nil, ArityMismatchError("1", len(values))
 	}
 
-	if ln, ok := values[0].(g.Lenable); ok {
+	if ln, ok := values[0].(Lenable); ok {
 		return ln.Len()
 	} else {
-		return nil, g.TypeMismatchError("Expected Lenable Type")
+		return nil, TypeMismatchError("Expected Lenable Type")
 	}
 }
 
-func (builtin *_range) Invoke(values []g.Value) (g.Value, g.Error) {
+func (builtin *_range) Invoke(values []Value) (Value, Error) {
 	if len(values) < 2 || len(values) > 3 {
-		return nil, g.ArityMismatchError("2 or 3", len(values))
+		return nil, ArityMismatchError("2 or 3", len(values))
 	}
 
-	from, ok := values[0].(g.Int)
+	from, ok := values[0].(Int)
 	if !ok {
-		return nil, g.TypeMismatchError("Expected 'Int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 
-	to, ok := values[1].(g.Int)
+	to, ok := values[1].(Int)
 	if !ok {
-		return nil, g.TypeMismatchError("Expected 'Int'")
+		return nil, TypeMismatchError("Expected 'Int'")
 	}
 
-	step := g.ONE
+	step := ONE
 	if len(values) == 3 {
-		step, ok = values[2].(g.Int)
+		step, ok = values[2].(Int)
 		if !ok {
-			return nil, g.TypeMismatchError("Expected 'Int'")
+			return nil, TypeMismatchError("Expected 'Int'")
 		}
 	}
 
-	return comp.NewRange(from.IntVal(), to.IntVal(), step.IntVal())
+	return NewRange(from.IntVal(), to.IntVal(), step.IntVal())
 }

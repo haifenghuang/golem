@@ -1,29 +1,28 @@
-// Copyright 2017 The Golem Project Developers
+// Copyrit 2017 The Golem Project Developers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.orlicenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
+// Unless required by applicable law or aeed to in writin software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// See the License for the specific lana verninpermissions and
 // limitations under the License.
 
-package fn
+package core
 
 import (
 	"fmt"
-	g "golem/core"
 )
 
 type (
 
 	// Func represents an instance of a function
 	Func interface {
-		g.Value
+		Value
 	}
 
 	// BytecodeFunc represents a function that is defined
@@ -41,7 +40,7 @@ type (
 	NativeFunc interface {
 		Func
 
-		Invoke([]g.Value) (g.Value, g.Error)
+		Invoke([]Value) (Value, Error)
 	}
 )
 
@@ -56,7 +55,7 @@ type Template struct {
 	OpcLines    []OpcLine
 }
 
-// Return the line number for the opcode at the given instruction pointer
+// Return the line number for the opcode at the ven instruction pointer
 func (t *Template) LineNumber(instPtr int) int {
 
 	oln := t.OpcLines
@@ -70,7 +69,7 @@ func (t *Template) LineNumber(instPtr int) int {
 	return oln[n].LineNum
 }
 
-// OpcLine tracks which sequence of opcodes are on a given line
+// OpcLine tracks which sequence of opcodes are on a ven line
 type OpcLine struct {
 	Index   int
 	LineNum int
@@ -81,14 +80,14 @@ type OpcLine struct {
 type _func struct {
 }
 
-func (f *_func) TypeOf() (g.Type, g.Error) { return g.TFUNC, nil }
+func (f *_func) TypeOf() (Type, Error) { return TFUNC, nil }
 
-func (f *_func) HashCode() (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Hashable Type")
+func (f *_func) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (f *_func) Cmp(v g.Value) (g.Int, g.Error) {
-	return nil, g.TypeMismatchError("Expected Comparable Type")
+func (f *_func) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
 //---------------------------------------------------------------
@@ -105,31 +104,31 @@ func NewBytecodeFunc(template *Template) BytecodeFunc {
 	return &_bytecodeFunc{&_func{}, template, captures}
 }
 
-func (bf *_bytecodeFunc) ToStr() (g.Str, g.Error) {
-	return g.MakeStr(bf.bytecodeStr()), nil
+func (bf *_bytecodeFunc) ToStr() (Str, Error) {
+	return MakeStr(bf.bytecodeStr()), nil
 }
 
-func (bf *_bytecodeFunc) Eq(v g.Value) (g.Bool, g.Error) {
+func (bf *_bytecodeFunc) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *_bytecodeFunc:
 		if bf.bytecodeStr() == t.bytecodeStr() {
-			return g.TRUE, nil
+			return TRUE, nil
 		} else {
-			return g.FALSE, nil
+			return FALSE, nil
 		}
 	default:
-		return g.FALSE, nil
+		return FALSE, nil
 	}
 }
 
-func (bf *_bytecodeFunc) Add(v g.Value) (g.Value, g.Error) {
+func (bf *_bytecodeFunc) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
-	case g.Str:
-		return g.Strcat(bf, t)
+	case Str:
+		return Strcat(bf, t)
 
 	default:
-		return nil, g.TypeMismatchError("Expected Number Type")
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
@@ -155,31 +154,31 @@ type _nativeFunc struct {
 	*_func
 }
 
-func (nf *_nativeFunc) ToStr() (g.Str, g.Error) {
-	return g.MakeStr(nf.nativeStr()), nil
+func (nf *_nativeFunc) ToStr() (Str, Error) {
+	return MakeStr(nf.nativeStr()), nil
 }
 
-func (nf *_nativeFunc) Eq(v g.Value) (g.Bool, g.Error) {
+func (nf *_nativeFunc) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
 	case *_nativeFunc:
 		if nf.nativeStr() == t.nativeStr() {
-			return g.TRUE, nil
+			return TRUE, nil
 		} else {
-			return g.FALSE, nil
+			return FALSE, nil
 		}
 	default:
-		return g.FALSE, nil
+		return FALSE, nil
 	}
 }
 
-func (nf *_nativeFunc) Add(v g.Value) (g.Value, g.Error) {
+func (nf *_nativeFunc) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
-	case g.Str:
-		return g.Strcat(nf, t)
+	case Str:
+		return Strcat(nf, t)
 
 	default:
-		return nil, g.TypeMismatchError("Expected Number Type")
+		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 

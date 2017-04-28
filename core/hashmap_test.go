@@ -12,43 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package coll
+package core
 
 import (
 	//"fmt"
-	g "golem/core"
 	"reflect"
 	"testing"
 )
-
-func assert(t *testing.T, flag bool) {
-	if !flag {
-		t.Error("assertion failure")
-	}
-}
-
-func ok(t *testing.T, val g.Value, err g.Error, expect g.Value) {
-
-	if err != nil {
-		t.Error(err, " != ", nil)
-	}
-
-	if !reflect.DeepEqual(val, expect) {
-		panic("asdfasfad")
-		t.Error(val, " != ", expect)
-	}
-}
-
-func fail(t *testing.T, val g.Value, err g.Error, expect string) {
-
-	if val != nil {
-		t.Error(val, " != ", nil)
-	}
-
-	if err.Error() != expect {
-		t.Error(err.Error(), " != ", expect)
-	}
-}
 
 func debug(hm *HashMap) {
 	//fmt.Println("--------------------------")
@@ -70,52 +40,52 @@ func TestHashMap(t *testing.T) {
 	hm := NewHashMap(nil)
 	debug(hm)
 
-	ok(t, hm.Len(), nil, g.ZERO)
-	v, err := hm.Get(g.MakeInt(3))
-	ok(t, v, err, g.NULL)
+	ok(t, hm.Len(), nil, ZERO)
+	v, err := hm.Get(MakeInt(3))
+	ok(t, v, err, NULL)
 
-	err = hm.Put(g.MakeInt(3), g.MakeInt(33))
+	err = hm.Put(MakeInt(3), MakeInt(33))
 	ok(t, nil, err, nil)
 	debug(hm)
 
-	ok(t, hm.Len(), nil, g.ONE)
-	v, err = hm.Get(g.MakeInt(3))
-	ok(t, v, err, g.MakeInt(33))
-	v, err = hm.Get(g.MakeInt(5))
-	ok(t, v, err, g.NULL)
+	ok(t, hm.Len(), nil, ONE)
+	v, err = hm.Get(MakeInt(3))
+	ok(t, v, err, MakeInt(33))
+	v, err = hm.Get(MakeInt(5))
+	ok(t, v, err, NULL)
 
-	err = hm.Put(g.MakeInt(3), g.MakeInt(33))
+	err = hm.Put(MakeInt(3), MakeInt(33))
 	ok(t, nil, err, nil)
 	debug(hm)
 
-	ok(t, hm.Len(), nil, g.ONE)
-	v, err = hm.Get(g.MakeInt(3))
-	ok(t, v, err, g.MakeInt(33))
-	v, err = hm.Get(g.MakeInt(5))
-	ok(t, v, err, g.NULL)
+	ok(t, hm.Len(), nil, ONE)
+	v, err = hm.Get(MakeInt(3))
+	ok(t, v, err, MakeInt(33))
+	v, err = hm.Get(MakeInt(5))
+	ok(t, v, err, NULL)
 
-	err = hm.Put(g.MakeInt(int64(2)), g.MakeInt(int64(22)))
+	err = hm.Put(MakeInt(int64(2)), MakeInt(int64(22)))
 	ok(t, nil, err, nil)
 	debug(hm)
-	ok(t, hm.Len(), nil, g.MakeInt(2))
+	ok(t, hm.Len(), nil, MakeInt(2))
 
-	err = hm.Put(g.MakeInt(int64(1)), g.MakeInt(int64(11)))
+	err = hm.Put(MakeInt(int64(1)), MakeInt(int64(11)))
 	ok(t, nil, err, nil)
 	debug(hm)
-	ok(t, hm.Len(), nil, g.MakeInt(3))
+	ok(t, hm.Len(), nil, MakeInt(3))
 
 	for i := 1; i <= 20; i++ {
-		err = hm.Put(g.MakeInt(int64(i)), g.MakeInt(int64(i*10+i)))
+		err = hm.Put(MakeInt(int64(i)), MakeInt(int64(i*10+i)))
 		ok(t, nil, err, nil)
 	}
 	debug(hm)
 
 	for i := 1; i <= 40; i++ {
-		v, err = hm.Get(g.MakeInt(int64(i)))
+		v, err = hm.Get(MakeInt(int64(i)))
 		if i <= 20 {
-			ok(t, v, err, g.MakeInt(int64(i*10+i)))
+			ok(t, v, err, MakeInt(int64(i*10+i)))
 		} else {
-			ok(t, v, err, g.NULL)
+			ok(t, v, err, NULL)
 		}
 	}
 }
@@ -124,11 +94,11 @@ func TestStrHashMap(t *testing.T) {
 
 	hm := NewHashMap(nil)
 
-	err := hm.Put(g.MakeStr("abc"), g.MakeStr("xyz"))
+	err := hm.Put(MakeStr("abc"), MakeStr("xyz"))
 	ok(t, nil, err, nil)
 
-	v, err := hm.Get(g.MakeStr("abc"))
-	ok(t, v, err, g.MakeStr("xyz"))
+	v, err := hm.Get(MakeStr("abc"))
+	ok(t, v, err, MakeStr("xyz"))
 }
 
 func testIteratorEntries(t *testing.T, initial []*HEntry, expect []*HEntry) {
@@ -154,25 +124,25 @@ func TestHashMapIterator(t *testing.T) {
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)}},
+			&HEntry{MakeStr("a"), MakeInt(1)}},
 		[]*HEntry{
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)}})
+			&HEntry{MakeStr("a"), MakeInt(1)}})
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)},
-			&HEntry{g.MakeStr("b"), g.MakeInt(2)}},
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("b"), MakeInt(2)}},
 		[]*HEntry{
-			&HEntry{g.MakeStr("b"), g.MakeInt(2)},
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)}})
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("a"), MakeInt(1)}})
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)},
-			&HEntry{g.MakeStr("b"), g.MakeInt(2)},
-			&HEntry{g.MakeStr("c"), g.MakeInt(3)}},
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("c"), MakeInt(3)}},
 		[]*HEntry{
-			&HEntry{g.MakeStr("b"), g.MakeInt(2)},
-			&HEntry{g.MakeStr("a"), g.MakeInt(1)},
-			&HEntry{g.MakeStr("c"), g.MakeInt(3)}})
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("a"), MakeInt(1)},
+			&HEntry{MakeStr("c"), MakeInt(3)}})
 }

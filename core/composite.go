@@ -12,58 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package comp
-
-import (
-	g "golem/core"
-)
+package core
 
 type (
 	Composite interface {
-		g.Value
+		Value
 		compositeMarker()
 	}
 
 	List interface {
 		Composite
-		g.Indexable
-		g.Lenable
-		g.Sliceable
+		Indexable
+		Lenable
+		Sliceable
 
-		Append(g.Value) g.Error
+		Append(Value) Error
 	}
 
 	Range interface {
 		Composite
-		g.Getable
-		g.Lenable
-		g.Sliceable
+		Getable
+		Lenable
+		Sliceable
 
-		From() g.Int
-		To() g.Int
-		Step() g.Int
+		From() Int
+		To() Int
+		Step() Int
 	}
 
 	Tuple interface {
 		Composite
-		g.Getable
-		g.Lenable
+		Getable
+		Lenable
 	}
 
 	Obj interface {
 		Composite
-		g.Indexable
+		Indexable
 
-		Init(*ObjDef, []g.Value)
+		Init(*ObjDef, []Value)
 
-		GetField(g.Str) (g.Value, g.Error)
-		PutField(g.Str, g.Value) g.Error
-		Has(g.Value) (g.Bool, g.Error)
+		GetField(Str) (Value, Error)
+		PutField(Str, Value) Error
+		Has(Value) (Bool, Error)
 	}
 
 	Dict interface {
 		Composite
-		g.Indexable
-		g.Lenable
+		Indexable
+		Lenable
 	}
 )
