@@ -19,6 +19,216 @@ import (
 )
 
 //---------------------------------------------------------------
+// Value
+
+type Value interface {
+	TypeOf() (Type, Error)
+
+	HashCode() (Int, Error)
+	Eq(Value) (Bool, Error)
+	ToStr() (Str, Error)
+
+	Cmp(Value) (Int, Error)
+	Add(Value) (Value, Error)
+}
+
+//---------------------------------------------------------------
+// Basic
+
+type (
+	Basic interface {
+		Value
+		basicMarker()
+	}
+
+	Null interface {
+		Basic
+	}
+
+	Bool interface {
+		Basic
+		BoolVal() bool
+
+		Not() Bool
+	}
+
+	Str interface {
+		Basic
+		fmt.Stringer
+
+		Getable
+		Lenable
+		Sliceable
+		Iterable
+	}
+
+	Number interface {
+		Basic
+		FloatVal() float64
+		IntVal() int64
+
+		Sub(Value) (Number, Error)
+		Mul(Value) (Number, Error)
+		Div(Value) (Number, Error)
+		Negate() (Number, Error)
+	}
+
+	Float interface {
+		Number
+	}
+
+	Int interface {
+		Number
+
+		Rem(Value) (Int, Error)
+		BitAnd(Value) (Int, Error)
+		BitOr(Value) (Int, Error)
+		BitXOr(Value) (Int, Error)
+		LeftShift(Value) (Int, Error)
+		RightShift(Value) (Int, Error)
+		Complement() (Int, Error)
+	}
+)
+
+//---------------------------------------------------------------
+// Composite
+
+type (
+	Composite interface {
+		Value
+		compositeMarker()
+	}
+
+	List interface {
+		Composite
+		Indexable
+		Lenable
+		Sliceable
+		Iterable
+
+		Append(Value) Error
+	}
+
+	Range interface {
+		Composite
+		Getable
+		Lenable
+		Sliceable
+		Iterable
+
+		From() Int
+		To() Int
+		Step() Int
+	}
+
+	Tuple interface {
+		Composite
+		Getable
+		Lenable
+	}
+
+	Dict interface {
+		Composite
+		Indexable
+		Lenable
+		Iterable
+	}
+
+	Obj interface {
+		Composite
+		Indexable
+
+		Init(*ObjDef, []Value)
+
+		GetField(Str) (Value, Error)
+		PutField(Str, Value) Error
+		Has(Value) (Bool, Error)
+	}
+
+	Iterator interface {
+		Obj
+		IterNext() Bool
+		IterGet() (Value, Error)
+	}
+)
+
+//---------------------------------------------------------------
+// Func
+
+type (
+
+	// Func represents an instance of a function
+	Func interface {
+		Value
+	}
+
+	// BytecodeFunc represents a function that is defined
+	// via Golem source code
+	BytecodeFunc interface {
+		Func
+
+		Template() *Template
+		GetCapture(int) *Ref
+		PushCapture(*Ref)
+	}
+
+	// NativeFunc represents a function that is defined
+	// natively within Go.
+	NativeFunc interface {
+		Func
+
+		Invoke([]Value) (Value, Error)
+	}
+)
+
+type (
+	// Template represents the information needed to invoke a function
+	// instance.  Templates are created at compile time, and
+	// are immutable at run time.
+	Template struct {
+		Arity       int
+		NumCaptures int
+		NumLocals   int
+		OpCodes     []byte
+		OpcLines    []OpcLine
+	}
+
+	// OpcLine tracks which sequence of opcodes are on a ven line
+	OpcLine struct {
+		Index   int
+		LineNum int
+	}
+)
+
+//---------------------------------------------------------------
+// Shared Interfaces
+
+type (
+	Getable interface {
+		Get(Value) (Value, Error)
+	}
+
+	Indexable interface {
+		Getable
+		Set(Value, Value) Error
+	}
+
+	Lenable interface {
+		Len() (Int, Error)
+	}
+
+	Sliceable interface {
+		Slice(Value, Value) (Value, Error)
+		SliceFrom(Value) (Value, Error)
+		SliceTo(Value) (Value, Error)
+	}
+
+	Iterable interface {
+		NewIterator() Iterator
+	}
+)
+
+//---------------------------------------------------------------
 // Type
 
 type Type int
@@ -66,95 +276,3 @@ func (t Type) String() string {
 		panic("unreachable")
 	}
 }
-
-//---------------------------------------------------------------
-// Shared Interfaces
-
-type (
-	Getable interface {
-		Get(Value) (Value, Error)
-	}
-
-	Indexable interface {
-		Getable
-		Set(Value, Value) Error
-	}
-
-	Lenable interface {
-		Len() (Int, Error)
-	}
-
-	Sliceable interface {
-		Slice(Value, Value) (Value, Error)
-		SliceFrom(Value) (Value, Error)
-		SliceTo(Value) (Value, Error)
-	}
-)
-
-//---------------------------------------------------------------
-// Value
-
-type (
-	Value interface {
-		TypeOf() (Type, Error)
-
-		HashCode() (Int, Error)
-		Eq(Value) (Bool, Error)
-		ToStr() (Str, Error)
-
-		Cmp(Value) (Int, Error)
-		Add(Value) (Value, Error)
-	}
-
-	Basic interface {
-		Value
-		basicMarker()
-	}
-
-	Null interface {
-		Basic
-	}
-
-	Bool interface {
-		Basic
-		BoolVal() bool
-
-		Not() Bool
-	}
-
-	Str interface {
-		Basic
-		fmt.Stringer
-
-		Getable
-		Lenable
-		Sliceable
-	}
-
-	Number interface {
-		Basic
-		FloatVal() float64
-		IntVal() int64
-
-		Sub(Value) (Number, Error)
-		Mul(Value) (Number, Error)
-		Div(Value) (Number, Error)
-		Negate() (Number, Error)
-	}
-
-	Float interface {
-		Number
-	}
-
-	Int interface {
-		Number
-
-		Rem(Value) (Int, Error)
-		BitAnd(Value) (Int, Error)
-		BitOr(Value) (Int, Error)
-		BitXOr(Value) (Int, Error)
-		LeftShift(Value) (Int, Error)
-		RightShift(Value) (Int, Error)
-		Complement() (Int, Error)
-	}
-)

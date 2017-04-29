@@ -33,7 +33,7 @@ func ok(t *testing.T, val Value, err Error, expect Value) {
 	}
 
 	if !reflect.DeepEqual(val, expect) {
-		panic("asdfasfad")
+		//panic("asdfasfad")
 		t.Error(val, " != ", expect)
 	}
 }
@@ -502,4 +502,55 @@ func TestBasicHashCode(t *testing.T) {
 
 	h, err = MakeStr("abcdef").HashCode()
 	ok(t, h, err, MakeInt(436938535))
+}
+
+func objFuncField(t *testing.T, obj Obj, name Str) NativeFunc {
+	v, err := obj.GetField(name)
+	assert(t, err == nil)
+	f, ok := v.(NativeFunc)
+	assert(t, ok)
+	return f
+}
+
+func objInvokeFunc(t *testing.T, obj Obj, name Str) Value {
+	f := objFuncField(t, obj, name)
+	v, err := f.Invoke([]Value{})
+	assert(t, err == nil)
+
+	return v
+}
+
+func objInvokeBoolFunc(t *testing.T, obj Obj, name Str) Bool {
+	v := objInvokeFunc(t, obj, name)
+	b, ok := v.(Bool)
+	assert(t, ok)
+	return b
+}
+
+func TestStrIterator(t *testing.T) {
+
+	var ibl Iterable = MakeStr("abc")
+
+	var itr Iterator = ibl.NewIterator()
+	v, err := itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+	s := MakeStr("")
+	for itr.IterNext().BoolVal() {
+		v, err = itr.IterGet()
+		assert(t, err == nil)
+		s, err = Strcat(s, v)
+		assert(t, err == nil)
+	}
+	ok(t, s, nil, MakeStr("abc"))
+	v, err = itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+
+	itr = ibl.NewIterator()
+	s = MakeStr("")
+	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+		s, err = Strcat(s, v)
+		assert(t, err == nil)
+	}
+	ok(t, s, nil, MakeStr("abc"))
 }

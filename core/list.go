@@ -144,3 +144,45 @@ func (ls *list) SliceFrom(from Value) (Value, Error) {
 func (ls *list) SliceTo(to Value) (Value, Error) {
 	return ls.Slice(ZERO, to)
 }
+
+//---------------------------------------------------------------
+// Iterator
+
+type listIterator struct {
+	Obj
+	ls *list
+	n  int
+}
+
+func (ls *list) NewIterator() Iterator {
+
+	// TODO make this immutable
+	obj := NewObj()
+
+	iter := &listIterator{obj, ls, -1}
+
+	obj.Init(
+		&ObjDef{[]string{
+			"nextValue",
+			"getValue"}},
+		[]Value{
+			&nativeIterNext{&nativeFunc{}, iter},
+			&nativeIterGet{&nativeFunc{}, iter}})
+
+	return iter
+}
+
+func (i *listIterator) IterNext() Bool {
+
+	i.n++
+	return MakeBool(i.n < len(i.ls.array))
+}
+
+func (i *listIterator) IterGet() (Value, Error) {
+
+	if (i.n >= 0) && (i.n < len(i.ls.array)) {
+		return i.ls.array[i.n], nil
+	} else {
+		return nil, NoSuchElementError()
+	}
+}

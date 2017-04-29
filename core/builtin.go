@@ -27,19 +27,19 @@ const (
 )
 
 var Builtins = []NativeFunc{
-	&_print{&_nativeFunc{}},
-	&_println{&_nativeFunc{}},
-	&_str{&_nativeFunc{}},
-	&_len{&_nativeFunc{}},
-	&_range{&_nativeFunc{}}}
+	&fnPrint{&nativeFunc{}},
+	&fnPrintln{&nativeFunc{}},
+	&fnStr{&nativeFunc{}},
+	&fnLen{&nativeFunc{}},
+	&fnRange{&nativeFunc{}}}
 
-type _print struct{ *_nativeFunc }
-type _println struct{ *_nativeFunc }
-type _str struct{ *_nativeFunc }
-type _len struct{ *_nativeFunc }
-type _range struct{ *_nativeFunc }
+type fnPrint struct{ *nativeFunc }
+type fnPrintln struct{ *nativeFunc }
+type fnStr struct{ *nativeFunc }
+type fnLen struct{ *nativeFunc }
+type fnRange struct{ *nativeFunc }
 
-func (builtin *_print) Invoke(values []Value) (Value, Error) {
+func (fn *fnPrint) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
 		s, err := v.ToStr()
 		if err != nil {
@@ -51,7 +51,7 @@ func (builtin *_print) Invoke(values []Value) (Value, Error) {
 	return NULL, nil
 }
 
-func (builtin *_println) Invoke(values []Value) (Value, Error) {
+func (fn *fnPrintln) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
 		s, err := v.ToStr()
 		if err != nil {
@@ -64,7 +64,7 @@ func (builtin *_println) Invoke(values []Value) (Value, Error) {
 	return NULL, nil
 }
 
-func (builtin *_str) Invoke(values []Value) (Value, Error) {
+func (fn *fnStr) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
@@ -72,7 +72,7 @@ func (builtin *_str) Invoke(values []Value) (Value, Error) {
 	return values[0].ToStr()
 }
 
-func (builtin *_len) Invoke(values []Value) (Value, Error) {
+func (fn *fnLen) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
@@ -84,7 +84,7 @@ func (builtin *_len) Invoke(values []Value) (Value, Error) {
 	}
 }
 
-func (builtin *_range) Invoke(values []Value) (Value, Error) {
+func (fn *fnRange) Invoke(values []Value) (Value, Error) {
 	if len(values) < 2 || len(values) > 3 {
 		return nil, ArityMismatchError("2 or 3", len(values))
 	}

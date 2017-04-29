@@ -18,42 +18,8 @@ import (
 	"fmt"
 )
 
-type (
-
-	// Func represents an instance of a function
-	Func interface {
-		Value
-	}
-
-	// BytecodeFunc represents a function that is defined
-	// via Golem source code
-	BytecodeFunc interface {
-		Func
-
-		Template() *Template
-		GetCapture(int) *Ref
-		PushCapture(*Ref)
-	}
-
-	// NativeFunc represents a function that is defined
-	// natively within Go.
-	NativeFunc interface {
-		Func
-
-		Invoke([]Value) (Value, Error)
-	}
-)
-
-// Template represents the information needed to invoke a function
-// instance.  Templates are created at compile time, and
-// are immutable at run time.
-type Template struct {
-	Arity       int
-	NumCaptures int
-	NumLocals   int
-	OpCodes     []byte
-	OpcLines    []OpcLine
-}
+//---------------------------------------------------------------
+// Template
 
 // Return the line number for the opcode at the ven instruction pointer
 func (t *Template) LineNumber(instPtr int) int {
@@ -69,31 +35,27 @@ func (t *Template) LineNumber(instPtr int) int {
 	return oln[n].LineNum
 }
 
-// OpcLine tracks which sequence of opcodes are on a ven line
-type OpcLine struct {
-	Index   int
-	LineNum int
-}
-
 //---------------------------------------------------------------
+// function
 
-type _func struct {
+type function struct {
 }
 
-func (f *_func) TypeOf() (Type, Error) { return TFUNC, nil }
+func (f *function) TypeOf() (Type, Error) { return TFUNC, nil }
 
-func (f *_func) HashCode() (Int, Error) {
+func (f *function) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (f *_func) Cmp(v Value) (Int, Error) {
+func (f *function) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
 //---------------------------------------------------------------
+// bytecodeFunc
 
-type _bytecodeFunc struct {
-	*_func
+type bytecodeFunc struct {
+	*function
 	template *Template
 	captures []*Ref
 }
@@ -101,16 +63,16 @@ type _bytecodeFunc struct {
 // Called via NEW_FUNC opcode at runtime
 func NewBytecodeFunc(template *Template) BytecodeFunc {
 	captures := make([]*Ref, 0, template.NumCaptures)
-	return &_bytecodeFunc{&_func{}, template, captures}
+	return &bytecodeFunc{&function{}, template, captures}
 }
 
-func (bf *_bytecodeFunc) ToStr() (Str, Error) {
+func (bf *bytecodeFunc) ToStr() (Str, Error) {
 	return MakeStr(bf.bytecodeStr()), nil
 }
 
-func (bf *_bytecodeFunc) Eq(v Value) (Bool, Error) {
+func (bf *bytecodeFunc) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *_bytecodeFunc:
+	case *bytecodeFunc:
 		if bf.bytecodeStr() == t.bytecodeStr() {
 			return TRUE, nil
 		} else {
@@ -121,7 +83,7 @@ func (bf *_bytecodeFunc) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (bf *_bytecodeFunc) Add(v Value) (Value, Error) {
+func (bf *bytecodeFunc) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -132,35 +94,36 @@ func (bf *_bytecodeFunc) Add(v Value) (Value, Error) {
 	}
 }
 
-func (bf *_bytecodeFunc) Template() *Template {
+func (bf *bytecodeFunc) Template() *Template {
 	return bf.template
 }
 
-func (bf *_bytecodeFunc) GetCapture(idx int) *Ref {
+func (bf *bytecodeFunc) GetCapture(idx int) *Ref {
 	return bf.captures[idx]
 }
 
-func (bf *_bytecodeFunc) PushCapture(ref *Ref) {
+func (bf *bytecodeFunc) PushCapture(ref *Ref) {
 	bf.captures = append(bf.captures, ref)
 }
 
-func (bf *_bytecodeFunc) bytecodeStr() string {
+func (bf *bytecodeFunc) bytecodeStr() string {
 	return fmt.Sprintf("func<%p>", bf)
 }
 
 //---------------------------------------------------------------
+// nativeFunc
 
-type _nativeFunc struct {
-	*_func
+type nativeFunc struct {
+	*function
 }
 
-func (nf *_nativeFunc) ToStr() (Str, Error) {
+func (nf *nativeFunc) ToStr() (Str, Error) {
 	return MakeStr(nf.nativeStr()), nil
 }
 
-func (nf *_nativeFunc) Eq(v Value) (Bool, Error) {
+func (nf *nativeFunc) Eq(v Value) (Bool, Error) {
 	switch t := v.(type) {
-	case *_nativeFunc:
+	case *nativeFunc:
 		if nf.nativeStr() == t.nativeStr() {
 			return TRUE, nil
 		} else {
@@ -171,7 +134,7 @@ func (nf *_nativeFunc) Eq(v Value) (Bool, Error) {
 	}
 }
 
-func (nf *_nativeFunc) Add(v Value) (Value, Error) {
+func (nf *nativeFunc) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -182,6 +145,27 @@ func (nf *_nativeFunc) Add(v Value) (Value, Error) {
 	}
 }
 
-func (nf *_nativeFunc) nativeStr() string {
+func (nf *nativeFunc) nativeStr() string {
 	return fmt.Sprintf("nativeFunc<%p>", nf)
+}
+
+//---------------------------------------------------------------
+// nativeFuncs that operate on various Types
+
+type nativeIterNext struct {
+	*nativeFunc
+	itr Iterator
+}
+
+type nativeIterGet struct {
+	*nativeFunc
+	itr Iterator
+}
+
+func (f *nativeIterNext) Invoke(values []Value) (Value, Error) {
+	return f.itr.IterNext(), nil
+}
+
+func (f *nativeIterGet) Invoke(values []Value) (Value, Error) {
+	return f.itr.IterGet()
 }

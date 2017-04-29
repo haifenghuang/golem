@@ -15,6 +15,7 @@
 package core
 
 import (
+	//"fmt"
 	"testing"
 )
 
@@ -424,4 +425,107 @@ func TestRange(t *testing.T) {
 	ok(t, r.From(), nil, ZERO)
 	ok(t, r.To(), nil, MakeInt(5))
 	ok(t, r.Step(), nil, ONE)
+}
+
+func TestRangeIterator(t *testing.T) {
+
+	var ibl Iterable = newRange(1, 5, 1)
+
+	var itr Iterator = ibl.NewIterator()
+	v, err := itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+	var n int64 = 1
+	for itr.IterNext().BoolVal() {
+		v, err = itr.IterGet()
+		assert(t, err == nil)
+
+		i, ok := v.(Int)
+		assert(t, ok)
+		n *= i.IntVal()
+	}
+	assert(t, n == 24)
+	v, err = itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+
+	itr = ibl.NewIterator()
+	n = 1
+	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+
+		i, ok := v.(Int)
+		assert(t, ok)
+		n *= i.IntVal()
+	}
+	assert(t, n == 24)
+}
+
+func TestListIterator(t *testing.T) {
+
+	var ibl Iterable = NewList(
+		[]Value{MakeInt(1), MakeInt(2), MakeInt(3), MakeInt(4)})
+
+	var itr Iterator = ibl.NewIterator()
+	v, err := itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+	var n int64 = 1
+	for itr.IterNext().BoolVal() {
+		v, err = itr.IterGet()
+		assert(t, err == nil)
+
+		i, ok := v.(Int)
+		assert(t, ok)
+		n *= i.IntVal()
+	}
+	assert(t, n == 24)
+	v, err = itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+
+	itr = ibl.NewIterator()
+	n = 1
+	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+
+		i, ok := v.(Int)
+		assert(t, ok)
+		n *= i.IntVal()
+	}
+	assert(t, n == 24)
+}
+
+func TestDictIterator(t *testing.T) {
+
+	var ibl Iterable = NewDict(
+		NewHashMap([]*HEntry{
+			&HEntry{MakeStr("a"), ONE},
+			&HEntry{MakeStr("b"), MakeInt(2)},
+			&HEntry{MakeStr("c"), MakeInt(3)}}))
+
+	var itr Iterator = ibl.NewIterator()
+	v, err := itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+	s := MakeStr("")
+	for itr.IterNext().BoolVal() {
+		v, err = itr.IterGet()
+		assert(t, err == nil)
+
+		tp, ok := v.(Tuple)
+		assert(t, ok)
+		s, err = Strcat(s, tp)
+		assert(t, err == nil)
+	}
+	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
+	v, err = itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+
+	itr = ibl.NewIterator()
+	s = MakeStr("")
+	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+
+		tp, ok := v.(Tuple)
+		assert(t, ok)
+		s, err = Strcat(s, tp)
+		assert(t, err == nil)
+	}
+	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
 }

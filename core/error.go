@@ -76,3 +76,7 @@ func NoSuchFieldError(field string) Error {
 func InvalidArgumentError(msg string) Error {
 	return &serror{"InvalidArgument", msg}
 }
+
+func NoSuchElementError() Error {
+	return &serror{"NoSuchElement", ""}
+}

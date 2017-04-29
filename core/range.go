@@ -130,3 +130,44 @@ func (r *rng) SliceTo(to Value) (Value, Error) {
 func (r *rng) From() Int { return MakeInt(r.from) }
 func (r *rng) To() Int   { return MakeInt(r.to) }
 func (r *rng) Step() Int { return MakeInt(r.step) }
+
+//---------------------------------------------------------------
+// Iterator
+
+type rangeIterator struct {
+	Obj
+	r *rng
+	n int64
+}
+
+func (r *rng) NewIterator() Iterator {
+
+	// TODO make this immutable
+	obj := NewObj()
+
+	iter := &rangeIterator{obj, r, -1}
+
+	obj.Init(
+		&ObjDef{[]string{
+			"nextValue",
+			"getValue"}},
+		[]Value{
+			&nativeIterNext{&nativeFunc{}, iter},
+			&nativeIterGet{&nativeFunc{}, iter}})
+
+	return iter
+}
+
+func (i *rangeIterator) IterNext() Bool {
+	i.n++
+	return MakeBool(i.n < i.r.count)
+}
+
+func (i *rangeIterator) IterGet() (Value, Error) {
+
+	if (i.n >= 0) && (i.n < i.r.count) {
+		return MakeInt(i.r.from + i.n*i.r.step), nil
+	} else {
+		return nil, NoSuchElementError()
+	}
+}

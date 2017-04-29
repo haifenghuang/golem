@@ -161,3 +161,44 @@ func runesCmp(a str, b str) int {
 	}
 	return len(a) - len(b)
 }
+
+//---------------------------------------------------------------
+// Iterator
+
+type strIterator struct {
+	Obj
+	s str
+	n int
+}
+
+func (s str) NewIterator() Iterator {
+
+	// TODO make this immutable
+	obj := NewObj()
+
+	iter := &strIterator{obj, s, -1}
+
+	obj.Init(
+		&ObjDef{[]string{
+			"nextValue",
+			"getValue"}},
+		[]Value{
+			&nativeIterNext{&nativeFunc{}, iter},
+			&nativeIterGet{&nativeFunc{}, iter}})
+
+	return iter
+}
+
+func (i *strIterator) IterNext() Bool {
+	i.n++
+	return MakeBool(i.n < len(i.s))
+}
+
+func (i *strIterator) IterGet() (Value, Error) {
+
+	if (i.n >= 0) && (i.n < len(i.s)) {
+		return str([]rune{i.s[i.n]}), nil
+	} else {
+		return nil, NoSuchElementError()
+	}
+}

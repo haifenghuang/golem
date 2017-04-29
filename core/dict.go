@@ -108,3 +108,46 @@ func (d *dict) Set(key Value, val Value) Error {
 func (d *dict) Len() (Int, Error) {
 	return d.hashMap.Len(), nil
 }
+
+//---------------------------------------------------------------
+// Iterator
+
+type dictIterator struct {
+	Obj
+	d       *dict
+	itr     *HIterator
+	hasNext bool
+}
+
+func (d *dict) NewIterator() Iterator {
+
+	// TODO make this immutable
+	obj := NewObj()
+
+	iter := &dictIterator{obj, d, d.hashMap.Iterator(), false}
+
+	obj.Init(
+		&ObjDef{[]string{
+			"nextValue",
+			"getValue"}},
+		[]Value{
+			&nativeIterNext{&nativeFunc{}, iter},
+			&nativeIterGet{&nativeFunc{}, iter}})
+
+	return iter
+}
+
+func (i *dictIterator) IterNext() Bool {
+	i.hasNext = i.itr.Next()
+	return MakeBool(i.hasNext)
+}
+
+func (i *dictIterator) IterGet() (Value, Error) {
+
+	if i.hasNext {
+		entry := i.itr.Get()
+		return NewTuple([]Value{entry.Key, entry.Value}), nil
+	} else {
+		return nil, NoSuchElementError()
+	}
+}
