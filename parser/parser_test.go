@@ -319,6 +319,27 @@ func TestStatement(t *testing.T) {
 
 	p = newParser("let a = 3, b; const x, y, z = 5; ")
 	ok(t, p, "fn() { let a = 3, b; const x, y, z = 5; }")
+
+	p = newParser("for a in b {}")
+	ok(t, p, "fn() { for a in b {  } }")
+
+	p = newParser("for (a,b) in c {}")
+	ok(t, p, "fn() { for (a, b) in c {  } }")
+
+	p = newParser("for (a,b,c) in d {}")
+	ok(t, p, "fn() { for (a, b, c) in d {  } }")
+
+	p = newParser("for a b")
+	fail(t, p, "Unexpected Token 'b' at (1, 7)")
+
+	p = newParser("for in")
+	fail(t, p, "Unexpected Token 'in' at (1, 5)")
+
+	p = newParser("for (a) in c {}")
+	fail(t, p, "Invalid For Expression at (1, 5)")
+
+	p = newParser("for () in c {}")
+	fail(t, p, "Invalid For Expression at (1, 5)")
 }
 
 func TestFn(t *testing.T) {

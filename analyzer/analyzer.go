@@ -31,7 +31,7 @@ type analyzer struct {
 	mod       *ast.FnExpr
 	rootScope *scope
 	curScope  *scope
-	loops     []*ast.While
+	loops     []ast.Loop
 	objs      []*ast.ObjExpr
 	errors    []error
 }
@@ -40,7 +40,7 @@ func NewAnalyzer(mod *ast.FnExpr) Analyzer {
 
 	rootScope := newFuncScope(nil)
 
-	return &analyzer{mod, rootScope, rootScope, []*ast.While{}, []*ast.ObjExpr{}, nil}
+	return &analyzer{mod, rootScope, rootScope, []ast.Loop{}, []*ast.ObjExpr{}, nil}
 }
 
 func (a *analyzer) scope() *scope {
@@ -87,6 +87,11 @@ func (a *analyzer) Visit(node ast.Node) {
 		t.Traverse(a)
 		a.loops = a.loops[:len(a.loops)-1]
 
+	case *ast.For:
+		a.loops = append(a.loops, t)
+		a.visitFor(t)
+		a.loops = a.loops[:len(a.loops)-1]
+
 	case *ast.Break:
 		if len(a.loops) == 0 {
 			a.errors = append(a.errors, &aerror{"'break' outside of loop"})
@@ -109,10 +114,50 @@ func (a *analyzer) Visit(node ast.Node) {
 	}
 }
 
+func (a *analyzer) visitDecls(decls []*ast.Decl, isConst bool) {
+
+	for _, d := range decls {
+		if d.Val != nil {
+			a.Visit(d.Val)
+		}
+		a.defineIdent(d.Ident, isConst)
+	}
+}
+
+func (a *analyzer) defineIdent(ident *ast.IdentExpr, isConst bool) {
+	sym := ident.Symbol.Text
+	if _, ok := a.curScope.get(sym); ok {
+		a.errors = append(a.errors,
+			&aerror{fmt.Sprintf("Symbol '%s' is already defined", sym)})
+	} else {
+		ident.Variable = a.curScope.put(sym, isConst)
+	}
+}
+
 func (a *analyzer) visitBlock(blk *ast.Block) {
 
 	a.curScope = newBlockScope(a.curScope)
 	blk.Traverse(a)
+	a.curScope = a.curScope.parent
+}
+
+func (a *analyzer) visitFor(fr *ast.For) {
+
+	// push block scope
+	a.curScope = newBlockScope(a.curScope)
+
+	// define identifiers
+	for _, ident := range fr.Idents {
+		a.defineIdent(ident, false)
+	}
+
+	// define the identifier for the iterable
+
+	// visit the iterable and body
+	a.Visit(fr.Iterable)
+	a.visitBlock(fr.Body)
+
+	// pop block scope
 	a.curScope = a.curScope.parent
 }
 
@@ -152,23 +197,6 @@ func (a *analyzer) doVisitFunc(fn *ast.FnExpr) {
 	fn.NumLocals = af.numLocals
 	fn.NumCaptures = len(af.captures)
 	fn.ParentCaptures = pc
-}
-
-func (a *analyzer) visitDecls(decls []*ast.Decl, isConst bool) {
-
-	for _, d := range decls {
-		if d.Val != nil {
-			a.Visit(d.Val)
-		}
-
-		sym := d.Ident.Symbol.Text
-		if _, ok := a.curScope.get(sym); ok {
-			a.errors = append(a.errors,
-				&aerror{fmt.Sprintf("Symbol '%s' is already defined", sym)})
-		} else {
-			d.Ident.Variable = a.curScope.put(sym, isConst)
-		}
-	}
 }
 
 func (a *analyzer) visitAssignment(asn *ast.Assignment) {

@@ -861,6 +861,41 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			s[n] = val
 			ip++
 
+		case g.ITER:
+
+			ibl, ok := s[n].(g.Iterable)
+			if !ok {
+				panic("Expected Iterable")
+			}
+
+			s[n] = ibl.NewIterator()
+			ip++
+
+		case g.ITER_NEXT:
+
+			itr, ok := s[n].(g.Iterator)
+			if !ok {
+				panic("Expected Iterator")
+			}
+
+			s[n] = itr.IterNext()
+			ip++
+
+		case g.ITER_GET:
+
+			itr, ok := s[n].(g.Iterator)
+			if !ok {
+				panic("Expected Iterator")
+			}
+
+			val, err := itr.IterGet()
+			if err != nil {
+				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			s[n] = val
+			ip++
+
 		case g.DUP:
 			s = append(s, s[n])
 			ip++

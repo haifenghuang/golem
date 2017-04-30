@@ -691,6 +691,28 @@ println(a,b);
 	ok_ref(t, mod.Locals[1], g.MakeStr("[ 4, 5, 6 ]"))
 	ok_ref(t, mod.Locals[2], newRange(0, 5, 1))
 	ok_ref(t, mod.Locals[3], newRange(0, 5, 2))
+
+	source = `
+let a = assert(true);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+	ok_ref(t, mod.Locals[0], g.TRUE)
+
+	fail(t, "assert(1, 2);", &ErrorStack{
+		g.ArityMismatchError("1", 2),
+		[]string{
+			"    at line 1"}})
+
+	fail(t, "assert(1);", &ErrorStack{
+		g.TypeMismatchError("Expected 'Bool'"),
+		[]string{
+			"    at line 1"}})
+
+	fail(t, "assert(1 == 2);", &ErrorStack{
+		g.AssertionFailedError(),
+		[]string{
+			"    at line 1"}})
 }
 
 func TestTuple(t *testing.T) {
@@ -730,3 +752,16 @@ const c = 1, d;
 	ok_ref(t, mod.Locals[2], g.ONE)
 	ok_ref(t, mod.Locals[3], g.NULL)
 }
+
+//func TestFor(t *testing.T) {
+//
+//	source := `
+//let a = 0;
+//for n in [1,2,3] {
+//    a += n;
+//}
+//assert(a == 6);
+//`
+//	mod := newCompiler(source).Compile()
+//	interpret(mod)
+//}

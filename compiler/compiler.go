@@ -97,6 +97,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.While:
 		c.visitWhile(t)
 
+	case *ast.For:
+		c.visitFor(t)
+
 	case *ast.Break:
 		c.visitBreak(t)
 
@@ -330,6 +333,42 @@ func (c *compiler) visitWhile(w *ast.While) {
 
 	end := c.opcLen()
 	c.setJump(j0, end)
+
+	c.fixBreakContinue(begin, body, end)
+}
+
+func (c *compiler) visitFor(f *ast.For) {
+
+	tok := f.Iterable.Begin()
+
+	c.Visit(f.Iterable)
+	c.push(tok, g.ITER)
+
+	begin := c.opcLen()
+	c.push(tok, g.DUP)
+	c.push(tok, g.ITER_NEXT)
+	j0 := c.push(tok, g.JUMP_FALSE, 0xFF, 0xFF)
+
+	c.push(tok, g.DUP)
+	c.push(tok, g.ITER_GET)
+
+	if len(f.Idents) == 1 {
+		c.assignIdent(f.Idents[0])
+	} else {
+		panic("not yet implemented")
+	}
+
+	body := c.opcLen()
+	f.Body.Traverse(c)
+	c.push(f.Body.End(), g.JUMP, begin.high, begin.low)
+
+	end := c.opcLen()
+	c.setJump(j0, end)
+
+	c.fixBreakContinue(begin, body, end)
+}
+
+func (c *compiler) fixBreakContinue(begin *instPtr, body *instPtr, end *instPtr) {
 
 	// replace BREAK and CONTINUE with JUMP
 	for i := body.ip; i < end.ip; {
@@ -588,6 +627,9 @@ func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
 		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
 	case ast.FN_RANGE:
 		high, low := index(g.RANGE)
+		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+	case ast.FN_ASSERT:
+		high, low := index(g.ASSERT)
 		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
 
 	default:

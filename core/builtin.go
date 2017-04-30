@@ -24,6 +24,7 @@ const (
 	STR
 	LEN
 	RANGE
+	ASSERT
 )
 
 var Builtins = []NativeFunc{
@@ -31,13 +32,15 @@ var Builtins = []NativeFunc{
 	&fnPrintln{&nativeFunc{}},
 	&fnStr{&nativeFunc{}},
 	&fnLen{&nativeFunc{}},
-	&fnRange{&nativeFunc{}}}
+	&fnRange{&nativeFunc{}},
+	&fnAssert{&nativeFunc{}}}
 
 type fnPrint struct{ *nativeFunc }
 type fnPrintln struct{ *nativeFunc }
 type fnStr struct{ *nativeFunc }
 type fnLen struct{ *nativeFunc }
 type fnRange struct{ *nativeFunc }
+type fnAssert struct{ *nativeFunc }
 
 func (fn *fnPrint) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
@@ -108,4 +111,21 @@ func (fn *fnRange) Invoke(values []Value) (Value, Error) {
 	}
 
 	return NewRange(from.IntVal(), to.IntVal(), step.IntVal())
+}
+
+func (fn *fnAssert) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+
+	b, ok := values[0].(Bool)
+	if !ok {
+		return nil, TypeMismatchError("Expected 'Bool'")
+	}
+
+	if b.BoolVal() {
+		return TRUE, nil
+	} else {
+		return nil, AssertionFailedError()
+	}
 }

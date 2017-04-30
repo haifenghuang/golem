@@ -103,6 +103,9 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.WHILE:
 		return p.whileStmt()
 
+	case ast.FOR:
+		return p.forStmt()
+
 	case ast.BREAK:
 		return p.breakStmt()
 
@@ -191,6 +194,32 @@ func (p *Parser) ifStmt() *ast.If {
 func (p *Parser) whileStmt() *ast.While {
 
 	return &ast.While{p.expect(ast.WHILE), p.expression(), p.block()}
+}
+
+func (p *Parser) forStmt() *ast.For {
+
+	token := p.expect(ast.FOR)
+
+	switch p.cur.Kind {
+
+	case ast.IDENT:
+
+		idents := []*ast.IdentExpr{p.identExpr()}
+		p.expect(ast.IN)
+		return &ast.For{token, idents, p.expression(), p.block()}
+
+	case ast.LPAREN:
+
+		lparen, idents := p.formalParams()
+		if len(idents) < 2 {
+			panic(&parserError{INVALID_FOR, lparen})
+		}
+		p.expect(ast.IN)
+		return &ast.For{token, idents, p.expression(), p.block()}
+
+	default:
+		panic(p.unexpected())
+	}
 }
 
 func (p *Parser) breakStmt() *ast.Break {
@@ -504,8 +533,13 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 }
 
 func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
+	_, params := p.formalParams()
+	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
+}
 
-	p.expect(ast.LPAREN)
+func (p *Parser) formalParams() (*ast.Token, []*ast.IdentExpr) {
+
+	lparen := p.expect(ast.LPAREN)
 
 	params := []*ast.IdentExpr{}
 
@@ -537,8 +571,7 @@ func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
 		panic(p.unexpected())
 	}
 
-	blk := p.block()
-	return &ast.FnExpr{token, params, blk, 0, 0, nil}
+	return lparen, params
 }
 
 func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
@@ -872,7 +905,8 @@ func isBuiltIn(t *ast.Token) bool {
 		ast.FN_PRINTLN,
 		ast.FN_STR,
 		ast.FN_LEN,
-		ast.FN_RANGE:
+		ast.FN_RANGE,
+		ast.FN_ASSERT:
 		return true
 	default:
 		return false
@@ -918,6 +952,7 @@ const (
 	UNEXPECTED_TOKEN
 	UNEXPECTED_EOF
 	INVALID_POSTFIX
+	INVALID_FOR
 )
 
 type parserError struct {
@@ -940,6 +975,9 @@ func (e *parserError) Error() string {
 
 	case INVALID_POSTFIX:
 		return fmt.Sprintf("Invalid Postfix Expression at %v", e.token.Position)
+
+	case INVALID_FOR:
+		return fmt.Sprintf("Invalid For Expression at %v", e.token.Position)
 
 	default:
 		panic("unreachable")

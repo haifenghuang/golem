@@ -136,7 +136,7 @@ FnExpr(numLocals:3 numCaptures:0 parentCaptures:[])
 `)
 }
 
-func TestWhile(t *testing.T) {
+func TestLoop(t *testing.T) {
 
 	anl := newAnalyzer("while true { 1 + 2; }")
 	errors := anl.Analyze()
@@ -171,6 +171,36 @@ FnExpr(numLocals:0 numCaptures:0 parentCaptures:[])
 
 	errors = newAnalyzer("continue;").Analyze()
 	fail(t, errors, "['continue' outside of loop]")
+
+	anl = newAnalyzer("let a; for b in [] { break; continue; }")
+	errors = anl.Analyze()
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   Let
+.   .   .   IdentExpr(a,(0,false,false))
+.   .   For
+.   .   .   IdentExpr(b,(1,false,false))
+.   .   .   ListExpr
+.   .   .   Block
+.   .   .   .   Break
+.   .   .   .   Continue
+`)
+
+	anl = newAnalyzer("for (a, b) in [] { }")
+	errors = anl.Analyze()
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   For
+.   .   .   IdentExpr(a,(0,false,false))
+.   .   .   IdentExpr(b,(1,false,false))
+.   .   .   ListExpr
+.   .   .   Block
+`)
+
+	//fmt.Println(ast.Dump(anl.Module()))
+	//fmt.Println(errors)
 }
 
 func TestPureFunction(t *testing.T) {

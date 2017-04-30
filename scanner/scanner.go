@@ -361,6 +361,10 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.CONST, text, pos}
 	case "let":
 		return &ast.Token{ast.LET, text, pos}
+	case "for":
+		return &ast.Token{ast.FOR, text, pos}
+	case "in":
+		return &ast.Token{ast.IN, text, pos}
 	case "obj":
 		return &ast.Token{ast.OBJ, text, pos}
 	case "dict":
@@ -379,6 +383,8 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.FN_LEN, text, pos}
 	case "range":
 		return &ast.Token{ast.FN_RANGE, text, pos}
+	case "assert":
+		return &ast.Token{ast.FN_ASSERT, text, pos}
 
 	default:
 		return &ast.Token{ast.IDENT, text, pos}

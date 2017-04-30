@@ -273,12 +273,14 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.CONTINUE, "continue", 1, 13)
 	ok(t, s, ast.EOF, "", 1, 21)
 
-	s = NewScanner("fn return const let ")
+	s = NewScanner("fn return const let for in")
 	ok(t, s, ast.FN, "fn", 1, 1)
 	ok(t, s, ast.RETURN, "return", 1, 4)
 	ok(t, s, ast.CONST, "const", 1, 11)
 	ok(t, s, ast.LET, "let", 1, 17)
-	ok(t, s, ast.EOF, "", 1, 21)
+	ok(t, s, ast.FOR, "for", 1, 21)
+	ok(t, s, ast.IN, "in", 1, 25)
+	ok(t, s, ast.EOF, "", 1, 27)
 
 	s = NewScanner("obj this has dict")
 	ok(t, s, ast.OBJ, "obj", 1, 1)
@@ -287,13 +289,14 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.DICT, "dict", 1, 14)
 	ok(t, s, ast.EOF, "", 1, 18)
 
-	s = NewScanner("print println str len range")
+	s = NewScanner("print println str len range assert")
 	ok(t, s, ast.FN_PRINT, "print", 1, 1)
 	ok(t, s, ast.FN_PRINTLN, "println", 1, 7)
 	ok(t, s, ast.FN_STR, "str", 1, 15)
 	ok(t, s, ast.FN_LEN, "len", 1, 19)
 	ok(t, s, ast.FN_RANGE, "range", 1, 23)
-	ok(t, s, ast.EOF, "", 1, 28)
+	ok(t, s, ast.FN_ASSERT, "assert", 1, 29)
+	ok(t, s, ast.EOF, "", 1, 35)
 }
 
 func TestComments(t *testing.T) {

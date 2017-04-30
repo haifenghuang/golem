@@ -65,6 +65,14 @@ func (wh *While) Traverse(v Visitor) {
 	v.Visit(wh.Body)
 }
 
+func (fr *For) Traverse(v Visitor) {
+	for _, n := range fr.Idents {
+		v.Visit(n)
+	}
+	v.Visit(fr.Iterable)
+	v.Visit(fr.Body)
+}
+
 func (br *Break) Traverse(v Visitor) {
 }
 
@@ -231,6 +239,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString("If\n")
 	case *While:
 		p.buf.WriteString("While\n")
+	case *For:
+		p.buf.WriteString("For\n")
 	case *Break:
 		p.buf.WriteString("Break\n")
 	case *Continue:

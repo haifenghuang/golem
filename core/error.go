@@ -80,3 +80,7 @@ func InvalidArgumentError(msg string) Error {
 func NoSuchElementError() Error {
 	return &serror{"NoSuchElement", ""}
 }
+
+func AssertionFailedError() Error {
+	return &serror{"AssertionFailed", ""}
+}

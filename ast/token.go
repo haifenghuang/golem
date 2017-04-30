@@ -114,6 +114,8 @@ const (
 	RETURN
 	CONST
 	LET
+	FOR
+	IN
 
 	OBJ
 	THIS
@@ -125,6 +127,7 @@ const (
 	FN_STR
 	FN_LEN
 	FN_RANGE
+	FN_ASSERT
 )
 
 func (t TokenKind) String() string {
@@ -238,6 +241,10 @@ func (t TokenKind) String() string {
 		return "CONST"
 	case LET:
 		return "LET"
+	case FOR:
+		return "FOR"
+	case IN:
+		return "IN"
 
 	case OBJ:
 		return "OBJ"
@@ -258,6 +265,8 @@ func (t TokenKind) String() string {
 		return "FN_LEN"
 	case FN_RANGE:
 		return "FN_RANGE"
+	case FN_ASSERT:
+		return "FN_ASSERT"
 
 	default:
 		panic("unreachable")

@@ -87,6 +87,10 @@ const (
 	SLICE_FROM
 	SLICE_TO
 
+	ITER
+	ITER_NEXT
+	ITER_GET
+
 	DUP
 
 	// These are temporary values created during compilation.
@@ -221,6 +225,13 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmt.Sprintf("%d: SLICE_FROM\n", i)
 	case SLICE_TO:
 		return fmt.Sprintf("%d: SLICE_TO\n", i)
+
+	case ITER:
+		return fmt.Sprintf("%d: ITER\n", i)
+	case ITER_NEXT:
+		return fmt.Sprintf("%d: ITER_NEXT\n", i)
+	case ITER_GET:
+		return fmt.Sprintf("%d: ITER_GET\n", i)
 
 	case DUP:
 		return fmt.Sprintf("%d: DUP\n", i)

@@ -37,6 +37,11 @@ type (
 		stmtMarker()
 	}
 
+	Loop interface {
+		Stmt
+		loopMarker()
+	}
+
 	Expr interface {
 		Node
 		exprMarker()
@@ -88,6 +93,13 @@ type (
 		Token *Token
 		Cond  Expr
 		Body  *Block
+	}
+
+	For struct {
+		Token    *Token
+		Idents   []*IdentExpr
+		Iterable Expr
+		Body     *Block
 	}
 
 	Break struct {
@@ -254,9 +266,13 @@ func (*Const) stmtMarker()    {}
 func (*Let) stmtMarker()      {}
 func (*If) stmtMarker()       {}
 func (*While) stmtMarker()    {}
+func (*For) stmtMarker()      {}
 func (*Break) stmtMarker()    {}
 func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
+
+func (*While) loopMarker() {}
+func (*For) loopMarker()   {}
 
 func (*Assignment) exprMarker()    {}
 func (*TernaryExpr) exprMarker()   {}
@@ -308,6 +324,9 @@ func (n *If) End() Pos {
 
 func (n *While) Begin() Pos { return n.Token.Position }
 func (n *While) End() Pos   { return n.Body.End() }
+
+func (n *For) Begin() Pos { return n.Token.Position }
+func (n *For) End() Pos   { return n.Body.End() }
 
 func (n *Break) Begin() Pos { return n.Token.Position }
 func (n *Break) End() Pos   { return n.Semicolon.Position }
@@ -452,6 +471,14 @@ func (wh *While) String() string {
 	return fmt.Sprintf("while %v %v", wh.Cond, wh.Body)
 }
 
+func (fr *For) String() string {
+	if len(fr.Idents) == 1 {
+		return fmt.Sprintf("for %v in %v %v", fr.Idents[0], fr.Iterable, fr.Body)
+	} else {
+		return fmt.Sprintf("for %s in %v %v", identsString(fr.Idents), fr.Iterable, fr.Body)
+	}
+}
+
 func (br *Break) String() string {
 	return "break;"
 }
@@ -504,16 +531,24 @@ func (blt *BuiltinExpr) String() string {
 func (fn *FnExpr) String() string {
 	var buf bytes.Buffer
 
-	buf.WriteString("fn(")
-	for idx, p := range fn.FormalParams {
+	buf.WriteString("fn")
+	buf.WriteString(identsString(fn.FormalParams))
+	buf.WriteString(" ")
+	buf.WriteString(fn.Body.String())
+	return buf.String()
+}
+
+func identsString(idents []*IdentExpr) string {
+	var buf bytes.Buffer
+
+	buf.WriteString("(")
+	for idx, p := range idents {
 		if idx > 0 {
 			buf.WriteString(", ")
 		}
 		buf.WriteString(p.String())
 	}
-	buf.WriteString(") ")
-
-	buf.WriteString(fn.Body.String())
+	buf.WriteString(")")
 
 	return buf.String()
 }
