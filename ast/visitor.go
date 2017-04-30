@@ -27,9 +27,8 @@ type Visitor interface {
 }
 
 func (cns *Const) Traverse(v Visitor) {
-	// Do not traverse cns.Ident!!!
-	// It will confuse the Analyzer.
 	for _, d := range cns.Decls {
+		v.Visit(d.Ident)
 		if d.Val != nil {
 			v.Visit(d.Val)
 		}
@@ -37,9 +36,8 @@ func (cns *Const) Traverse(v Visitor) {
 }
 
 func (let *Let) Traverse(v Visitor) {
-	// Do not traverse let.Ident!!!
-	// It will confuse the Analyzer.
 	for _, d := range let.Decls {
+		v.Visit(d.Ident)
 		if d.Val != nil {
 			v.Visit(d.Val)
 		}
@@ -47,8 +45,7 @@ func (let *Let) Traverse(v Visitor) {
 }
 
 func (asn *Assignment) Traverse(v Visitor) {
-	// Do not traverse asn.Assignee!!!
-	// It will confuse the Analyzer.
+	v.Visit(asn.Assignee)
 	v.Visit(asn.Val)
 }
 
@@ -217,23 +214,10 @@ func (p *dump) Visit(node Node) {
 
 	case *Const:
 		p.buf.WriteString("Const\n")
-		p.indent++
-		for _, d := range t.Decls {
-			p.Visit(d.Ident)
-		}
-		p.indent--
 	case *Let:
 		p.buf.WriteString("Let\n")
-		p.indent++
-		for _, d := range t.Decls {
-			p.Visit(d.Ident)
-		}
-		p.indent--
 	case *Assignment:
 		p.buf.WriteString("Assignment\n")
-		p.indent++
-		p.Visit(t.Assignee)
-		p.indent--
 
 	case *If:
 		p.buf.WriteString("If\n")

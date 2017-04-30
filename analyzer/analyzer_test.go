@@ -96,13 +96,13 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 func TestNested(t *testing.T) {
 
 	source := `
-let a = 1; 
-if (true) { 
-    a = 2; 
-    const b = 2; 
-} else { 
-    a = 3; 
-    let b = 3; 
+let a = 1;
+if (true) {
+    a = 2;
+    const b = 2;
+} else {
+    a = 3;
+    let b = 3;
 }`
 	anl := newAnalyzer(source)
 	//errors := anl.Analyze()
@@ -563,8 +563,8 @@ FnExpr(numLocals:6 numCaptures:0 parentCaptures:[])
 .   .   .   BasicExpr(INT,"5")
 .   .   Const
 .   .   .   IdentExpr(i,(4,true,false))
-.   .   .   IdentExpr(j,(5,true,false))
 .   .   .   BasicExpr(INT,"6")
+.   .   .   IdentExpr(j,(5,true,false))
 `)
 }
 
