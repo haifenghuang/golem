@@ -336,21 +336,6 @@ func (c *compiler) visitWhile(w *ast.While) {
 	c.fixBreakContinue(begin, body, end)
 }
 
-// * 24: aload_1
-// * 25: invokeinterface #8,  1            // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
-// * 30: astore_2
-// * 31: aload_2
-// * 32: invokeinterface #9,  1            // InterfaceMethod java/util/Iterator.hasNext:()Z
-// * 37: ifeq          60
-//   40: aload_2
-//   41: invokeinterface #10,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
-//   46: checkcast     #4                  // class java/lang/String
-//   49: astore_3
-//   50: getstatic     #11                 // Field java/lang/System.out:Ljava/io/PrintStream;
-//   53: aload_3
-//   54: invokevirtual #12                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-//   57: goto          31
-//   60: return
 func (c *compiler) visitFor(f *ast.For) {
 
 	tok := f.Iterable.Begin()
@@ -376,9 +361,24 @@ func (c *compiler) visitFor(f *ast.For) {
 	c.push(tok, g.ITER_GET)
 
 	if len(f.Idents) == 1 {
-		c.pushIndex(tok, g.STORE_LOCAL, f.Idents[0].Variable.Index)
+		// perform STORE_LOCAL on the current item
+		ident := f.Idents[0]
+		c.pushIndex(ident.Begin(), g.STORE_LOCAL, ident.Variable.Index)
 	} else {
-		panic("not yet implemented")
+		// make sure the current item is really a tuple,
+		// and is of the proper length
+		c.pushIndex(tok, g.CHECK_TUPLE, len(f.Idents))
+
+		// perform STORE_LOCAL on each tuple element
+		for i, ident := range f.Idents {
+			c.push(tok, g.DUP)
+			c.loadInt(tok, int64(i))
+			c.push(tok, g.GET_INDEX)
+			c.pushIndex(ident.Begin(), g.STORE_LOCAL, ident.Variable.Index)
+		}
+
+		// pop the tuple
+		c.push(tok, g.POP)
 	}
 
 	// compile the body
@@ -603,16 +603,9 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 		c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
 
 	case ast.INT:
-		i := parseInt(basic.Token.Text)
-		switch i {
-		case 0:
-			c.push(basic.Token.Position, g.LOAD_ZERO)
-		case 1:
-			c.push(basic.Token.Position, g.LOAD_ONE)
-		default:
-			c.pool = append(c.pool, g.MakeInt(i))
-			c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
-		}
+		c.loadInt(
+			basic.Token.Position,
+			parseInt(basic.Token.Text))
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
@@ -767,6 +760,19 @@ func (c *compiler) visitDictExpr(d *ast.DictExpr) {
 	}
 
 	c.pushIndex(d.Begin(), g.NEW_DICT, len(d.Entries))
+}
+
+func (c *compiler) loadInt(pos ast.Pos, i int64) {
+	switch i {
+	case 0:
+		c.push(pos, g.LOAD_ZERO)
+	case 1:
+		c.push(pos, g.LOAD_ONE)
+	default:
+		idx := len(c.pool)
+		c.pool = append(c.pool, g.MakeInt(i))
+		c.pushIndex(pos, g.LOAD_CONST, idx)
+	}
 }
 
 func parseInt(text string) int64 {

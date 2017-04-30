@@ -33,6 +33,34 @@ type Value interface {
 }
 
 //---------------------------------------------------------------
+// Shared Interfaces
+
+type (
+	Getable interface {
+		Get(Value) (Value, Error)
+	}
+
+	Indexable interface {
+		Getable
+		Set(Value, Value) Error
+	}
+
+	Lenable interface {
+		Len() (Int, Error)
+	}
+
+	Sliceable interface {
+		Slice(Value, Value) (Value, Error)
+		SliceFrom(Value) (Value, Error)
+		SliceTo(Value) (Value, Error)
+	}
+
+	Iterable interface {
+		NewIterator() Iterator
+	}
+)
+
+//---------------------------------------------------------------
 // Basic
 
 type (
@@ -197,34 +225,6 @@ type (
 	OpcLine struct {
 		Index   int
 		LineNum int
-	}
-)
-
-//---------------------------------------------------------------
-// Shared Interfaces
-
-type (
-	Getable interface {
-		Get(Value) (Value, Error)
-	}
-
-	Indexable interface {
-		Getable
-		Set(Value, Value) Error
-	}
-
-	Lenable interface {
-		Len() (Int, Error)
-	}
-
-	Sliceable interface {
-		Slice(Value, Value) (Value, Error)
-		SliceFrom(Value) (Value, Error)
-		SliceTo(Value) (Value, Error)
-	}
-
-	Iterable interface {
-		NewIterator() Iterator
 	}
 )
 

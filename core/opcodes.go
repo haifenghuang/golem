@@ -91,6 +91,9 @@ const (
 	ITER_NEXT
 	ITER_GET
 
+	CHECK_TUPLE
+
+	POP
 	DUP
 
 	// These are temporary values created during compilation.
@@ -103,10 +106,12 @@ func OpCodeSize(opc byte) int {
 
 	switch opc {
 
-	case LOAD_BUILTIN, LOAD_CONST, LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
+	case LOAD_BUILTIN, LOAD_CONST,
+		LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
-		INIT_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD, NEW_DICT, NEW_LIST, NEW_TUPLE:
+		INIT_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD, NEW_DICT, NEW_LIST,
+		NEW_TUPLE, CHECK_TUPLE:
 
 		return 3
 
@@ -233,6 +238,11 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case ITER_GET:
 		return fmt.Sprintf("%d: ITER_GET\n", i)
 
+	case CHECK_TUPLE:
+		return fmtIndex(opcodes, i, "CHECK_TUPLE")
+
+	case POP:
+		return fmt.Sprintf("%d: POP\n", i)
 	case DUP:
 		return fmt.Sprintf("%d: DUP\n", i)
 

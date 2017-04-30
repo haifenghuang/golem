@@ -249,6 +249,32 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			s = append(s, g.NewTuple(vals))
 			ip += 3
 
+		case g.CHECK_TUPLE:
+
+			// make sure the top of the stack is really a tuple
+			tp, ok := s[n].(g.Tuple)
+			if !ok {
+				return nil, &ErrorStack{
+					g.TypeMismatchError("Expected 'Tuple'"),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// and make sure its of the expected length
+			expectedLen := index(opc, ip)
+			tpLen, err := tp.Len()
+			if err != nil {
+				panic("unexpected error getting length of tuple")
+			}
+			if expectedLen != int(tpLen.IntVal()) {
+				return nil, &ErrorStack{
+					g.InvalidArgumentError(
+						fmt.Sprintf("Expected Tuple of length %d", expectedLen)),
+					inp.stringFrames(curFunc, locals, s, ip)}
+			}
+
+			// do not alter stack
+			ip += 3
+
 		case g.NEW_DICT:
 
 			size := index(opc, ip)
@@ -900,6 +926,10 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			s = append(s, s[n])
 			ip++
 
+		case g.POP:
+			s = s[:n]
+			ip++
+
 		default:
 			panic("Invalid opcode")
 		}
@@ -920,8 +950,8 @@ func (inp *Interpreter) stringFrames(
 	stack = append(stack, fmt.Sprintf("    at line %d", lineNum))
 
 	for i := n - 1; i >= 0; i-- {
-		tp := inp.frames[i].function.Template()
-		lineNum := tp.LineNumber(inp.frames[i].instPtr)
+		tpl := inp.frames[i].function.Template()
+		lineNum := tpl.LineNumber(inp.frames[i].instPtr)
 		stack = append(stack, fmt.Sprintf("    at line %d", lineNum))
 	}
 

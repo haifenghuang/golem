@@ -760,8 +760,54 @@ let a = 0;
 for n in [1,2,3] {
     a += n;
 }
-assert(a == 6);
+assert(a == 6); 
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
+
+	source = `
+let keys = '';
+let values = 0;
+for (k, v)  in dict {'a': 1, 'b': 2, 'c': 3} {
+    keys += k;
+    values += v;
+}
+assert(keys == 'bac'); 
+assert(values == 6); 
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let entries = '';
+for e in dict {'a': 1, 'b': 2, 'c': 3} {
+    entries += str(e);
+}
+assert(entries == '(b, 2)(a, 1)(c, 3)'); 
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let keys = '';
+let values = 0;
+for (k, v)  in [('a', 1), ('b', 2), ('c', 3)] {
+    keys += k;
+    values += v;
+}
+assert(keys == 'abc'); 
+assert(values == 6); 
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = "for (k, v)  in [1, 2, 3] {}"
+	fail(t, source, &ErrorStack{
+		g.TypeMismatchError("Expected 'Tuple'"),
+		[]string{"    at line 1"}})
+
+	source = "for (a, b, c)  in [('a', 1), ('b', 2), ('c', 3)] {}"
+	fail(t, source, &ErrorStack{
+		g.InvalidArgumentError("Expected Tuple of length 3"),
+		[]string{"    at line 1"}})
 }
