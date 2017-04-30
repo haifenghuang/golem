@@ -23,7 +23,7 @@ import (
 // Ref
 
 type Module struct {
-	Pool      []Value
+	Pool      []Basic
 	Locals    []*Ref
 	ObjDefs   []*ObjDef
 	Templates []*Template

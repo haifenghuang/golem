@@ -19,6 +19,7 @@ import (
 	"golem/analyzer"
 	"golem/ast"
 	g "golem/core"
+	"sort"
 	"strconv"
 )
 
@@ -29,7 +30,7 @@ type Compiler interface {
 
 type compiler struct {
 	anl  analyzer.Analyzer
-	pool []g.Value
+	pool *g.HashMap
 	opc  []byte
 	opln []g.OpcLine
 
@@ -44,7 +45,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
 	defs := []*g.ObjDef{}
-	return &compiler{anl, []g.Value{}, nil, nil, funcs, templates, defs, 0}
+	return &compiler{anl, g.EmptyHashMap(), nil, nil, funcs, templates, defs, 0}
 }
 
 func (c *compiler) Compile() *g.Module {
@@ -56,7 +57,7 @@ func (c *compiler) Compile() *g.Module {
 		c.idx += 1
 	}
 
-	return &g.Module{c.pool, nil, c.defs, c.templates}
+	return &g.Module{makePoolSlice(c.pool), nil, c.defs, c.templates}
 }
 
 func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {
@@ -210,10 +211,10 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 
 		c.Visit(t.Operand)
 		c.Visit(asn.Val)
-
-		idx := len(c.pool)
-		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
-		c.pushIndex(t.Key.Position, g.PUT_FIELD, idx)
+		c.pushIndex(
+			t.Key.Position,
+			g.PUT_FIELD,
+			poolIndex(c.pool, g.MakeStr(t.Key.Text)))
 
 	case *ast.IndexExpr:
 
@@ -261,9 +262,10 @@ func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
 			panic("invalid postfix operator")
 		}
 
-		idx := len(c.pool)
-		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
-		c.pushIndex(t.Key.Position, g.INC_FIELD, idx)
+		c.pushIndex(
+			t.Key.Position,
+			g.INC_FIELD,
+			poolIndex(c.pool, g.MakeStr(t.Key.Text)))
 
 	case *ast.IndexExpr:
 
@@ -552,9 +554,10 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 				case 1:
 					c.push(u.Op.Position, g.LOAD_NEG_ONE)
 				default:
-					idx := len(c.pool)
-					c.pool = append(c.pool, g.MakeInt(-i))
-					c.pushIndex(u.Op.Position, g.LOAD_CONST, idx)
+					c.pushIndex(
+						u.Op.Position,
+						g.LOAD_CONST,
+						poolIndex(c.pool, g.MakeInt(-i)))
 				}
 
 			default:
@@ -583,10 +586,6 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 
 func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
-	idx := len(c.pool)
-
-	// TODO create pool hash map
-
 	switch basic.Token.Kind {
 
 	case ast.NULL:
@@ -599,8 +598,10 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 		c.push(basic.Token.Position, g.LOAD_FALSE)
 
 	case ast.STR:
-		c.pool = append(c.pool, g.MakeStr(basic.Token.Text))
-		c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
+		c.pushIndex(
+			basic.Token.Position,
+			g.LOAD_CONST,
+			poolIndex(c.pool, g.MakeStr(basic.Token.Text)))
 
 	case ast.INT:
 		c.loadInt(
@@ -609,8 +610,10 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
-		c.pool = append(c.pool, g.MakeFloat(f))
-		c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
+		c.pushIndex(
+			basic.Token.Position,
+			g.LOAD_CONST,
+			poolIndex(c.pool, g.MakeFloat(f)))
 
 	default:
 		panic("unreachable")
@@ -707,9 +710,10 @@ func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
 
 func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	c.Visit(fe.Operand)
-	idx := len(c.pool)
-	c.pool = append(c.pool, g.MakeStr(fe.Key.Text))
-	c.pushIndex(fe.Key.Position, g.GET_FIELD, idx)
+	c.pushIndex(
+		fe.Key.Position,
+		g.GET_FIELD,
+		poolIndex(c.pool, g.MakeStr(fe.Key.Text)))
 }
 
 func (c *compiler) visitIndexExpr(ie *ast.IndexExpr) {
@@ -769,32 +773,11 @@ func (c *compiler) loadInt(pos ast.Pos, i int64) {
 	case 1:
 		c.push(pos, g.LOAD_ONE)
 	default:
-		idx := len(c.pool)
-		c.pool = append(c.pool, g.MakeInt(i))
-		c.pushIndex(pos, g.LOAD_CONST, idx)
+		c.pushIndex(
+			pos,
+			g.LOAD_CONST,
+			poolIndex(c.pool, g.MakeInt(i)))
 	}
-}
-
-func parseInt(text string) int64 {
-	i, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		panic("unreachable")
-	}
-	if i < 0 {
-		panic("unreachable")
-	}
-	return int64(i)
-}
-
-func parseFloat(text string) float64 {
-	f, err := strconv.ParseFloat(text, 64)
-	if err != nil {
-		panic("unreachable")
-	}
-	if f < 0 {
-		panic("unreachable")
-	}
-	return float64(f)
 }
 
 // returns the length of opc *before* the bytes are pushed
@@ -824,7 +807,13 @@ func (c *compiler) setJump(jmp int, dest *instPtr) {
 	c.opc[jmp+2] = dest.low
 }
 
+func (c *compiler) opcLen() *instPtr {
+	high, low := index(len(c.opc))
+	return &instPtr{len(c.opc), high, low}
+}
+
 //--------------------------------------------------------------
+// misc
 
 type instPtr struct {
 	ip   int
@@ -832,14 +821,110 @@ type instPtr struct {
 	low  byte
 }
 
-func (c *compiler) opcLen() *instPtr {
-	high, low := index(len(c.opc))
-	return &instPtr{len(c.opc), high, low}
-}
-
 func index(n int) (byte, byte) {
 	if n >= (2 << 16) {
 		panic("TODO wide index")
 	}
 	return byte((n >> 8) & 0xFF), byte(n & 0xFF)
+}
+
+func parseInt(text string) int64 {
+	i, err := strconv.ParseInt(text, 10, 64)
+	if err != nil {
+		panic("unreachable")
+	}
+	if i < 0 {
+		panic("unreachable")
+	}
+	return int64(i)
+}
+
+func parseFloat(text string) float64 {
+	f, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		panic("unreachable")
+	}
+	if f < 0 {
+		panic("unreachable")
+	}
+	return float64(f)
+}
+
+//--------------------------------------------------------------
+// pool
+
+func poolIndex(pool *g.HashMap, key g.Basic) int {
+
+	b, err := pool.ContainsKey(key)
+	if err != nil {
+		panic("unreachable")
+	}
+
+	if b.BoolVal() {
+		v, err := pool.Get(key)
+		if err != nil {
+			panic("unreachable")
+		}
+		i, ok := v.(g.Int)
+		if !ok {
+			panic("unreachable")
+		}
+		return int(i.IntVal())
+	} else {
+		i := pool.Len()
+		err := pool.Put(key, i)
+		if err != nil {
+			panic("unreachable")
+		}
+		return int(i.IntVal())
+	}
+}
+
+type PoolItems []*g.HEntry
+
+func (items PoolItems) Len() int {
+	return len(items)
+}
+
+func (items PoolItems) Less(i, j int) bool {
+
+	x, ok := items[i].Value.(g.Int)
+	if !ok {
+		panic("unreachable")
+	}
+
+	y, ok := items[j].Value.(g.Int)
+	if !ok {
+		panic("unreachable")
+	}
+
+	return x.IntVal() < y.IntVal()
+}
+
+func (items PoolItems) Swap(i, j int) {
+	items[i], items[j] = items[j], items[i]
+}
+
+func makePoolSlice(pool *g.HashMap) []g.Basic {
+
+	n := int(pool.Len().IntVal())
+
+	entries := make([]*g.HEntry, 0, n)
+	itr := pool.Iterator()
+	for itr.Next() {
+		entries = append(entries, itr.Get())
+	}
+
+	sort.Sort(PoolItems(entries))
+
+	slice := make([]g.Basic, n, n)
+	for i, e := range entries {
+		b, ok := e.Key.(g.Basic)
+		if !ok {
+			panic("unreachable")
+		}
+		slice[i] = b
+	}
+
+	return slice
 }

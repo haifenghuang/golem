@@ -99,6 +99,12 @@ func TestStrHashMap(t *testing.T) {
 
 	v, err := hm.Get(MakeStr("abc"))
 	ok(t, v, err, MakeStr("xyz"))
+
+	v, err = hm.ContainsKey(MakeStr("abc"))
+	ok(t, v, err, TRUE)
+
+	v, err = hm.ContainsKey(MakeStr("bogus"))
+	ok(t, v, err, FALSE)
 }
 
 func testIteratorEntries(t *testing.T, initial []*HEntry, expect []*HEntry) {

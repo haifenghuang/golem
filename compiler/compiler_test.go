@@ -25,6 +25,12 @@ import (
 	"testing"
 )
 
+func assert(t *testing.T, flag bool) {
+	if !flag {
+		t.Error("assertion failure")
+	}
+}
+
 func ok(t *testing.T, mod *g.Module, expect *g.Module) {
 
 	if !reflect.DeepEqual(mod.Pool, expect.Pool) {
@@ -78,7 +84,7 @@ func TestExpression(t *testing.T) {
 
 	mod := NewCompiler(newAnalyzer("-2 + -1 + -0 + 0 + 1 + 2;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(int64(-2)),
 			g.MakeInt(int64(2))},
 		nil,
@@ -107,7 +113,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("(2 + 3) * -4 / 10;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3)),
 			g.MakeInt(int64(-4)),
@@ -134,7 +140,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("null / true + \nfalse;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -157,7 +163,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("'a' * 1.23e4;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeStr("a"),
 			g.MakeFloat(float64(12300))},
 		nil,
@@ -178,7 +184,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("'a' == true;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeStr("a")},
 		nil,
 		[]*g.ObjDef{},
@@ -198,7 +204,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("true != false;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -215,7 +221,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("true > false; true >= false;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -233,7 +239,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("true < false; true <= false; true <=> false;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -252,7 +258,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("let a = 2 && 3;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
@@ -278,7 +284,7 @@ func TestExpression(t *testing.T) {
 
 	mod = NewCompiler(newAnalyzer("let a = 2 || 3;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
@@ -307,7 +313,7 @@ func TestAssignment(t *testing.T) {
 
 	mod := NewCompiler(newAnalyzer("let a = 1;\nconst b = \n2;a = 3;")).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
@@ -355,7 +361,7 @@ func TestIf(t *testing.T) {
 	anl := newAnalyzer(source)
 	mod := NewCompiler(anl).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(3),
 			g.MakeInt(2),
 			g.MakeInt(42)},
@@ -389,7 +395,7 @@ func TestIf(t *testing.T) {
 	anl = newAnalyzer(source)
 	mod = NewCompiler(anl).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4)},
@@ -428,7 +434,7 @@ func TestWhile(t *testing.T) {
 	source := "let a = 1; while (0 < 1) { let b = 2; }"
 	mod := NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
 		[]*g.ObjDef{},
@@ -455,7 +461,7 @@ func TestWhile(t *testing.T) {
 	source = "let a = 'z'; while (0 < 1) \n{ break; continue; let b = 2; } let c = 3;"
 	mod = NewCompiler(newAnalyzer(source)).Compile()
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeStr("z"),
 			g.MakeInt(2),
 			g.MakeInt(3)},
@@ -494,7 +500,7 @@ func TestReturn(t *testing.T) {
 	mod := NewCompiler(anl).Compile()
 
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -514,7 +520,7 @@ func TestReturn(t *testing.T) {
 	mod = NewCompiler(anl).Compile()
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
@@ -564,7 +570,7 @@ let b = fn(x) {
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(42),
 			g.MakeInt(7)},
 		nil,
@@ -640,7 +646,7 @@ c(2, 3);
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4)},
@@ -724,7 +730,7 @@ const accumGen = fn(n) {
 	mod := NewCompiler(anl).Compile()
 
 	ok(t, mod, &g.Module{
-		[]g.Value{},
+		[]g.Basic{},
 		nil,
 		[]*g.ObjDef{},
 		[]*g.Template{
@@ -784,7 +790,7 @@ const accumGen = fn(n) {
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
 		[]*g.ObjDef{},
@@ -853,7 +859,7 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(2),
 			g.MakeInt(3),
 			g.MakeInt(4),
@@ -907,10 +913,9 @@ x.a = 3;
 	mod = NewCompiler(anl).Compile()
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeStr("a"),
-			g.MakeInt(3),
-			g.MakeStr("a")},
+			g.MakeInt(3)},
 		nil,
 		[]*g.ObjDef{
 			&g.ObjDef{[]string{"a"}}},
@@ -927,7 +932,7 @@ x.a = 3;
 					g.STORE_LOCAL, 0, 1,
 					g.LOAD_LOCAL, 0, 0,
 					g.LOAD_CONST, 0, 1,
-					g.PUT_FIELD, 0, 2,
+					g.PUT_FIELD, 0, 0,
 					g.RETURN},
 				[]g.OpcLine{
 					g.OpcLine{0, 0},
@@ -955,13 +960,11 @@ let c = a.minus();
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(8),
 			g.MakeInt(5),
 			g.MakeStr("plus"),
 			g.MakeStr("minus"),
-			g.MakeStr("x"),
-			g.MakeStr("y"),
 			g.MakeStr("x"),
 			g.MakeStr("y")},
 		nil,
@@ -1021,9 +1024,9 @@ let c = a.minus();
 				[]byte{
 					g.LOAD_NULL,
 					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 6,
+					g.GET_FIELD, 0, 4,
 					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 7,
+					g.GET_FIELD, 0, 5,
 					g.SUB,
 					g.RETURN,
 					g.RETURN},
@@ -1050,7 +1053,7 @@ let d = b--;
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(int64(10)),
 			g.MakeInt(int64(20))},
 		nil,
@@ -1100,7 +1103,7 @@ let d = b.y--;
 	//fmt.Println(mod)
 
 	ok(t, mod, &g.Module{
-		[]g.Value{
+		[]g.Basic{
 			g.MakeInt(10),
 			g.MakeInt(20),
 			g.MakeStr("x"),
@@ -1132,20 +1135,20 @@ let d = b.y--;
 				nil}}})
 }
 
-//func TestFor(t *testing.T) {
-//
-//	source := `
-//let a = 0;
-//for n in [1,2,3] {
-//    a += n;
-//}
-//assert(a == 6);
-//`
-//	anl := newAnalyzer(source)
-//	mod := NewCompiler(anl).Compile()
-//	fmt.Println("----------------------------")
-//	fmt.Println(source)
-//	//fmt.Println("----------------------------")
-//	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
-//	fmt.Println(mod)
-//}
+func TestPool(t *testing.T) {
+	pool := g.EmptyHashMap()
+
+	assert(t, poolIndex(pool, g.MakeInt(4)) == 0)
+	assert(t, poolIndex(pool, g.MakeStr("a")) == 1)
+	assert(t, poolIndex(pool, g.MakeFloat(1.0)) == 2)
+	assert(t, poolIndex(pool, g.MakeStr("a")) == 1)
+	assert(t, poolIndex(pool, g.MakeInt(4)) == 0)
+
+	slice := makePoolSlice(pool)
+	assert(t, reflect.DeepEqual(
+		slice,
+		[]g.Basic{
+			g.MakeInt(4),
+			g.MakeStr("a"),
+			g.MakeFloat(1.0)}))
+}

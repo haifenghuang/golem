@@ -35,6 +35,10 @@ type (
 	bucket []*HEntry
 )
 
+func EmptyHashMap() *HashMap {
+	return NewHashMap([]*HEntry{})
+}
+
 func NewHashMap(entries []*HEntry) *HashMap {
 	capacity := 5
 	buckets := make([]bucket, capacity, capacity)
@@ -65,6 +69,28 @@ func (hm *HashMap) Get(key Value) (value Value, err Error) {
 		return NULL, nil
 	} else {
 		return b[n].Value, nil
+	}
+}
+
+func (hm *HashMap) ContainsKey(key Value) (flag Bool, err Error) {
+
+	// panic-recover is the cleanest approach
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(Error); ok {
+				flag = nil
+				err = e
+			}
+			panic(r)
+		}
+	}()
+
+	b := hm.buckets[hm.hashBucket(key)]
+	n := indexOf(b, key)
+	if n == -1 {
+		return FALSE, nil
+	} else {
+		return TRUE, nil
 	}
 }
 
