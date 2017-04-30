@@ -187,11 +187,10 @@ func (c *compiler) visitDecls(decls []*ast.Decl) {
 func (c *compiler) assignIdent(ident *ast.IdentExpr) {
 
 	v := ident.Variable
-	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(ident.Begin(), g.STORE_CAPTURE, high, low)
+		c.pushIndex(ident.Begin(), g.STORE_CAPTURE, v.Index)
 	} else {
-		c.push(ident.Begin(), g.STORE_LOCAL, high, low)
+		c.pushIndex(ident.Begin(), g.STORE_LOCAL, v.Index)
 	}
 }
 
@@ -212,9 +211,9 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 		c.Visit(t.Operand)
 		c.Visit(asn.Val)
 
-		high, low := index(len(c.pool))
+		idx := len(c.pool)
 		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
-		c.push(t.Key.Position, g.PUT_FIELD, high, low)
+		c.pushIndex(t.Key.Position, g.PUT_FIELD, idx)
 
 	case *ast.IndexExpr:
 
@@ -262,9 +261,9 @@ func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
 			panic("invalid postfix operator")
 		}
 
-		high, low := index(len(c.pool))
+		idx := len(c.pool)
 		c.pool = append(c.pool, g.MakeStr(t.Key.Text))
-		c.push(t.Key.Position, g.INC_FIELD, high, low)
+		c.pushIndex(t.Key.Position, g.INC_FIELD, idx)
 
 	case *ast.IndexExpr:
 
@@ -355,6 +354,7 @@ func (c *compiler) visitWhile(w *ast.While) {
 func (c *compiler) visitFor(f *ast.For) {
 
 	tok := f.Iterable.Begin()
+	idx := f.IterableIdent.Variable.Index
 
 	// put Iterable expression on stack
 	c.Visit(f.Iterable)
@@ -363,22 +363,20 @@ func (c *compiler) visitFor(f *ast.For) {
 	c.push(tok, g.ITER)
 
 	// store iterator
-	high, low := index(f.IterableIdent.Variable.Index)
-	c.push(tok, g.STORE_LOCAL, high, low)
+	c.pushIndex(tok, g.STORE_LOCAL, idx)
 
 	// top of loop: load iterator and call IterNext()
 	begin := c.opcLen()
-	c.push(tok, g.LOAD_LOCAL, high, low)
+	c.pushIndex(tok, g.LOAD_LOCAL, idx)
 	c.push(tok, g.ITER_NEXT)
 	j0 := c.push(tok, g.JUMP_FALSE, 0xFF, 0xFF)
 
 	// load iterator and call IterGet()
-	c.push(tok, g.LOAD_LOCAL, high, low)
+	c.pushIndex(tok, g.LOAD_LOCAL, idx)
 	c.push(tok, g.ITER_GET)
 
 	if len(f.Idents) == 1 {
-		a, b := index(f.Idents[0].Variable.Index)
-		c.push(tok, g.STORE_LOCAL, a, b)
+		c.pushIndex(tok, g.STORE_LOCAL, f.Idents[0].Variable.Index)
 	} else {
 		panic("not yet implemented")
 	}
@@ -554,9 +552,9 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 				case 1:
 					c.push(u.Op.Position, g.LOAD_NEG_ONE)
 				default:
-					high, low := index(len(c.pool))
+					idx := len(c.pool)
 					c.pool = append(c.pool, g.MakeInt(-i))
-					c.push(u.Op.Position, g.LOAD_CONST, high, low)
+					c.pushIndex(u.Op.Position, g.LOAD_CONST, idx)
 				}
 
 			default:
@@ -585,7 +583,7 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 
 func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
-	high, low := index(len(c.pool))
+	idx := len(c.pool)
 
 	// TODO create pool hash map
 
@@ -602,7 +600,7 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
 	case ast.STR:
 		c.pool = append(c.pool, g.MakeStr(basic.Token.Text))
-		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+		c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
 
 	case ast.INT:
 		i := parseInt(basic.Token.Text)
@@ -613,13 +611,13 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 			c.push(basic.Token.Position, g.LOAD_ONE)
 		default:
 			c.pool = append(c.pool, g.MakeInt(i))
-			c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+			c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
 		}
 
 	case ast.FLOAT:
 		f := parseFloat(basic.Token.Text)
 		c.pool = append(c.pool, g.MakeFloat(f))
-		c.push(basic.Token.Position, g.LOAD_CONST, high, low)
+		c.pushIndex(basic.Token.Position, g.LOAD_CONST, idx)
 
 	default:
 		panic("unreachable")
@@ -629,11 +627,10 @@ func (c *compiler) visitBasicExpr(basic *ast.BasicExpr) {
 
 func (c *compiler) visitIdentExpr(ident *ast.IdentExpr) {
 	v := ident.Variable
-	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(ident.Begin(), g.LOAD_CAPTURE, high, low)
+		c.pushIndex(ident.Begin(), g.LOAD_CAPTURE, v.Index)
 	} else {
-		c.push(ident.Begin(), g.LOAD_LOCAL, high, low)
+		c.pushIndex(ident.Begin(), g.LOAD_LOCAL, v.Index)
 	}
 }
 
@@ -641,23 +638,17 @@ func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
 
 	switch blt.Fn.Kind {
 	case ast.FN_PRINT:
-		high, low := index(g.PRINT)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.PRINT)
 	case ast.FN_PRINTLN:
-		high, low := index(g.PRINTLN)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.PRINTLN)
 	case ast.FN_STR:
-		high, low := index(g.STR)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.STR)
 	case ast.FN_LEN:
-		high, low := index(g.LEN)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.LEN)
 	case ast.FN_RANGE:
-		high, low := index(g.RANGE)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.RANGE)
 	case ast.FN_ASSERT:
-		high, low := index(g.ASSERT)
-		c.push(blt.Fn.Position, g.LOAD_BUILTIN, high, low)
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.ASSERT)
 
 	default:
 		panic("unknown builtin function")
@@ -665,15 +656,13 @@ func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
 }
 
 func (c *compiler) visitFunc(fe *ast.FnExpr) {
-	high, low := index(len(c.funcs))
-	c.push(fe.Begin(), g.NEW_FUNC, high, low)
 
+	c.pushIndex(fe.Begin(), g.NEW_FUNC, len(c.funcs))
 	for _, pc := range fe.ParentCaptures {
-		high, low = index(pc.Index)
 		if pc.IsCapture {
-			c.push(fe.Begin(), g.FUNC_CAPTURE, high, low)
+			c.pushIndex(fe.Begin(), g.FUNC_CAPTURE, pc.Index)
 		} else {
-			c.push(fe.Begin(), g.FUNC_LOCAL, high, low)
+			c.pushIndex(fe.Begin(), g.FUNC_LOCAL, pc.Index)
 		}
 	}
 
@@ -683,8 +672,7 @@ func (c *compiler) visitFunc(fe *ast.FnExpr) {
 func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 
 	inv.Traverse(c)
-	high, low := index(len(inv.Params))
-	c.push(inv.Begin(), g.INVOKE, high, low)
+	c.pushIndex(inv.Begin(), g.INVOKE, len(inv.Params))
 }
 
 func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
@@ -694,7 +682,7 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 	for i, k := range obj.Keys {
 		def.Keys[i] = k.Text
 	}
-	high, low := index(len(c.defs))
+	defIdx := len(c.defs)
 	c.defs = append(c.defs, def)
 
 	// create un-initialized obj
@@ -702,9 +690,8 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 
 	// if the obj is referenced by a 'this', then store local
 	if obj.LocalThisIndex != -1 {
-		high, low := index(obj.LocalThisIndex)
 		c.push(obj.Begin(), g.DUP)
-		c.push(obj.Begin(), g.STORE_LOCAL, high, low)
+		c.pushIndex(obj.Begin(), g.STORE_LOCAL, obj.LocalThisIndex)
 	}
 
 	// eval each value
@@ -713,24 +700,23 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 	}
 
 	// initialize the object
-	c.push(obj.End(), g.INIT_OBJ, high, low)
+	c.pushIndex(obj.End(), g.INIT_OBJ, defIdx)
 }
 
 func (c *compiler) visitThisExpr(this *ast.ThisExpr) {
 	v := this.Variable
-	high, low := index(v.Index)
 	if v.IsCapture {
-		c.push(this.Begin(), g.LOAD_CAPTURE, high, low)
+		c.pushIndex(this.Begin(), g.LOAD_CAPTURE, v.Index)
 	} else {
-		c.push(this.Begin(), g.LOAD_LOCAL, high, low)
+		c.pushIndex(this.Begin(), g.LOAD_LOCAL, v.Index)
 	}
 }
 
 func (c *compiler) visitFieldExpr(fe *ast.FieldExpr) {
 	c.Visit(fe.Operand)
-	high, low := index(len(c.pool))
+	idx := len(c.pool)
 	c.pool = append(c.pool, g.MakeStr(fe.Key.Text))
-	c.push(fe.Key.Position, g.GET_FIELD, high, low)
+	c.pushIndex(fe.Key.Position, g.GET_FIELD, idx)
 }
 
 func (c *compiler) visitIndexExpr(ie *ast.IndexExpr) {
@@ -760,38 +746,27 @@ func (c *compiler) visitSliceToExpr(s *ast.SliceToExpr) {
 
 func (c *compiler) visitListExpr(ls *ast.ListExpr) {
 
-	// eval each element
 	for _, v := range ls.Elems {
 		c.Visit(v)
 	}
-
-	// create the list
-	high, low := index(len(ls.Elems))
-	c.push(ls.Begin(), g.NEW_LIST, high, low)
+	c.pushIndex(ls.Begin(), g.NEW_LIST, len(ls.Elems))
 }
 
 func (c *compiler) visitTupleExpr(tp *ast.TupleExpr) {
 
-	// eval each element
 	for _, v := range tp.Elems {
 		c.Visit(v)
 	}
-
-	// create the list
-	high, low := index(len(tp.Elems))
-	c.push(tp.Begin(), g.NEW_TUPLE, high, low)
+	c.pushIndex(tp.Begin(), g.NEW_TUPLE, len(tp.Elems))
 }
 
 func (c *compiler) visitDictExpr(d *ast.DictExpr) {
 
-	// eval each entry
 	for _, v := range d.Entries {
 		c.Visit(v)
 	}
 
-	// create the list
-	high, low := index(len(d.Entries))
-	c.push(d.Begin(), g.NEW_DICT, high, low)
+	c.pushIndex(d.Begin(), g.NEW_DICT, len(d.Entries))
 }
 
 func parseInt(text string) int64 {
@@ -829,6 +804,12 @@ func (c *compiler) push(pos ast.Pos, bytes ...byte) int {
 	}
 
 	return n
+}
+
+// push a 3-byte, indexed opcode
+func (c *compiler) pushIndex(pos ast.Pos, opcode byte, idx int) int {
+	high, low := index(idx)
+	return c.push(pos, opcode, high, low)
 }
 
 // replace a mocked-up jump value with the 'real' destination
