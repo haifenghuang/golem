@@ -175,12 +175,13 @@ FnExpr(numLocals:0 numCaptures:0 parentCaptures:[])
 	anl = newAnalyzer("let a; for b in [] { break; continue; }")
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
-FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+FnExpr(numLocals:3 numCaptures:0 parentCaptures:[])
 .   Block
 .   .   Let
 .   .   .   IdentExpr(a,(0,false,false))
 .   .   For
 .   .   .   IdentExpr(b,(1,false,false))
+.   .   .   IdentExpr(#synthetic0,(2,false,false))
 .   .   .   ListExpr
 .   .   .   Block
 .   .   .   .   Break
@@ -190,13 +191,36 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 	anl = newAnalyzer("for (a, b) in [] { }")
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
-FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+FnExpr(numLocals:3 numCaptures:0 parentCaptures:[])
 .   Block
 .   .   For
 .   .   .   IdentExpr(a,(0,false,false))
 .   .   .   IdentExpr(b,(1,false,false))
+.   .   .   IdentExpr(#synthetic0,(2,false,false))
 .   .   .   ListExpr
 .   .   .   Block
+`)
+
+	anl = newAnalyzer(`
+for a in [] {
+    for b in [] {
+    }
+}
+`)
+	errors = anl.Analyze()
+	ok(t, anl, errors, `
+FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   For
+.   .   .   IdentExpr(a,(0,false,false))
+.   .   .   IdentExpr(#synthetic0,(1,false,false))
+.   .   .   ListExpr
+.   .   .   Block
+.   .   .   .   For
+.   .   .   .   .   IdentExpr(b,(2,false,false))
+.   .   .   .   .   IdentExpr(#synthetic1,(3,false,false))
+.   .   .   .   .   ListExpr
+.   .   .   .   .   Block
 `)
 
 	//fmt.Println(ast.Dump(anl.Module()))

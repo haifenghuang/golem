@@ -17,6 +17,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 )
 
 //--------------------------------------------------------------
@@ -66,6 +67,7 @@ func (fr *For) Traverse(v Visitor) {
 	for _, n := range fr.Idents {
 		v.Visit(n)
 	}
+	v.Visit(fr.IterableIdent)
 	v.Visit(fr.Iterable)
 	v.Visit(fr.Body)
 }
@@ -251,34 +253,37 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString(")\n")
 	case *InvokeExpr:
 		p.buf.WriteString("InvokeExpr\n")
+	case *BuiltinExpr:
+		p.buf.WriteString(fmt.Sprintf("BuiltinExpr(%q)\n", t.Fn.Text))
 
 	case *ObjExpr:
 		p.buf.WriteString(fmt.Sprintf("ObjExpr(%v,%d)\n", tokensString(t.Keys), t.LocalThisIndex))
 	case *DictExpr:
-		p.buf.WriteString(fmt.Sprintf("DictExpr\n"))
+		p.buf.WriteString("DictExpr\n")
 	case *DictEntryExpr:
-		p.buf.WriteString(fmt.Sprintf("DictEntryExpr\n"))
+		p.buf.WriteString("DictEntryExpr\n")
 	case *ThisExpr:
 		p.buf.WriteString(fmt.Sprintf("ThisExpr(%v)\n", t.Variable))
 	case *ListExpr:
-		p.buf.WriteString(fmt.Sprintf("ListExpr\n"))
+		p.buf.WriteString("ListExpr\n")
 	case *TupleExpr:
-		p.buf.WriteString(fmt.Sprintf("TupleExpr\n"))
+		p.buf.WriteString("TupleExpr\n")
 
 	case *FieldExpr:
 		p.buf.WriteString(fmt.Sprintf("FieldExpr(%v)\n", t.Key.Text))
 
 	case *IndexExpr:
-		p.buf.WriteString(fmt.Sprintf("IndexExpr\n"))
+		p.buf.WriteString("IndexExpr\n")
 
 	case *SliceExpr:
-		p.buf.WriteString(fmt.Sprintf("SliceExpr\n"))
+		p.buf.WriteString("SliceExpr\n")
 	case *SliceFromExpr:
-		p.buf.WriteString(fmt.Sprintf("SliceFromExpr\n"))
+		p.buf.WriteString("SliceFromExpr\n")
 	case *SliceToExpr:
-		p.buf.WriteString(fmt.Sprintf("SliceToExpr\n"))
+		p.buf.WriteString("SliceToExpr\n")
 
 	default:
+		fmt.Println(reflect.TypeOf(node))
 		panic("cannot visit")
 	}
 

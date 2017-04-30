@@ -25,13 +25,14 @@ import (
 // Parser
 
 type Parser struct {
-	scn  *scanner.Scanner
-	cur  *ast.Token
-	next *ast.Token
+	scn       *scanner.Scanner
+	cur       *ast.Token
+	next      *ast.Token
+	synthetic int
 }
 
 func NewParser(scn *scanner.Scanner) *Parser {
-	return &Parser{scn, nil, nil}
+	return &Parser{scn, nil, nil, 0}
 }
 
 func (p *Parser) ParseModule() (fn *ast.FnExpr, err error) {
@@ -200,26 +201,73 @@ func (p *Parser) forStmt() *ast.For {
 
 	token := p.expect(ast.FOR)
 
+	// parse identifers -- either single ident, or 'tuple' of idents
+	var idents []*ast.IdentExpr
 	switch p.cur.Kind {
 
 	case ast.IDENT:
-
-		idents := []*ast.IdentExpr{p.identExpr()}
-		p.expect(ast.IN)
-		return &ast.For{token, idents, p.expression(), p.block()}
+		idents = []*ast.IdentExpr{p.identExpr()}
 
 	case ast.LPAREN:
-
-		lparen, idents := p.formalParams()
-		if len(idents) < 2 {
-			panic(&parserError{INVALID_FOR, lparen})
-		}
-		p.expect(ast.IN)
-		return &ast.For{token, idents, p.expression(), p.block()}
+		idents = p.tupleIdents()
 
 	default:
 		panic(p.unexpected())
 	}
+
+	// parse 'in'
+	tok := p.expect(ast.IN)
+
+	// make synthetic Identifier for iterable
+	iblIdent := p.makeSyntheticIdent(tok.Position)
+
+	// parse the rest
+	iterable := p.expression()
+	body := p.block()
+
+	// done
+	return &ast.For{token, idents, iblIdent, iterable, body}
+}
+
+func (p *Parser) tupleIdents() []*ast.IdentExpr {
+
+	lparen := p.expect(ast.LPAREN)
+
+	idents := []*ast.IdentExpr{}
+
+	switch p.cur.Kind {
+
+	case ast.IDENT:
+		idents = append(idents, p.identExpr())
+	loop:
+		for {
+			switch p.cur.Kind {
+
+			case ast.COMMA:
+				p.consume()
+				idents = append(idents, p.identExpr())
+
+			case ast.RPAREN:
+				p.consume()
+				break loop
+
+			default:
+				panic(p.unexpected())
+			}
+		}
+
+	case ast.RPAREN:
+		p.consume()
+
+	default:
+		panic(p.unexpected())
+	}
+
+	if len(idents) < 2 {
+		panic(&parserError{INVALID_FOR, lparen})
+	}
+
+	return idents
 }
 
 func (p *Parser) breakStmt() *ast.Break {
@@ -533,14 +581,8 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 }
 
 func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
-	_, params := p.formalParams()
-	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
-}
 
-func (p *Parser) formalParams() (*ast.Token, []*ast.IdentExpr) {
-
-	lparen := p.expect(ast.LPAREN)
-
+	p.expect(ast.LPAREN)
 	params := []*ast.IdentExpr{}
 
 	switch p.cur.Kind {
@@ -571,7 +613,7 @@ func (p *Parser) formalParams() (*ast.Token, []*ast.IdentExpr) {
 		panic(p.unexpected())
 	}
 
-	return lparen, params
+	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
 }
 
 func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
@@ -801,6 +843,14 @@ func (p *Parser) unexpected() error {
 	default:
 		return &parserError{UNEXPECTED_TOKEN, p.cur}
 	}
+}
+
+// make a synthetic identifier
+func (p *Parser) makeSyntheticIdent(pos ast.Pos) *ast.IdentExpr {
+	sym := fmt.Sprintf("#synthetic%d", p.synthetic)
+	p.synthetic++
+	return &ast.IdentExpr{
+		&ast.Token{ast.IDENT, sym, pos}, nil}
 }
 
 func isComparative(t *ast.Token) bool {

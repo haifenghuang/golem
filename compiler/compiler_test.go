@@ -1132,12 +1132,14 @@ let d = b.y--;
 				nil}}})
 }
 
-//func TestList(t *testing.T) {
+//func TestFor(t *testing.T) {
 //
 //	source := `
-//let a = [];
-//let b = [1];
-//let c = [1,2,b];
+//let a = 0;
+//for n in [1,2,3] {
+//    a += n;
+//}
+//assert(a == 6);
 //`
 //	anl := newAnalyzer(source)
 //	mod := NewCompiler(anl).Compile()

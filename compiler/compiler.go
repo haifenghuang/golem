@@ -337,31 +337,58 @@ func (c *compiler) visitWhile(w *ast.While) {
 	c.fixBreakContinue(begin, body, end)
 }
 
+// * 24: aload_1
+// * 25: invokeinterface #8,  1            // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+// * 30: astore_2
+// * 31: aload_2
+// * 32: invokeinterface #9,  1            // InterfaceMethod java/util/Iterator.hasNext:()Z
+// * 37: ifeq          60
+//   40: aload_2
+//   41: invokeinterface #10,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+//   46: checkcast     #4                  // class java/lang/String
+//   49: astore_3
+//   50: getstatic     #11                 // Field java/lang/System.out:Ljava/io/PrintStream;
+//   53: aload_3
+//   54: invokevirtual #12                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+//   57: goto          31
+//   60: return
 func (c *compiler) visitFor(f *ast.For) {
 
 	tok := f.Iterable.Begin()
 
+	// put Iterable expression on stack
 	c.Visit(f.Iterable)
+
+	// call NewIterator()
 	c.push(tok, g.ITER)
 
+	// store iterator
+	high, low := index(f.IterableIdent.Variable.Index)
+	c.push(tok, g.STORE_LOCAL, high, low)
+
+	// top of loop: load iterator and call IterNext()
 	begin := c.opcLen()
-	c.push(tok, g.DUP)
+	c.push(tok, g.LOAD_LOCAL, high, low)
 	c.push(tok, g.ITER_NEXT)
 	j0 := c.push(tok, g.JUMP_FALSE, 0xFF, 0xFF)
 
-	c.push(tok, g.DUP)
+	// load iterator and call IterGet()
+	c.push(tok, g.LOAD_LOCAL, high, low)
 	c.push(tok, g.ITER_GET)
 
 	if len(f.Idents) == 1 {
-		c.assignIdent(f.Idents[0])
+		a, b := index(f.Idents[0].Variable.Index)
+		c.push(tok, g.STORE_LOCAL, a, b)
 	} else {
 		panic("not yet implemented")
 	}
 
+	// compile the body
 	body := c.opcLen()
 	f.Body.Traverse(c)
 	c.push(f.Body.End(), g.JUMP, begin.high, begin.low)
 
+	// jump to top of loop
 	end := c.opcLen()
 	c.setJump(j0, end)
 

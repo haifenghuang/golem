@@ -152,6 +152,7 @@ func (a *analyzer) visitFor(fr *ast.For) {
 	}
 
 	// define the identifier for the iterable
+	a.defineIdent(fr.IterableIdent, false)
 
 	// visit the iterable and body
 	a.Visit(fr.Iterable)

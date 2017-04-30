@@ -753,15 +753,15 @@ const c = 1, d;
 	ok_ref(t, mod.Locals[3], g.NULL)
 }
 
-//func TestFor(t *testing.T) {
-//
-//	source := `
-//let a = 0;
-//for n in [1,2,3] {
-//    a += n;
-//}
-//assert(a == 6);
-//`
-//	mod := newCompiler(source).Compile()
-//	interpret(mod)
-//}
+func TestFor(t *testing.T) {
+
+	source := `
+let a = 0;
+for n in [1,2,3] {
+    a += n;
+}
+assert(a == 6);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}

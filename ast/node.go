@@ -96,10 +96,11 @@ type (
 	}
 
 	For struct {
-		Token    *Token
-		Idents   []*IdentExpr
-		Iterable Expr
-		Body     *Block
+		Token         *Token
+		Idents        []*IdentExpr
+		IterableIdent *IdentExpr
+		Iterable      Expr
+		Body          *Block
 	}
 
 	Break struct {
