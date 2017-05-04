@@ -72,6 +72,36 @@ func (fr *For) Traverse(v Visitor) {
 	v.Visit(fr.Body)
 }
 
+func (sw *Switch) Traverse(v Visitor) {
+	if sw.Item != nil {
+		v.Visit(sw.Item)
+	}
+
+	for _, cs := range sw.Cases {
+		v.Visit(cs)
+	}
+
+	if sw.Default != nil {
+		v.Visit(sw.Default)
+	}
+}
+
+func (cs *Case) Traverse(v Visitor) {
+	for _, n := range cs.Matches {
+		v.Visit(n)
+	}
+
+	for _, n := range cs.Body {
+		v.Visit(n)
+	}
+}
+
+func (def *Default) Traverse(v Visitor) {
+	for _, n := range def.Body {
+		v.Visit(n)
+	}
+}
+
 func (br *Break) Traverse(v Visitor) {
 }
 

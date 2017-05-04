@@ -282,6 +282,12 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.IN, "in", 1, 25)
 	ok(t, s, ast.EOF, "", 1, 27)
 
+	s = NewScanner("switch case default")
+	ok(t, s, ast.SWITCH, "switch", 1, 1)
+	ok(t, s, ast.CASE, "case", 1, 8)
+	ok(t, s, ast.DEFAULT, "default", 1, 13)
+	ok(t, s, ast.EOF, "", 1, 20)
+
 	s = NewScanner("obj this has dict")
 	ok(t, s, ast.OBJ, "obj", 1, 1)
 	ok(t, s, ast.THIS, "this", 1, 5)

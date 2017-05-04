@@ -26,9 +26,7 @@ func ok(t *testing.T, p *Parser, expect string) {
 	mod, err := p.ParseModule()
 	if err != nil {
 		t.Error(err, " != nil")
-	}
-
-	if mod.String() != expect {
+	} else if mod.String() != expect {
 		t.Error(mod, " != ", expect)
 	}
 }
@@ -319,8 +317,11 @@ func TestStatement(t *testing.T) {
 
 	p = newParser("let a = 3, b; const x, y, z = 5; ")
 	ok(t, p, "fn() { let a = 3, b; const x, y, z = 5; }")
+}
 
-	p = newParser("for a in b {}")
+func TestFor(t *testing.T) {
+
+	p := newParser("for a in b {}")
 	ok(t, p, "fn() { for a in b {  } }")
 
 	p = newParser("for (a,b) in c {}")
@@ -627,4 +628,43 @@ func TestTuple(t *testing.T) {
 
 	p = newParser("(a, b, obj { z: 1 })[2]")
 	ok_expr(t, p, "(a, b, obj { z: 1 })[2]")
+}
+
+func TestSwitch(t *testing.T) {
+
+	p := newParser("switch { case a: x; }")
+	ok(t, p, "fn() { switch { case a: x; } }")
+
+	p = newParser("switch { case a, b: x; y; }")
+	ok(t, p, "fn() { switch { case a, b: x; y; } }")
+
+	p = newParser("switch { case a: x; case b: y; }")
+	ok(t, p, "fn() { switch { case a: x; case b: y; } }")
+
+	p = newParser("switch true { case a: x; default: false; y; }")
+	ok(t, p, "fn() { switch true { case a: x; default: false; y; } }")
+
+	p = newParser("switch { case a: x; case b: y; default: z; }")
+	ok(t, p, "fn() { switch { case a: x; case b: y; default: z; } }")
+
+	p = newParser("switch { }")
+	fail(t, p, "Unexpected Token '}' at (1, 10)")
+
+	p = newParser("switch { case a: x;")
+	fail(t, p, "Unexpected EOF at (1, 20)")
+
+	p = newParser("switch { default: x; }")
+	fail(t, p, "Unexpected Token 'default' at (1, 10)")
+
+	p = newParser("switch { case case a: x; }")
+	fail(t, p, "Unexpected Token 'case' at (1, 15)")
+
+	p = newParser("switch { case z, x; }")
+	fail(t, p, "Unexpected Token ';' at (1, 19)")
+
+	p = newParser("switch { case a, b, c: }")
+	fail(t, p, "Invalid Switch Expression at (1, 22)")
+
+	p = newParser("switch { case a: b; default: }")
+	fail(t, p, "Invalid Switch Expression at (1, 28)")
 }

@@ -107,6 +107,9 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.FOR:
 		return p.forStmt()
 
+	case ast.SWITCH:
+		return p.switchStmt()
+
 	case ast.BREAK:
 		return p.breakStmt()
 
@@ -270,6 +273,71 @@ func (p *Parser) tupleIdents() []*ast.IdentExpr {
 	return idents
 }
 
+func (p *Parser) switchStmt() *ast.Switch {
+
+	token := p.expect(ast.SWITCH)
+
+	var item ast.Expr = nil
+	if p.cur.Kind != ast.LBRACE {
+		item = p.expression()
+	}
+	lbrace := p.expect(ast.LBRACE)
+
+	// cases
+	cases := []*ast.Case{p.caseStmt()}
+	for p.cur.Kind == ast.CASE {
+		cases = append(cases, p.caseStmt())
+	}
+
+	// default
+	var def *ast.Default = nil
+	if p.cur.Kind == ast.DEFAULT {
+		def = p.defaultStmt()
+	}
+
+	// done
+	return &ast.Switch{token, item, lbrace, cases, def, p.expect(ast.RBRACE)}
+}
+
+func (p *Parser) caseStmt() *ast.Case {
+
+	token := p.expect(ast.CASE)
+
+	matches := []ast.Expr{p.expression()}
+	for {
+		switch p.cur.Kind {
+
+		case ast.COMMA:
+			p.expect(ast.COMMA)
+			matches = append(matches, p.expression())
+
+		case ast.COLON:
+			colon := p.expect(ast.COLON)
+			body := p.nodeSequenceAny(ast.CASE, ast.DEFAULT, ast.RBRACE)
+			if len(body) == 0 {
+				panic(&parserError{INVALID_SWITCH, colon})
+			}
+			return &ast.Case{token, matches, body}
+
+		default:
+			panic(p.unexpected())
+		}
+	}
+}
+
+func (p *Parser) defaultStmt() *ast.Default {
+
+	token := p.expect(ast.DEFAULT)
+	colon := p.expect(ast.COLON)
+
+	body := p.nodeSequence(ast.RBRACE)
+	if len(body) == 0 {
+		panic(&parserError{INVALID_SWITCH, colon})
+	}
+
+	return &ast.Default{token, body}
+}
+
 func (p *Parser) breakStmt() *ast.Break {
 	return &ast.Break{
 		p.expect(ast.BREAK),
@@ -310,7 +378,7 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 
 	for {
 		if p.cur.Kind == endKind {
-			break
+			return nodes
 		}
 
 		// see if there is a statement on tap
@@ -325,7 +393,31 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 		nodes = append(nodes, node)
 	}
 
-	return nodes
+}
+
+// Parse a sequence of statements or expressions.
+func (p *Parser) nodeSequenceAny(endKinds ...ast.TokenKind) []ast.Node {
+
+	nodes := []ast.Node{}
+
+	for {
+		for _, e := range endKinds {
+			if p.cur.Kind == e {
+				return nodes
+			}
+		}
+
+		// see if there is a statement on tap
+		var node ast.Node = p.statement()
+
+		// if there isn't, read an expression instead
+		if node == nil {
+			node = p.expression()
+			p.expect(ast.SEMICOLON)
+		}
+
+		nodes = append(nodes, node)
+	}
 }
 
 func (p *Parser) expression() ast.Expr {
@@ -1003,6 +1095,7 @@ const (
 	UNEXPECTED_EOF
 	INVALID_POSTFIX
 	INVALID_FOR
+	INVALID_SWITCH
 )
 
 type parserError struct {
@@ -1028,6 +1121,9 @@ func (e *parserError) Error() string {
 
 	case INVALID_FOR:
 		return fmt.Sprintf("Invalid For Expression at %v", e.token.Position)
+
+	case INVALID_SWITCH:
+		return fmt.Sprintf("Invalid Switch Expression at %v", e.token.Position)
 
 	default:
 		panic("unreachable")

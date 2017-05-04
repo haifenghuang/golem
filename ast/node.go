@@ -103,6 +103,26 @@ type (
 		Body          *Block
 	}
 
+	Switch struct {
+		Token   *Token
+		Item    Expr
+		LBrace  *Token
+		Cases   []*Case
+		Default *Default
+		RBrace  *Token
+	}
+
+	Case struct {
+		Token   *Token
+		Matches []Expr
+		Body    []Node
+	}
+
+	Default struct {
+		Token *Token
+		Body  []Node
+	}
+
 	Break struct {
 		Token     *Token
 		Semicolon *Token
@@ -268,6 +288,9 @@ func (*Let) stmtMarker()      {}
 func (*If) stmtMarker()       {}
 func (*While) stmtMarker()    {}
 func (*For) stmtMarker()      {}
+func (*Switch) stmtMarker()   {}
+func (*Case) stmtMarker()     {}
+func (*Default) stmtMarker()  {}
 func (*Break) stmtMarker()    {}
 func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
@@ -328,6 +351,15 @@ func (n *While) End() Pos   { return n.Body.End() }
 
 func (n *For) Begin() Pos { return n.Token.Position }
 func (n *For) End() Pos   { return n.Body.End() }
+
+func (n *Switch) Begin() Pos { return n.Token.Position }
+func (n *Switch) End() Pos   { return n.RBrace.Position }
+
+func (n *Case) Begin() Pos { return n.Token.Position }
+func (n *Case) End() Pos   { return n.Body[len(n.Body)-1].End() }
+
+func (n *Default) Begin() Pos { return n.Token.Position }
+func (n *Default) End() Pos   { return n.Body[len(n.Body)-1].End() }
 
 func (n *Break) Begin() Pos { return n.Token.Position }
 func (n *Break) End() Pos   { return n.Semicolon.Position }
@@ -478,6 +510,56 @@ func (fr *For) String() string {
 	} else {
 		return fmt.Sprintf("for %s in %v %v", identsString(fr.Idents), fr.Iterable, fr.Body)
 	}
+}
+
+func (sw *Switch) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString("switch ")
+	if sw.Item != nil {
+		buf.WriteString(fmt.Sprintf("%v", sw.Item))
+		buf.WriteString(" ")
+	}
+
+	buf.WriteString("{ ")
+	for i, c := range sw.Cases {
+		if i > 0 {
+			buf.WriteString(" ")
+		}
+		buf.WriteString(fmt.Sprintf("%v", c))
+	}
+	if sw.Default != nil {
+		buf.WriteString(fmt.Sprintf("%v", sw.Default))
+	}
+	buf.WriteString(" }")
+
+	return buf.String()
+}
+
+func (cs *Case) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString("case ")
+	for i, m := range cs.Matches {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(fmt.Sprintf("%v", m))
+	}
+
+	buf.WriteString(": ")
+	writeNodes(cs.Body, &buf)
+
+	return buf.String()
+}
+
+func (def *Default) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString(" default: ")
+	writeNodes(def.Body, &buf)
+
+	return buf.String()
 }
 
 func (br *Break) String() string {

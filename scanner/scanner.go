@@ -365,6 +365,12 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.FOR, text, pos}
 	case "in":
 		return &ast.Token{ast.IN, text, pos}
+	case "switch":
+		return &ast.Token{ast.SWITCH, text, pos}
+	case "case":
+		return &ast.Token{ast.CASE, text, pos}
+	case "default":
+		return &ast.Token{ast.DEFAULT, text, pos}
 	case "obj":
 		return &ast.Token{ast.OBJ, text, pos}
 	case "dict":

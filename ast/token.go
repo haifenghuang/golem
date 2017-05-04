@@ -116,6 +116,9 @@ const (
 	LET
 	FOR
 	IN
+	SWITCH
+	CASE
+	DEFAULT
 
 	OBJ
 	THIS
@@ -245,6 +248,12 @@ func (t TokenKind) String() string {
 		return "FOR"
 	case IN:
 		return "IN"
+	case SWITCH:
+		return "SWITCH"
+	case CASE:
+		return "CASE"
+	case DEFAULT:
+		return "DEFAULT"
 
 	case OBJ:
 		return "OBJ"
