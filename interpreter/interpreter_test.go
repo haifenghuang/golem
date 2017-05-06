@@ -811,3 +811,57 @@ assert(values == 6);
 		g.InvalidArgumentError("Expected Tuple of length 3"),
 		[]string{"    at line 1"}})
 }
+
+func TestSwitch(t *testing.T) {
+
+	source := `
+let s = ''; 
+for i in range(0, 4) {
+    switch { 
+    case i == 0: 
+        s += 'a'; 
+
+    case i == 1, i == 2: 
+        s += 'b'; 
+
+    default:
+        s += 'c'; 
+    }
+}
+assert(s == 'abbc');
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let s = ''; 
+for i in range(0, 4) {
+    switch { 
+    case i == 0, i == 1: 
+        s += 'a'; 
+
+    case i == 2: 
+        s += 'b'; 
+    }
+}
+assert(s == 'aab');
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let s = ''; 
+for i in range(0, 4) {
+    switch i { 
+    case 0, 1: 
+        s += 'a'; 
+
+    case 2: 
+        s += 'b'; 
+    }
+}
+assert(s == 'aab');
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+}

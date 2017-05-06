@@ -101,6 +101,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.For:
 		c.visitFor(t)
 
+	case *ast.Switch:
+		c.visitSwitch(t)
+
 	case *ast.Break:
 		c.visitBreak(t)
 
@@ -419,6 +422,80 @@ func (c *compiler) visitBreak(br *ast.Break) {
 
 func (c *compiler) visitContinue(cn *ast.Continue) {
 	c.push(cn.Begin(), g.CONTINUE, 0xFF, 0xFF)
+}
+
+func (c *compiler) visitSwitch(sw *ast.Switch) {
+
+	// visit the item, if there is one
+	hasItem := false
+	if sw.Item != nil {
+		hasItem = true
+		c.Visit(sw.Item)
+	}
+
+	// visit each case
+	endJumps := []int{}
+	for _, cs := range sw.Cases {
+		endJumps = append(endJumps, c.visitCase(cs, hasItem))
+	}
+
+	// visit default
+	if sw.Default != nil {
+		for _, n := range sw.Default.Body {
+			c.Visit(n)
+		}
+	}
+
+	// if there is an item, pop it
+	if hasItem {
+		c.push(sw.End(), g.POP)
+	}
+
+	// set all the end jumps
+	for _, j := range endJumps {
+		c.setJump(j, c.opcLen())
+	}
+}
+
+func (c *compiler) visitCase(cs *ast.Case, hasItem bool) int {
+
+	bodyJumps := []int{}
+
+	// visit each match, and jump to body if true
+	for _, m := range cs.Matches {
+
+		if hasItem {
+			// if there is an item, DUP it and do an EQ comparison against the match
+			c.push(m.Begin(), g.DUP)
+			c.Visit(m)
+			c.push(m.Begin(), g.EQ)
+		} else {
+			// otherwise, evaluate the match and assume its a Bool
+			c.Visit(m)
+		}
+
+		bodyJumps = append(bodyJumps, c.push(m.End(), g.JUMP_TRUE, 0xFF, 0xFF))
+	}
+
+	// no match -- jump to the end of the case
+	caseEndJump := c.push(cs.End(), g.JUMP, 0xFF, 0xFF)
+
+	// set all the body jumps
+	for _, j := range bodyJumps {
+		c.setJump(j, c.opcLen())
+	}
+
+	// visit body, and then push a jump to the very end of the switch
+	for _, n := range cs.Body {
+		c.Visit(n)
+	}
+	endJump := c.push(cs.End(), g.JUMP, 0xFF, 0xFF)
+
+	// set the jump to the end of the case
+	c.setJump(caseEndJump, c.opcLen())
+
+	// return the jump to end of the switch
+	return endJump
 }
 
 func (c *compiler) visitReturn(rt *ast.Return) {

@@ -69,13 +69,13 @@ func newAnalyzer(source string) analyzer.Analyzer {
 	parser := parser.NewParser(scanner)
 	mod, err := parser.ParseModule()
 	if err != nil {
-		panic("oops")
+		panic(err)
 	}
 
 	anl := analyzer.NewAnalyzer(mod)
 	errors := anl.Analyze()
 	if len(errors) > 0 {
-		panic("oops")
+		panic(err)
 	}
 	return anl
 }
