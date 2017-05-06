@@ -78,7 +78,7 @@ func (d *dict) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (d *dict) Add(v Value) (Value, Error) {
+func (d *dict) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

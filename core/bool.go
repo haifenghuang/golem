@@ -81,7 +81,7 @@ func (b _bool) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (b _bool) Add(v Value) (Value, Error) {
+func (b _bool) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

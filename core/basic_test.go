@@ -70,7 +70,7 @@ func TestNull(t *testing.T) {
 	v, err = NULL.Cmp(TRUE)
 	fail(t, v, err, "NullValue")
 
-	v, err = NULL.Add(MakeStr("a"))
+	v, err = NULL.Plus(MakeStr("a"))
 	ok(t, v, err, MakeStr("nulla"))
 }
 
@@ -114,10 +114,10 @@ func TestBool(t *testing.T) {
 	val = FALSE.Not()
 	ok(t, val, nil, TRUE)
 
-	v, err := TRUE.Add(MakeInt(1))
+	v, err := TRUE.Plus(MakeInt(1))
 	fail(t, v, err, "TypeMismatch: Expected Number Type")
 
-	v, err = TRUE.Add(MakeStr("a"))
+	v, err = TRUE.Plus(MakeStr("a"))
 	ok(t, v, err, MakeStr("truea"))
 }
 
@@ -152,9 +152,9 @@ func TestStr(t *testing.T) {
 	v, err = b.Cmp(a)
 	ok(t, v, err, MakeInt(1))
 
-	v, err = a.Add(MakeInt(1))
+	v, err = a.Plus(MakeInt(1))
 	ok(t, v, err, MakeStr("a1"))
-	v, err = a.Add(NULL)
+	v, err = a.Plus(NULL)
 	ok(t, v, err, MakeStr("anull"))
 
 	ab := MakeStr("ab")
@@ -309,15 +309,15 @@ func TestInt(t *testing.T) {
 	val, err = MakeInt(3).Div(MakeFloat(0.0))
 	fail(t, val, err, "DivideByZero")
 
-	v1, err := MakeInt(3).Add(MakeInt(2))
+	v1, err := MakeInt(3).Plus(MakeInt(2))
 	ok(t, v1, err, MakeInt(5))
-	v1, err = MakeInt(3).Add(MakeFloat(2.0))
+	v1, err = MakeInt(3).Plus(MakeFloat(2.0))
 	ok(t, v1, err, MakeFloat(5.0))
-	v1, err = MakeInt(3).Add(MakeStr("a"))
+	v1, err = MakeInt(3).Plus(MakeStr("a"))
 	ok(t, v1, err, MakeStr("3a"))
-	v2, err := MakeInt(3).Add(FALSE)
+	v2, err := MakeInt(3).Plus(FALSE)
 	fail(t, v2, err, "TypeMismatch: Expected Number Type")
-	v2, err = MakeInt(3).Add(NULL)
+	v2, err = MakeInt(3).Plus(NULL)
 	fail(t, v2, err, "TypeMismatch: Expected Number Type")
 
 	v1, err = MakeInt(7).Rem(MakeInt(3))
@@ -427,15 +427,15 @@ func TestFloat(t *testing.T) {
 	val, err = MakeFloat(3.3).Div(MakeFloat(0.0))
 	fail(t, val, err, "DivideByZero")
 
-	v1, err := MakeFloat(3.3).Add(MakeInt(2))
+	v1, err := MakeFloat(3.3).Plus(MakeInt(2))
 	ok(t, v1, err, MakeFloat(float64(3.3)+float64(int64(2))))
-	v1, err = MakeFloat(3.3).Add(MakeFloat(2.0))
+	v1, err = MakeFloat(3.3).Plus(MakeFloat(2.0))
 	ok(t, v1, err, MakeFloat(float64(3.3)+float64(2.0)))
-	v1, err = MakeFloat(3.3).Add(MakeStr("a"))
+	v1, err = MakeFloat(3.3).Plus(MakeStr("a"))
 	ok(t, v1, err, MakeStr("3.3a"))
-	v1, err = MakeFloat(3.3).Add(FALSE)
+	v1, err = MakeFloat(3.3).Plus(FALSE)
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
-	v1, err = MakeFloat(3.3).Add(NULL)
+	v1, err = MakeFloat(3.3).Plus(NULL)
 	fail(t, v1, err, "TypeMismatch: Expected Number Type")
 }
 

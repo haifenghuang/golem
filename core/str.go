@@ -71,7 +71,7 @@ func (s str) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (s str) Add(v Value) (Value, Error) {
+func (s str) Plus(v Value) (Value, Error) {
 	return Strcat(s, v)
 }
 

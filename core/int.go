@@ -99,7 +99,7 @@ func (i _int) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (i _int) Add(v Value) (Value, Error) {
+func (i _int) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

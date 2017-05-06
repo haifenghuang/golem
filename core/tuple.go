@@ -79,7 +79,7 @@ func (tp tuple) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (tp tuple) Add(v Value) (Value, Error) {
+func (tp tuple) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

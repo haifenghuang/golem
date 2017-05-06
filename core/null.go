@@ -37,7 +37,7 @@ func (n *null) Eq(v Value) Bool {
 
 func (n *null) Cmp(v Value) (Int, Error) { return nil, NullValueError() }
 
-func (n *null) Add(v Value) (Value, Error) {
+func (n *null) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

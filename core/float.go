@@ -102,7 +102,7 @@ func (f _float) Cmp(v Value) (Int, Error) {
 	}
 }
 
-func (f _float) Add(v Value) (Value, Error) {
+func (f _float) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

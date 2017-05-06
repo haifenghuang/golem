@@ -31,7 +31,7 @@ func TestObj(t *testing.T) {
 	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
 	ok(t, z, nil, FALSE)
 
-	val, err := o.Add(MakeStr("a"))
+	val, err := o.Plus(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj {}a"))
 
 	val, err = o.GetField(MakeStr("a"))
@@ -56,7 +56,7 @@ func TestObj(t *testing.T) {
 	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
 	ok(t, z, nil, TRUE)
 
-	val, err = o.Add(MakeStr("a"))
+	val, err = o.Plus(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj { a: 1 }a"))
 
 	val, err = o.GetField(MakeStr("a"))
@@ -129,7 +129,7 @@ func TestList(t *testing.T) {
 	v = ls.Len()
 	ok(t, v, nil, ZERO)
 
-	ls.Append(MakeStr("a"))
+	ls.Add(MakeStr("a"))
 
 	v = ls.Eq(NewList([]Value{}))
 	ok(t, v, nil, FALSE)
@@ -164,7 +164,7 @@ func TestList(t *testing.T) {
 	v = ls.ToStr()
 	ok(t, v, nil, MakeStr("[ b ]"))
 
-	ls.Append(MakeStr("z"))
+	ls.Add(MakeStr("z"))
 
 	v = ls.ToStr()
 	ok(t, v, nil, MakeStr("[ b, z ]"))

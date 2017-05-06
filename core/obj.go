@@ -93,7 +93,7 @@ func (o *obj) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (o *obj) Add(v Value) (Value, Error) {
+func (o *obj) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

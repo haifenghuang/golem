@@ -249,7 +249,7 @@ func (c *compiler) visitPostfixExpr(pe *ast.PostfixExpr) {
 			panic("invalid postfix operator")
 		}
 
-		c.push(pe.Op.Position, g.ADD)
+		c.push(pe.Op.Position, g.PLUS)
 		c.assignIdent(t)
 
 	case *ast.FieldExpr:
@@ -542,7 +542,7 @@ func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 
 	case ast.PLUS:
 		b.Traverse(c)
-		c.push(b.Op.Position, g.ADD)
+		c.push(b.Op.Position, g.PLUS)
 	case ast.MINUS:
 		b.Traverse(c)
 		c.push(b.Op.Position, g.SUB)

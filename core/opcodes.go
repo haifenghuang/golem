@@ -46,7 +46,7 @@ const (
 	CMP
 	HAS
 
-	ADD
+	PLUS
 	SUB
 	MUL
 	DIV
@@ -173,8 +173,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case HAS:
 		return fmt.Sprintf("%d: HAS\n", i)
 
-	case ADD:
-		return fmt.Sprintf("%d: ADD\n", i)
+	case PLUS:
+		return fmt.Sprintf("%d: PLUS\n", i)
 	case SUB:
 		return fmt.Sprintf("%d: SUB\n", i)
 	case MUL:

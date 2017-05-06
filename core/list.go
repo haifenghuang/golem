@@ -69,7 +69,7 @@ func (ls *list) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (ls *list) Add(v Value) (Value, Error) {
+func (ls *list) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -98,7 +98,7 @@ func (ls *list) Set(index Value, val Value) Error {
 	return nil
 }
 
-func (ls *list) Append(val Value) {
+func (ls *list) Add(val Value) {
 	ls.array = append(ls.array, val)
 }
 

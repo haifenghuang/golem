@@ -340,7 +340,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			after, err := before.Add(value)
+			after, err := before.Plus(value)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
@@ -422,7 +422,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			after, err := before.Add(val)
+			after, err := before.Plus(val)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
@@ -662,8 +662,8 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			s[n-1] = val
 			ip++
 
-		case g.ADD:
-			val, err := s[n-1].Add(s[n])
+		case g.PLUS:
+			val, err := s[n-1].Plus(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}

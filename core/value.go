@@ -29,7 +29,7 @@ type Value interface {
 	ToStr() Str
 
 	Cmp(Value) (Int, Error)
-	Add(Value) (Value, Error)
+	Plus(Value) (Value, Error)
 }
 
 //---------------------------------------------------------------
@@ -131,10 +131,10 @@ type (
 		Composite
 		Indexable
 		Lenable
-		Sliceable
 		Iterable
 
-		Append(Value)
+		Sliceable
+		Add(Value)
 	}
 
 	Range interface {

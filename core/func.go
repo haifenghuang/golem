@@ -83,7 +83,7 @@ func (bf *bytecodeFunc) Eq(v Value) Bool {
 	}
 }
 
-func (bf *bytecodeFunc) Add(v Value) (Value, Error) {
+func (bf *bytecodeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -134,7 +134,7 @@ func (nf *nativeFunc) Eq(v Value) Bool {
 	}
 }
 
-func (nf *nativeFunc) Add(v Value) (Value, Error) {
+func (nf *nativeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:

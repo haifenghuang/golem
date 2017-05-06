@@ -71,7 +71,7 @@ func (r *rng) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (r *rng) Add(v Value) (Value, Error) {
+func (r *rng) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
