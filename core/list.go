@@ -23,24 +23,24 @@ import (
 
 type list struct {
 	array    []Value
-	add      *fnAdd
-	addAll   *fnAddAll
-	clear    *fnClear
-	isEmpty  *fnIsEmpty
-	contains *fnContains
-	indexOf  *fnIndexOf
+	add      *listAdd
+	addAll   *listAddAll
+	clear    *listClear
+	isEmpty  *listIsEmpty
+	contains *listContains
+	indexOf  *listIndexOf
 }
 
 func NewList(values []Value) List {
 
 	ls := &list{values, nil, nil, nil, nil, nil, nil}
 
-	ls.add = &fnAdd{&nativeFunc{}, ls}
-	ls.addAll = &fnAddAll{&nativeFunc{}, ls}
-	ls.clear = &fnClear{&nativeFunc{}, ls}
-	ls.isEmpty = &fnIsEmpty{&nativeFunc{}, ls}
-	ls.contains = &fnContains{&nativeFunc{}, ls}
-	ls.indexOf = &fnIndexOf{&nativeFunc{}, ls}
+	ls.add = &listAdd{&nativeFunc{}, ls}
+	ls.addAll = &listAddAll{&nativeFunc{}, ls}
+	ls.clear = &listClear{&nativeFunc{}, ls}
+	ls.isEmpty = &listIsEmpty{&nativeFunc{}, ls}
+	ls.contains = &listContains{&nativeFunc{}, ls}
+	ls.indexOf = &listIndexOf{&nativeFunc{}, ls}
 
 	return ls
 }
@@ -130,7 +130,7 @@ func (ls *list) AddAll(val Value) Error {
 		}
 		return nil
 	} else {
-		return TypeMismatchError("Expected Comparable Type")
+		return TypeMismatchError("Expected Iterable Type")
 	}
 }
 
@@ -252,37 +252,37 @@ func (ls *list) GetField(key Str) (Value, Error) {
 	}
 }
 
-type fnAdd struct {
+type listAdd struct {
 	*nativeFunc
 	ls *list
 }
 
-type fnAddAll struct {
+type listAddAll struct {
 	*nativeFunc
 	ls *list
 }
 
-type fnClear struct {
+type listClear struct {
 	*nativeFunc
 	ls *list
 }
 
-type fnIsEmpty struct {
+type listIsEmpty struct {
 	*nativeFunc
 	ls *list
 }
 
-type fnContains struct {
+type listContains struct {
 	*nativeFunc
 	ls *list
 }
 
-type fnIndexOf struct {
+type listIndexOf struct {
 	*nativeFunc
 	ls *list
 }
 
-func (f *fnAdd) Invoke(values []Value) (Value, Error) {
+func (f *listAdd) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
@@ -290,15 +290,19 @@ func (f *fnAdd) Invoke(values []Value) (Value, Error) {
 	return f.ls, nil
 }
 
-func (f *fnAddAll) Invoke(values []Value) (Value, Error) {
+func (f *listAddAll) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
-	f.ls.AddAll(values[0])
-	return f.ls, nil
+	err := f.ls.AddAll(values[0])
+	if err != nil {
+		return nil, err
+	} else {
+		return f.ls, nil
+	}
 }
 
-func (f *fnClear) Invoke(values []Value) (Value, Error) {
+func (f *listClear) Invoke(values []Value) (Value, Error) {
 	if len(values) != 0 {
 		return nil, ArityMismatchError("0", len(values))
 	}
@@ -306,21 +310,21 @@ func (f *fnClear) Invoke(values []Value) (Value, Error) {
 	return f.ls, nil
 }
 
-func (f *fnIsEmpty) Invoke(values []Value) (Value, Error) {
+func (f *listIsEmpty) Invoke(values []Value) (Value, Error) {
 	if len(values) != 0 {
 		return nil, ArityMismatchError("0", len(values))
 	}
 	return f.ls.IsEmpty(), nil
 }
 
-func (f *fnContains) Invoke(values []Value) (Value, Error) {
+func (f *listContains) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
 	return f.ls.Contains(values[0]), nil
 }
 
-func (f *fnIndexOf) Invoke(values []Value) (Value, Error) {
+func (f *listIndexOf) Invoke(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}

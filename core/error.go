@@ -55,6 +55,12 @@ func ArityMismatchError(expected string, actual int) Error {
 		fmt.Sprintf("Expected %s params, got %d", expected, actual)}
 }
 
+func TupleLengthError(expected int, actual int) Error {
+	return &serror{
+		"TupleLength",
+		fmt.Sprintf("Expected Tuple of length %d, got %d", expected, actual)}
+}
+
 func DivideByZeroError() Error {
 	return &serror{"DivideByZero", ""}
 }

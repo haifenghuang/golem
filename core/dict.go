@@ -20,11 +20,23 @@ import (
 )
 
 type dict struct {
-	hashMap *HashMap
+	hashMap     *HashMap
+	addAll      *dictAddAll
+	clear       *dictClear
+	isEmpty     *dictIsEmpty
+	containsKey *dictContainsKey
 }
 
 func NewDict(hashMap *HashMap) Dict {
-	return &dict{hashMap}
+
+	d := &dict{hashMap, nil, nil, nil, nil}
+
+	d.addAll = &dictAddAll{&nativeFunc{}, d}
+	d.clear = &dictClear{&nativeFunc{}, d}
+	d.isEmpty = &dictIsEmpty{&nativeFunc{}, d}
+	d.containsKey = &dictContainsKey{&nativeFunc{}, d}
+
+	return d
 }
 
 func (d *dict) compositeMarker() {}
@@ -74,10 +86,6 @@ func (d *dict) Eq(v Value) Bool {
 	}
 }
 
-func (d *dict) GetField(key Str) (Value, Error) {
-	return nil, NoSuchFieldError(key.String())
-}
-
 func (d *dict) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
@@ -103,6 +111,42 @@ func (d *dict) Set(key Value, val Value) Error {
 
 func (d *dict) Len() Int {
 	return d.hashMap.Len()
+}
+
+func (d *dict) Clear() {
+	d.hashMap = EmptyHashMap()
+}
+
+func (d *dict) IsEmpty() Bool {
+	return MakeBool(d.hashMap.Len().IntVal() == 0)
+}
+
+func (d *dict) ContainsKey(key Value) (Bool, Error) {
+	return d.hashMap.ContainsKey(key)
+}
+
+func (d *dict) AddAll(val Value) Error {
+	if ibl, ok := val.(Iterable); ok {
+		itr := ibl.NewIterator()
+		for itr.IterNext().BoolVal() {
+			v, err := itr.IterGet()
+			if err != nil {
+				return err
+			}
+			if tp, ok := v.(tuple); ok {
+				if len(tp) == 2 {
+					d.hashMap.Put(tp[0], tp[1])
+				} else {
+					return TupleLengthError(2, len(tp))
+				}
+			} else {
+				return TypeMismatchError("Expected Tuple")
+			}
+		}
+		return nil
+	} else {
+		return TypeMismatchError("Expected Iterable Type")
+	}
 }
 
 //---------------------------------------------------------------
@@ -144,4 +188,77 @@ func (i *dictIterator) IterGet() (Value, Error) {
 	} else {
 		return nil, NoSuchElementError()
 	}
+}
+
+//--------------------------------------------------------------
+// intrinsic functions
+
+func (d *dict) GetField(key Str) (Value, Error) {
+	switch key.String() {
+	case "addAll":
+		return d.addAll, nil
+	case "clear":
+		return d.clear, nil
+	case "isEmpty":
+		return d.isEmpty, nil
+	case "containsKey":
+		return d.containsKey, nil
+	default:
+		return nil, NoSuchFieldError(key.String())
+	}
+}
+
+type dictAddAll struct {
+	*nativeFunc
+	d *dict
+}
+
+type dictClear struct {
+	*nativeFunc
+	d *dict
+}
+
+type dictIsEmpty struct {
+	*nativeFunc
+	d *dict
+}
+
+type dictContainsKey struct {
+	*nativeFunc
+	d *dict
+}
+
+func (f *dictAddAll) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+
+	err := f.d.AddAll(values[0])
+	if err != nil {
+		return nil, err
+	} else {
+		return f.d, nil
+	}
+}
+
+func (f *dictClear) Invoke(values []Value) (Value, Error) {
+	if len(values) != 0 {
+		return nil, ArityMismatchError("0", len(values))
+	}
+	f.d.Clear()
+	return f.d, nil
+}
+
+func (f *dictIsEmpty) Invoke(values []Value) (Value, Error) {
+	if len(values) != 0 {
+		return nil, ArityMismatchError("0", len(values))
+	}
+	return f.d.IsEmpty(), nil
+}
+
+func (f *dictContainsKey) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+	return f.d.ContainsKey(values[0])
 }

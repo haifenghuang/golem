@@ -668,6 +668,12 @@ assert(b == [ 0, 1, 2, ('y', 2), ('x', 1) ]);
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
+	source = "let a = []; a.addAll(false);"
+	failErr(t, source, g.TypeMismatchError("Expected Iterable Type"))
+
+	source = "let a = []; a.add(3,4);"
+	failErr(t, source, g.ArityMismatchError("1", 2))
+
 	source = `
 let a = [];
 assert(a.isEmpty());
@@ -689,6 +695,7 @@ assert(a.indexOf('x') == 1);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
+
 }
 
 func TestDict(t *testing.T) {
@@ -710,6 +717,40 @@ let d = a['x'];
 	ok_ref(t, mod.Locals[1], g.ONE)
 	ok_ref(t, mod.Locals[2], g.NULL)
 	ok_ref(t, mod.Locals[3], g.NEG_ONE)
+
+	source = `
+let a = dict {};
+a.addAll([(1,2)]).addAll([(3,4)]);
+assert(a == dict {1:2,3:4});
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = "let a = dict{}; a.addAll(false);"
+	failErr(t, source, g.TypeMismatchError("Expected Iterable Type"))
+	source = "let a = dict{}; a.addAll([false]);"
+	failErr(t, source, g.TypeMismatchError("Expected Tuple"))
+	source = "let a = dict{}; a.addAll([(1,2,3)]);"
+	failErr(t, source, g.TupleLengthError(2, 3))
+
+	source = `
+let a = dict {};
+assert(a.isEmpty());
+a[1] = 2;
+assert(!a.isEmpty());
+a.clear();
+assert(a.isEmpty());
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = dict {'z': 3};
+assert(a.containsKey('z'));
+assert(!a.containsKey('x'));
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }
 
 func newRange(from int64, to int64, step int64) g.Range {
