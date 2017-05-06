@@ -47,6 +47,10 @@ func (f *function) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
+func (f *function) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
 func (f *function) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
@@ -72,12 +76,8 @@ func (bf *bytecodeFunc) ToStr() Str {
 
 func (bf *bytecodeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
-	case *bytecodeFunc:
-		if bf.bytecodeStr() == t.bytecodeStr() {
-			return TRUE
-		} else {
-			return FALSE
-		}
+	case Func:
+		return bf.ToStr().Eq(t.ToStr())
 	default:
 		return FALSE
 	}
@@ -123,12 +123,8 @@ func (nf *nativeFunc) ToStr() Str {
 
 func (nf *nativeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
-	case *nativeFunc:
-		if nf.nativeStr() == t.nativeStr() {
-			return TRUE
-		} else {
-			return FALSE
-		}
+	case Func:
+		return nf.ToStr().Eq(t.ToStr())
 	default:
 		return FALSE
 	}

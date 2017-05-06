@@ -67,6 +67,10 @@ func (r *rng) Eq(v Value) Bool {
 	}
 }
 
+func (r *rng) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
 func (r *rng) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }

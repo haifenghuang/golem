@@ -37,6 +37,14 @@ type ErrorStack struct {
 	Stack []string
 }
 
+func (e *ErrorStack) DumpStackTrace() {
+	println("Stack Trace:")
+	println(e.Err.Error())
+	for _, s := range e.Stack {
+		println(s)
+	}
+}
+
 //---------------------------------------------------------------
 // The Interpreter
 
@@ -272,15 +280,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				panic("Invalid GET_FIELD Key")
 			}
 
-			// get obj from stack
-			obj, ok := s[n].(g.Obj)
-			if !ok {
-				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Obj'"),
-					inp.stringFrames(curFunc, locals, s, ip)}
-			}
-
-			result, err := obj.GetField(key)
+			result, err := s[n].GetField(key)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}

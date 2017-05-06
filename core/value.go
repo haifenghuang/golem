@@ -30,6 +30,8 @@ type Value interface {
 
 	Cmp(Value) (Int, Error)
 	Plus(Value) (Value, Error)
+
+	GetField(Str) (Value, Error)
 }
 
 //---------------------------------------------------------------
@@ -166,7 +168,6 @@ type (
 		Composite
 		Indexable
 
-		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error
 		Has(Value) (Bool, Error)
 	}

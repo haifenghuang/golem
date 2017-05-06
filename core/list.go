@@ -22,11 +22,27 @@ import (
 // list
 
 type list struct {
-	array []Value
+	array    []Value
+	add      *fnAdd
+	addAll   *fnAddAll
+	clear    *fnClear
+	isEmpty  *fnIsEmpty
+	contains *fnContains
+	indexOf  *fnIndexOf
 }
 
 func NewList(values []Value) List {
-	return &list{values}
+
+	ls := &list{values, nil, nil, nil, nil, nil, nil}
+
+	ls.add = &fnAdd{&nativeFunc{}, ls}
+	ls.addAll = &fnAddAll{&nativeFunc{}, ls}
+	ls.clear = &fnClear{&nativeFunc{}, ls}
+	ls.isEmpty = &fnIsEmpty{&nativeFunc{}, ls}
+	ls.contains = &fnContains{&nativeFunc{}, ls}
+	ls.indexOf = &fnIndexOf{&nativeFunc{}, ls}
+
+	return ls
 }
 
 func (ls *list) compositeMarker() {}
@@ -102,6 +118,43 @@ func (ls *list) Add(val Value) {
 	ls.array = append(ls.array, val)
 }
 
+func (ls *list) AddAll(val Value) Error {
+	if ibl, ok := val.(Iterable); ok {
+		itr := ibl.NewIterator()
+		for itr.IterNext().BoolVal() {
+			v, err := itr.IterGet()
+			if err != nil {
+				return err
+			}
+			ls.array = append(ls.array, v)
+		}
+		return nil
+	} else {
+		return TypeMismatchError("Expected Comparable Type")
+	}
+}
+
+func (ls *list) Contains(val Value) Bool {
+	return MakeBool(!ls.IndexOf(val).Eq(NEG_ONE).BoolVal())
+}
+
+func (ls *list) IndexOf(val Value) Int {
+	for i, v := range ls.array {
+		if val.Eq(v).BoolVal() {
+			return MakeInt(int64(i))
+		}
+	}
+	return NEG_ONE
+}
+
+func (ls *list) Clear() {
+	ls.array = []Value{}
+}
+
+func (ls *list) IsEmpty() Bool {
+	return MakeBool(len(ls.array) == 0)
+}
+
 func (ls *list) Len() Int {
 	return MakeInt(int64(len(ls.array)))
 }
@@ -175,4 +228,101 @@ func (i *listIterator) IterGet() (Value, Error) {
 	} else {
 		return nil, NoSuchElementError()
 	}
+}
+
+//--------------------------------------------------------------
+// intrinsic functions
+
+func (ls *list) GetField(key Str) (Value, Error) {
+	switch key.String() {
+	case "add":
+		return ls.add, nil
+	case "addAll":
+		return ls.addAll, nil
+	case "clear":
+		return ls.clear, nil
+	case "isEmpty":
+		return ls.isEmpty, nil
+	case "contains":
+		return ls.contains, nil
+	case "indexOf":
+		return ls.indexOf, nil
+	default:
+		return nil, NoSuchFieldError(key.String())
+	}
+}
+
+type fnAdd struct {
+	*nativeFunc
+	ls *list
+}
+
+type fnAddAll struct {
+	*nativeFunc
+	ls *list
+}
+
+type fnClear struct {
+	*nativeFunc
+	ls *list
+}
+
+type fnIsEmpty struct {
+	*nativeFunc
+	ls *list
+}
+
+type fnContains struct {
+	*nativeFunc
+	ls *list
+}
+
+type fnIndexOf struct {
+	*nativeFunc
+	ls *list
+}
+
+func (f *fnAdd) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+	f.ls.Add(values[0])
+	return f.ls, nil
+}
+
+func (f *fnAddAll) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+	f.ls.AddAll(values[0])
+	return f.ls, nil
+}
+
+func (f *fnClear) Invoke(values []Value) (Value, Error) {
+	if len(values) != 0 {
+		return nil, ArityMismatchError("0", len(values))
+	}
+	f.ls.Clear()
+	return f.ls, nil
+}
+
+func (f *fnIsEmpty) Invoke(values []Value) (Value, Error) {
+	if len(values) != 0 {
+		return nil, ArityMismatchError("0", len(values))
+	}
+	return f.ls.IsEmpty(), nil
+}
+
+func (f *fnContains) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+	return f.ls.Contains(values[0]), nil
+}
+
+func (f *fnIndexOf) Invoke(values []Value) (Value, Error) {
+	if len(values) != 1 {
+		return nil, ArityMismatchError("1", len(values))
+	}
+	return f.ls.IndexOf(values[0]), nil
 }

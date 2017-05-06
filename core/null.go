@@ -26,6 +26,8 @@ func (n *null) ToStr() Str { return MakeStr("null") }
 
 func (n *null) HashCode() (Int, Error) { return nil, NullValueError() }
 
+func (n *null) GetField(key Str) (Value, Error) { return nil, NullValueError() }
+
 func (n *null) Eq(v Value) Bool {
 	switch v.(type) {
 	case *null:

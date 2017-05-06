@@ -60,6 +60,10 @@ func (s str) Eq(v Value) Bool {
 	}
 }
 
+func (s str) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
 func (s str) Cmp(v Value) (Int, Error) {
 	switch t := v.(type) {
 

@@ -75,6 +75,10 @@ func (tp tuple) Eq(v Value) Bool {
 	}
 }
 
+func (tp tuple) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
 func (tp tuple) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }

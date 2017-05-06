@@ -97,6 +97,21 @@ func fail(t *testing.T, source string, expect *ErrorStack) {
 	}
 }
 
+func failErr(t *testing.T, source string, expect g.Error) {
+
+	mod := newCompiler(source).Compile()
+	intp := NewInterpreter(mod)
+
+	result, errStack := intp.Init()
+	if result != nil {
+		panic(result)
+	}
+
+	if errStack.Err.Error() != expect.Error() {
+		t.Error(errStack, " != ", expect)
+	}
+}
+
 func newCompiler(source string) compiler.Compiler {
 	scanner := scanner.NewScanner(source)
 	parser := parser.NewParser(scanner)
@@ -117,7 +132,8 @@ func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
 	_, err := intp.Init()
 	if err != nil {
-		panic(err)
+		err.DumpStackTrace()
+		panic("interpreter failed")
 	}
 }
 
@@ -626,6 +642,53 @@ let e = c[1]++;
 	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
 	ok_ref(t, mod.Locals[3], g.TRUE)
 	ok_ref(t, mod.Locals[4], g.MakeInt(22))
+
+	source = `
+let a = [];
+a.add(1);
+assert(a == [1]);
+a.add(2).add([3]);
+assert(a == [1,2,[3]]);
+assert(a.add == a.add);
+let b = [];
+assert(a.add != b.add);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = [];
+a.addAll([1,2]).addAll('bc');
+assert(a == [1,2,'b','c']);
+let b = [];
+b.addAll(range(0,3));
+b.addAll(dict { 'x': 1, 'y': 2 });
+assert(b == [ 0, 1, 2, ('y', 2), ('x', 1) ]);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = [];
+assert(a.isEmpty());
+a.add(1);
+assert(!a.isEmpty());
+a.clear();
+assert(a.isEmpty());
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = [];
+assert(!a.contains('x'));
+assert(a.indexOf('x') == -1);
+a = ['z', 'x'];
+assert(a.contains('x'));
+assert(a.indexOf('x') == 1);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }
 
 func TestDict(t *testing.T) {
@@ -855,4 +918,27 @@ assert(s == 'aab');
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
+}
+
+func TestGetField(t *testing.T) {
+
+	source := "null.bogus;"
+	fail(t, source, &ErrorStack{
+		g.NullValueError(),
+		[]string{"    at line 1"}})
+
+	err := g.NoSuchFieldError("bogus")
+
+	failErr(t, "true.bogus;", err)
+	failErr(t, "'a'.bogus;", err)
+	failErr(t, "(0).bogus;", err)
+	failErr(t, "(0.123).bogus;", err)
+
+	failErr(t, "(1,2).bogus;", err)
+	failErr(t, "range(1,2).bogus;", err)
+	failErr(t, "[1,2].bogus;", err)
+	failErr(t, "dict {'a':1}.bogus;", err)
+	failErr(t, "obj {a:1}.bogus;", err)
+
+	failErr(t, "(fn() {}).bogus;", err)
 }

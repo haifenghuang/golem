@@ -74,6 +74,10 @@ func (d *dict) Eq(v Value) Bool {
 	}
 }
 
+func (d *dict) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
 func (d *dict) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
