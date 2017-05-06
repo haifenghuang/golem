@@ -34,10 +34,7 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 		panic(errStack.Err.Error())
 	}
 
-	b, err := result.Eq(expect)
-	if err != nil {
-		panic(err)
-	}
+	b := result.Eq(expect)
 	if !b.BoolVal() {
 		t.Error(result, " != ", expect)
 		//panic("ok_expr")
@@ -45,10 +42,7 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 }
 
 func ok_ref(t *testing.T, ref *g.Ref, expect g.Value) {
-	b, err := ref.Val.Eq(expect)
-	if err != nil {
-		panic(err)
-	}
+	b := ref.Val.Eq(expect)
 	if !b.BoolVal() {
 		t.Error(ref.Val, " != ", expect)
 	}
@@ -63,10 +57,7 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 		panic(errStack)
 	}
 
-	b, err := result.Eq(expectResult)
-	if err != nil {
-		panic(err)
-	}
+	b := result.Eq(expectResult)
 	if !b.BoolVal() {
 		t.Error(result, " != ", expectResult)
 	}

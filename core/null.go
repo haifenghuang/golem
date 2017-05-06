@@ -20,18 +20,18 @@ var NULL Null = &null{}
 
 func (n *null) basicMarker() {}
 
-func (n *null) TypeOf() (Type, Error) { return TNULL, nil }
+func (n *null) TypeOf() Type { return TNULL }
 
-func (n *null) ToStr() (Str, Error) { return MakeStr("null"), nil }
+func (n *null) ToStr() Str { return MakeStr("null") }
 
 func (n *null) HashCode() (Int, Error) { return nil, NullValueError() }
 
-func (n *null) Eq(v Value) (Bool, Error) {
+func (n *null) Eq(v Value) Bool {
 	switch v.(type) {
 	case *null:
-		return TRUE, nil
+		return TRUE
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 

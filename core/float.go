@@ -36,10 +36,10 @@ func MakeFloat(f float64) Float {
 
 func (f _float) basicMarker() {}
 
-func (f _float) TypeOf() (Type, Error) { return TFLOAT, nil }
+func (f _float) TypeOf() Type { return TFLOAT }
 
-func (f _float) ToStr() (Str, Error) {
-	return MakeStr(fmt.Sprintf("%g", f)), nil
+func (f _float) ToStr() Str {
+	return MakeStr(fmt.Sprintf("%g", f))
 }
 
 func (f _float) HashCode() (Int, Error) {
@@ -61,17 +61,17 @@ func (f _float) HashCode() (Int, Error) {
 	return MakeInt(hashCode), nil
 }
 
-func (f _float) Eq(v Value) (Bool, Error) {
+func (f _float) Eq(v Value) Bool {
 	switch t := v.(type) {
 
 	case _float:
-		return MakeBool(f == t), nil
+		return MakeBool(f == t)
 
 	case _int:
-		return MakeBool(f.FloatVal() == t.FloatVal()), nil
+		return MakeBool(f.FloatVal() == t.FloatVal())
 
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -169,6 +169,6 @@ func (f _float) Div(v Value) (Number, Error) {
 	}
 }
 
-func (f _float) Negate() (Number, Error) {
-	return 0 - f, nil
+func (f _float) Negate() Number {
+	return 0 - f
 }

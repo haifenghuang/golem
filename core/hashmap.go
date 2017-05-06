@@ -132,13 +132,7 @@ func (hm *HashMap) Len() Int {
 func indexOf(b bucket, key Value) int {
 	for i, e := range b {
 
-		// panic-recover is the cleanest approach
-		eq, err := e.Key.Eq(key)
-		if err != nil {
-			panic(err)
-		}
-
-		if eq.BoolVal() {
+		if e.Key.Eq(key).BoolVal() {
 			return i
 		}
 	}

@@ -30,9 +30,9 @@ func MakeStr(str string) Str {
 
 func (s str) basicMarker() {}
 
-func (s str) TypeOf() (Type, Error) { return TSTR, nil }
+func (s str) TypeOf() Type { return TSTR }
 
-func (s str) ToStr() (Str, Error) { return s, nil }
+func (s str) ToStr() Str { return s }
 
 func (s str) HashCode() (Int, Error) {
 
@@ -49,14 +49,14 @@ func (s str) HashCode() (Int, Error) {
 	return MakeInt(int64(hash)), nil
 }
 
-func (s str) Eq(v Value) (Bool, Error) {
+func (s str) Eq(v Value) Bool {
 	switch t := v.(type) {
 
 	case str:
-		return MakeBool(runesEq(s, t)), nil
+		return MakeBool(runesEq(s, t))
 
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -84,8 +84,8 @@ func (s str) Get(index Value) (Value, Error) {
 	return str([]rune{s[idx.IntVal()]}), nil
 }
 
-func (s str) Len() (Int, Error) {
-	return MakeInt(int64(len(s))), nil
+func (s str) Len() Int {
+	return MakeInt(int64(len(s)))
 }
 
 func (s str) Slice(from Value, to Value) (Value, Error) {

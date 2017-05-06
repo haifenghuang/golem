@@ -22,11 +22,11 @@ import (
 // Value
 
 type Value interface {
-	TypeOf() (Type, Error)
+	TypeOf() Type
 
 	HashCode() (Int, Error)
-	Eq(Value) (Bool, Error)
-	ToStr() (Str, Error)
+	Eq(Value) Bool
+	ToStr() Str
 
 	Cmp(Value) (Int, Error)
 	Add(Value) (Value, Error)
@@ -46,7 +46,7 @@ type (
 	}
 
 	Lenable interface {
-		Len() (Int, Error)
+		Len() Int
 	}
 
 	Sliceable interface {
@@ -98,7 +98,7 @@ type (
 		Sub(Value) (Number, Error)
 		Mul(Value) (Number, Error)
 		Div(Value) (Number, Error)
-		Negate() (Number, Error)
+		Negate() Number
 	}
 
 	Float interface {
@@ -114,7 +114,7 @@ type (
 		BitXOr(Value) (Int, Error)
 		LeftShift(Value) (Int, Error)
 		RightShift(Value) (Int, Error)
-		Complement() (Int, Error)
+		Complement() Int
 	}
 )
 
@@ -134,7 +134,7 @@ type (
 		Sliceable
 		Iterable
 
-		Append(Value) Error
+		Append(Value)
 	}
 
 	Range interface {

@@ -33,15 +33,8 @@ func ParseIndex(val Value, max int) (Int, Error) {
 
 func Strcat(a Value, b Value) (Str, Error) {
 
-	sa, err := fromValue(a)
-	if err != nil {
-		return nil, err
-	}
-
-	sb, err := fromValue(b)
-	if err != nil {
-		return nil, err
-	}
+	sa := fromValue(a)
+	sb := fromValue(b)
 
 	// copy to avoid memory leaks
 	ca := make([]rune, len(sa))
@@ -56,14 +49,25 @@ func Strcat(a Value, b Value) (Str, Error) {
 	return result, nil
 }
 
-func fromValue(v Value) (str, Error) {
+func fromValue(v Value) str {
 	if sv, ok := v.(str); ok {
-		return sv, nil
+		return sv
 	} else {
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		return toRunes(s.String()), nil
+		return toRunes(v.ToStr().String())
 	}
+}
+
+func valuesEq(as []Value, bs []Value) Bool {
+
+	if len(as) != len(bs) {
+		return FALSE
+	}
+
+	for i, a := range as {
+		if a.Eq(bs[i]) == FALSE {
+			return FALSE
+		}
+	}
+
+	return TRUE
 }

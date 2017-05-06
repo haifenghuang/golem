@@ -50,34 +50,36 @@ func fail(t *testing.T, val Value, err Error, expect string) {
 }
 
 func okType(t *testing.T, val Value, expected Type) {
-	tp, err := val.TypeOf()
-	assert(t, tp == expected)
-	assert(t, err == nil)
+	assert(t, val.TypeOf() == expected)
 }
 
 func TestNull(t *testing.T) {
 	okType(t, NULL, TNULL)
 
-	s, err := NULL.ToStr()
-	ok(t, s, err, MakeStr("null"))
+	var v Value
+	var err Error
 
-	b, err := NULL.Eq(NULL)
-	ok(t, b, err, TRUE)
-	b, err = NULL.Eq(TRUE)
-	ok(t, b, err, FALSE)
-	i, err := NULL.Cmp(TRUE)
-	fail(t, i, err, "NullValue")
+	v = NULL.ToStr()
+	ok(t, v, nil, MakeStr("null"))
 
-	v, err := NULL.Add(MakeStr("a"))
+	v = NULL.Eq(NULL)
+	ok(t, v, nil, TRUE)
+	v = NULL.Eq(TRUE)
+	ok(t, v, nil, FALSE)
+
+	v, err = NULL.Cmp(TRUE)
+	fail(t, v, err, "NullValue")
+
+	v, err = NULL.Add(MakeStr("a"))
 	ok(t, v, err, MakeStr("nulla"))
 }
 
 func TestBool(t *testing.T) {
 
-	s, err := TRUE.ToStr()
-	ok(t, s, err, MakeStr("true"))
-	s, err = FALSE.ToStr()
-	ok(t, s, err, MakeStr("false"))
+	s := TRUE.ToStr()
+	ok(t, s, nil, MakeStr("true"))
+	s = FALSE.ToStr()
+	ok(t, s, nil, MakeStr("false"))
 
 	okType(t, TRUE, TBOOL)
 	okType(t, FALSE, TBOOL)
@@ -85,16 +87,16 @@ func TestBool(t *testing.T) {
 	assert(t, TRUE.BoolVal())
 	assert(t, !FALSE.BoolVal())
 
-	b, err := TRUE.Eq(TRUE)
-	ok(t, b, err, TRUE)
-	b, err = FALSE.Eq(FALSE)
-	ok(t, b, err, TRUE)
-	b, err = TRUE.Eq(FALSE)
-	ok(t, b, err, FALSE)
-	b, err = FALSE.Eq(TRUE)
-	ok(t, b, err, FALSE)
-	b, err = FALSE.Eq(MakeStr("a"))
-	ok(t, b, err, FALSE)
+	b := TRUE.Eq(TRUE)
+	ok(t, b, nil, TRUE)
+	b = FALSE.Eq(FALSE)
+	ok(t, b, nil, TRUE)
+	b = TRUE.Eq(FALSE)
+	ok(t, b, nil, FALSE)
+	b = FALSE.Eq(TRUE)
+	ok(t, b, nil, FALSE)
+	b = FALSE.Eq(MakeStr("a"))
+	ok(t, b, nil, FALSE)
 
 	i, err := TRUE.Cmp(FALSE)
 	ok(t, i, err, ONE)
@@ -124,21 +126,22 @@ func TestStr(t *testing.T) {
 	b := MakeStr("b")
 
 	var v Value
+	var err Error
 
-	v, err := a.ToStr()
-	ok(t, v, err, MakeStr("a"))
-	v, err = b.ToStr()
-	ok(t, v, err, MakeStr("b"))
+	v = a.ToStr()
+	ok(t, v, nil, MakeStr("a"))
+	v = b.ToStr()
+	ok(t, v, nil, MakeStr("b"))
 
 	okType(t, a, TSTR)
-	v, err = a.Eq(b)
-	ok(t, v, err, FALSE)
-	v, err = b.Eq(a)
-	ok(t, v, err, FALSE)
-	v, err = a.Eq(a)
-	ok(t, v, err, TRUE)
-	v, err = a.Eq(MakeStr("a"))
-	ok(t, v, err, TRUE)
+	v = a.Eq(b)
+	ok(t, v, nil, FALSE)
+	v = b.Eq(a)
+	ok(t, v, nil, FALSE)
+	v = a.Eq(a)
+	ok(t, v, nil, TRUE)
+	v = a.Eq(MakeStr("a"))
+	ok(t, v, nil, TRUE)
 
 	v, err = a.Cmp(MakeInt(1))
 	fail(t, v, err, "TypeMismatch: Expected Comparable Type")
@@ -166,14 +169,14 @@ func TestStr(t *testing.T) {
 	v, err = ab.Get(MakeInt(2))
 	fail(t, v, err, "IndexOutOfBounds")
 
-	v, err = MakeStr("").Len()
-	ok(t, v, err, ZERO)
+	v = MakeStr("").Len()
+	ok(t, v, nil, ZERO)
 
-	v, err = MakeStr("a").Len()
-	ok(t, v, err, ONE)
+	v = MakeStr("a").Len()
+	ok(t, v, nil, ONE)
 
-	v, err = MakeStr("abcde").Len()
-	ok(t, v, err, MakeInt(5))
+	v = MakeStr("abcde").Len()
+	ok(t, v, nil, MakeInt(5))
 
 	//////////////////////////////
 	// sliceable
@@ -215,8 +218,8 @@ func TestStr(t *testing.T) {
 	// unicode
 
 	a = MakeStr("日本語")
-	v, err = a.Len()
-	ok(t, v, err, MakeInt(3))
+	v = a.Len()
+	ok(t, v, nil, MakeInt(3))
 
 	v, err = a.Get(MakeInt(2))
 	ok(t, v, err, MakeStr("語"))
@@ -226,23 +229,23 @@ func TestInt(t *testing.T) {
 	a := MakeInt(0)
 	b := MakeInt(1)
 
-	s, err := a.ToStr()
-	ok(t, s, err, MakeStr("0"))
-	s, err = b.ToStr()
-	ok(t, s, err, MakeStr("1"))
+	s := a.ToStr()
+	ok(t, s, nil, MakeStr("0"))
+	s = b.ToStr()
+	ok(t, s, nil, MakeStr("1"))
 
 	okType(t, a, TINT)
 
-	z, err := a.Eq(b)
-	ok(t, z, err, FALSE)
-	z, err = b.Eq(a)
-	ok(t, z, err, FALSE)
-	z, err = a.Eq(a)
-	ok(t, z, err, TRUE)
-	z, err = a.Eq(MakeInt(0))
-	ok(t, z, err, TRUE)
-	z, err = a.Eq(MakeFloat(0.0))
-	ok(t, z, err, TRUE)
+	z := a.Eq(b)
+	ok(t, z, nil, FALSE)
+	z = b.Eq(a)
+	ok(t, z, nil, FALSE)
+	z = a.Eq(a)
+	ok(t, z, nil, TRUE)
+	z = a.Eq(MakeInt(0))
+	ok(t, z, nil, TRUE)
+	z = a.Eq(MakeFloat(0.0))
+	ok(t, z, nil, TRUE)
 
 	n, err := a.Cmp(TRUE)
 	fail(t, n, err, "TypeMismatch: Expected Comparable Type")
@@ -262,11 +265,11 @@ func TestInt(t *testing.T) {
 	n, err = g.Cmp(a)
 	ok(t, n, err, MakeInt(1))
 
-	val, err := a.Negate()
-	ok(t, val, err, MakeInt(0))
+	val := a.Negate()
+	ok(t, val, nil, MakeInt(0))
 
-	val, err = b.Negate()
-	ok(t, val, err, MakeInt(-1))
+	val = b.Negate()
+	ok(t, val, nil, MakeInt(-1))
 
 	val, err = MakeInt(3).Sub(MakeInt(2))
 	ok(t, val, err, MakeInt(1))
@@ -338,28 +341,28 @@ func TestInt(t *testing.T) {
 	v1, err = MakeInt(8).LeftShift(MakeInt(-1))
 	fail(t, v1, err, "InvalidArgument: Shift count cannot be less than zero")
 
-	v1, err = MakeInt(0).Complement()
-	ok(t, v1, err, MakeInt(-1))
+	v1 = MakeInt(0).Complement()
+	ok(t, v1, nil, MakeInt(-1))
 }
 
 func TestFloat(t *testing.T) {
 	a := MakeFloat(0.1)
 	b := MakeFloat(1.2)
 
-	s, err := a.ToStr()
-	ok(t, s, err, MakeStr("0.1"))
-	s, err = b.ToStr()
-	ok(t, s, err, MakeStr("1.2"))
+	s := a.ToStr()
+	ok(t, s, nil, MakeStr("0.1"))
+	s = b.ToStr()
+	ok(t, s, nil, MakeStr("1.2"))
 
 	okType(t, a, TFLOAT)
-	z, err := a.Eq(b)
-	ok(t, z, err, FALSE)
-	z, err = b.Eq(a)
-	ok(t, z, err, FALSE)
-	z, err = a.Eq(a)
-	ok(t, z, err, TRUE)
-	z, err = a.Eq(MakeFloat(0.1))
-	ok(t, z, err, TRUE)
+	z := a.Eq(b)
+	ok(t, z, nil, FALSE)
+	z = b.Eq(a)
+	ok(t, z, nil, FALSE)
+	z = a.Eq(a)
+	ok(t, z, nil, TRUE)
+	z = a.Eq(MakeFloat(0.1))
+	ok(t, z, nil, TRUE)
 
 	f := MakeFloat(0.0)
 	g := MakeFloat(1.0)
@@ -380,11 +383,11 @@ func TestFloat(t *testing.T) {
 	n, err = j.Cmp(f)
 	ok(t, n, err, MakeInt(1))
 
-	z, err = MakeFloat(1.0).Eq(MakeInt(1))
-	ok(t, z, err, TRUE)
+	z = MakeFloat(1.0).Eq(MakeInt(1))
+	ok(t, z, nil, TRUE)
 
-	val, err := a.Negate()
-	ok(t, val, err, MakeFloat(-0.1))
+	val := a.Negate()
+	ok(t, val, nil, MakeFloat(-0.1))
 
 	val, err = MakeFloat(3.3).Sub(MakeInt(2))
 	ok(t, val, err, MakeFloat(float64(3.3)-float64(int64(2))))

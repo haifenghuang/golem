@@ -43,9 +43,9 @@ func (m *Module) String() string {
 
 	buf.WriteString("    Pool:\n")
 	for i, val := range m.Pool {
-		tp, _ := val.TypeOf()
+		typeOf := val.TypeOf()
 		buf.WriteString("        ")
-		buf.WriteString(fmt.Sprintf("%d: %v(%v)\n", i, tp, val))
+		buf.WriteString(fmt.Sprintf("%d: %v(%v)\n", i, typeOf, val))
 	}
 
 	buf.WriteString("    Locals:\n")

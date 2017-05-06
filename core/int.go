@@ -45,29 +45,29 @@ func (i _int) basicMarker() {}
 //--------------------------------------------------------------
 // Value
 
-func (i _int) TypeOf() (Type, Error) { return TINT, nil }
+func (i _int) TypeOf() Type { return TINT }
 
-func (i _int) ToStr() (Str, Error) {
-	return MakeStr(fmt.Sprintf("%d", i)), nil
+func (i _int) ToStr() Str {
+	return MakeStr(fmt.Sprintf("%d", i))
 }
 
 func (i _int) HashCode() (Int, Error) {
 	return i, nil
 }
 
-func (i _int) Eq(v Value) (Bool, Error) {
+func (i _int) Eq(v Value) Bool {
 	switch t := v.(type) {
 
 	case _int:
-		return MakeBool(i == t), nil
+		return MakeBool(i == t)
 
 	case _float:
 		a := float64(i)
 		b := t.FloatVal()
-		return MakeBool(a == b), nil
+		return MakeBool(a == b)
 
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -177,8 +177,8 @@ func (i _int) Div(v Value) (Number, Error) {
 	}
 }
 
-func (i _int) Negate() (Number, Error) {
-	return 0 - i, nil
+func (i _int) Negate() Number {
+	return 0 - i
 }
 
 //--------------------------------------------------------------
@@ -246,6 +246,6 @@ func (i _int) RightShift(v Value) (Int, Error) {
 	}
 }
 
-func (i _int) Complement() (Int, Error) {
-	return ^i, nil
+func (i _int) Complement() Int {
+	return ^i
 }

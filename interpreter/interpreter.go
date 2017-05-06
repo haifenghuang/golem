@@ -239,10 +239,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 
 			// and make sure its of the expected length
 			expectedLen := index(opc, ip)
-			tpLen, err := tp.Len()
-			if err != nil {
-				panic("unexpected error getting length of tuple")
-			}
+			tpLen := tp.Len()
 			if expectedLen != int(tpLen.IntVal()) {
 				return nil, &ErrorStack{
 					g.InvalidArgumentError(
@@ -591,19 +588,13 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			}
 
 		case g.EQ:
-			b, err := s[n-1].Eq(s[n])
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
-			}
+			b := s[n-1].Eq(s[n])
 			s = s[:n]
 			s[n-1] = b
 			ip++
 
 		case g.NE:
-			b, err := s[n-1].Eq(s[n])
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
-			}
+			b := s[n-1].Eq(s[n])
 			s = s[:n]
 			s[n-1] = b.Not()
 			ip++
@@ -747,10 +738,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			val, err := z.Negate()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
-			}
+			val := z.Negate()
 			s[n] = val
 			ip++
 
@@ -858,10 +846,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			val, err := z.Complement()
-			if err != nil {
-				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
-			}
+			val := z.Complement()
 			s[n] = val
 			ip++
 

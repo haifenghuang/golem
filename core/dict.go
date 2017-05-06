@@ -29,13 +29,11 @@ func NewDict(hashMap *HashMap) Dict {
 
 func (d *dict) compositeMarker() {}
 
-func (d *dict) TypeOf() (Type, Error) {
-	return TDICT, nil
-}
+func (d *dict) TypeOf() Type { return TDICT }
 
-func (d *dict) ToStr() (Str, Error) {
+func (d *dict) ToStr() Str {
 	if d.hashMap.Len().IntVal() == 0 {
-		return MakeStr("dict {}"), nil
+		return MakeStr("dict {}")
 	}
 
 	var buf bytes.Buffer
@@ -51,34 +49,28 @@ func (d *dict) ToStr() (Str, Error) {
 		idx++
 
 		buf.WriteString(" ")
-		s, err := entry.Key.ToStr()
-		if err != nil {
-			return s, err
-		}
+		s := entry.Key.ToStr()
 		buf.WriteString(s.String())
 
 		buf.WriteString(": ")
-		s, err = entry.Value.ToStr()
-		if err != nil {
-			return s, err
-		}
+		s = entry.Value.ToStr()
 		buf.WriteString(s.String())
 	}
 
 	buf.WriteString(" }")
-	return MakeStr(buf.String()), nil
+	return MakeStr(buf.String())
 }
 
 func (d *dict) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (d *dict) Eq(v Value) (Bool, Error) {
+func (d *dict) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *dict:
-		return MakeBool(reflect.DeepEqual(d.hashMap, t.hashMap)), nil
+		return MakeBool(reflect.DeepEqual(d.hashMap, t.hashMap))
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -105,8 +97,8 @@ func (d *dict) Set(key Value, val Value) Error {
 	return d.hashMap.Put(key, val)
 }
 
-func (d *dict) Len() (Int, Error) {
-	return d.hashMap.Len(), nil
+func (d *dict) Len() Int {
+	return d.hashMap.Len()
 }
 
 //---------------------------------------------------------------

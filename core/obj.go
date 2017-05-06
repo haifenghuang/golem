@@ -49,13 +49,11 @@ func BlankObj(keys []string) Obj {
 
 func (o *obj) compositeMarker() {}
 
-func (o *obj) TypeOf() (Type, Error) {
-	return TOBJ, nil
-}
+func (o *obj) TypeOf() Type { return TOBJ }
 
-func (o *obj) ToStr() (Str, Error) {
+func (o *obj) ToStr() Str {
 	if len(o.fields) == 0 {
-		return MakeStr("obj {}"), nil
+		return MakeStr("obj {}")
 	}
 
 	var buf bytes.Buffer
@@ -70,14 +68,10 @@ func (o *obj) ToStr() (Str, Error) {
 		buf.WriteString(k)
 		buf.WriteString(": ")
 
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		buf.WriteString(s.String())
+		buf.WriteString(v.ToStr().String())
 	}
 	buf.WriteString(" }")
-	return MakeStr(buf.String()), nil
+	return MakeStr(buf.String())
 }
 
 func (o *obj) HashCode() (Int, Error) {
@@ -85,13 +79,13 @@ func (o *obj) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (o *obj) Eq(v Value) (Bool, Error) {
+func (o *obj) Eq(v Value) Bool {
 	// TODO $eq()
 	switch t := v.(type) {
 	case *obj:
-		return MakeBool(reflect.DeepEqual(o.fields, t.fields)), nil
+		return MakeBool(reflect.DeepEqual(o.fields, t.fields))
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 

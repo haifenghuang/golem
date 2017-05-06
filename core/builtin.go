@@ -44,11 +44,7 @@ type fnAssert struct{ *nativeFunc }
 
 func (fn *fnPrint) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		fmt.Print(s.String())
+		fmt.Print(v.ToStr().String())
 	}
 
 	return NULL, nil
@@ -56,11 +52,7 @@ func (fn *fnPrint) Invoke(values []Value) (Value, Error) {
 
 func (fn *fnPrintln) Invoke(values []Value) (Value, Error) {
 	for _, v := range values {
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		fmt.Print(s.String())
+		fmt.Print(v.ToStr().String())
 	}
 	fmt.Println()
 
@@ -72,7 +64,7 @@ func (fn *fnStr) Invoke(values []Value) (Value, Error) {
 		return nil, ArityMismatchError("1", len(values))
 	}
 
-	return values[0].ToStr()
+	return values[0].ToStr(), nil
 }
 
 func (fn *fnLen) Invoke(values []Value) (Value, Error) {
@@ -81,7 +73,7 @@ func (fn *fnLen) Invoke(values []Value) (Value, Error) {
 	}
 
 	if ln, ok := values[0].(Lenable); ok {
-		return ln.Len()
+		return ln.Len(), nil
 	} else {
 		return nil, TypeMismatchError("Expected Lenable Type")
 	}

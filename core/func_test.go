@@ -26,12 +26,12 @@ func TestFunc(t *testing.T) {
 
 	okType(t, a, TFUNC)
 
-	z, err := a.Eq(b)
-	ok(t, z, err, FALSE)
-	z, err = b.Eq(a)
-	ok(t, z, err, FALSE)
-	z, err = a.Eq(a)
-	ok(t, z, err, TRUE)
+	z := a.Eq(b)
+	ok(t, z, nil, FALSE)
+	z = b.Eq(a)
+	ok(t, z, nil, FALSE)
+	z = a.Eq(a)
+	ok(t, z, nil, TRUE)
 }
 
 func TestLineNumber(t *testing.T) {

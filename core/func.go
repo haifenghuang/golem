@@ -41,7 +41,7 @@ func (t *Template) LineNumber(instPtr int) int {
 type function struct {
 }
 
-func (f *function) TypeOf() (Type, Error) { return TFUNC, nil }
+func (f *function) TypeOf() Type { return TFUNC }
 
 func (f *function) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
@@ -66,20 +66,20 @@ func NewBytecodeFunc(template *Template) BytecodeFunc {
 	return &bytecodeFunc{&function{}, template, captures}
 }
 
-func (bf *bytecodeFunc) ToStr() (Str, Error) {
-	return MakeStr(bf.bytecodeStr()), nil
+func (bf *bytecodeFunc) ToStr() Str {
+	return MakeStr(bf.bytecodeStr())
 }
 
-func (bf *bytecodeFunc) Eq(v Value) (Bool, Error) {
+func (bf *bytecodeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *bytecodeFunc:
 		if bf.bytecodeStr() == t.bytecodeStr() {
-			return TRUE, nil
+			return TRUE
 		} else {
-			return FALSE, nil
+			return FALSE
 		}
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -117,20 +117,20 @@ type nativeFunc struct {
 	*function
 }
 
-func (nf *nativeFunc) ToStr() (Str, Error) {
-	return MakeStr(nf.nativeStr()), nil
+func (nf *nativeFunc) ToStr() Str {
+	return MakeStr(nf.nativeStr())
 }
 
-func (nf *nativeFunc) Eq(v Value) (Bool, Error) {
+func (nf *nativeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *nativeFunc:
 		if nf.nativeStr() == t.nativeStr() {
-			return TRUE, nil
+			return TRUE
 		} else {
-			return FALSE, nil
+			return FALSE
 		}
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 

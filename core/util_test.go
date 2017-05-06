@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func TestUtil(t *testing.T) {
+func TestParseIndex(t *testing.T) {
 	i, err := ParseIndex(MakeInt(0), 2)
 	ok(t, i, err, MakeInt(0))
 
@@ -33,4 +33,22 @@ func TestUtil(t *testing.T) {
 
 	i, err = ParseIndex(MakeInt(2), 2)
 	fail(t, i, err, "IndexOutOfBounds")
+}
+
+func TestValuesEq(t *testing.T) {
+
+	v := valuesEq([]Value{ONE}, []Value{ONE})
+	ok(t, v, nil, TRUE)
+
+	v = valuesEq([]Value{}, []Value{})
+	ok(t, v, nil, TRUE)
+
+	v = valuesEq([]Value{ONE}, []Value{ZERO})
+	ok(t, v, nil, FALSE)
+
+	v = valuesEq([]Value{ONE}, []Value{})
+	ok(t, v, nil, FALSE)
+
+	v = valuesEq([]Value{}, []Value{ZERO})
+	ok(t, v, nil, FALSE)
 }

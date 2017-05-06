@@ -32,14 +32,12 @@ func NewList(values []Value) List {
 
 func (ls *list) compositeMarker() {}
 
-func (ls *list) TypeOf() (Type, Error) {
-	return TLIST, nil
-}
+func (ls *list) TypeOf() Type { return TLIST }
 
-func (ls *list) ToStr() (Str, Error) {
+func (ls *list) ToStr() Str {
 
 	if len(ls.array) == 0 {
-		return MakeStr("[]"), nil
+		return MakeStr("[]")
 	}
 
 	var buf bytes.Buffer
@@ -49,26 +47,22 @@ func (ls *list) ToStr() (Str, Error) {
 			buf.WriteString(",")
 		}
 		buf.WriteString(" ")
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		buf.WriteString(s.String())
+		buf.WriteString(v.ToStr().String())
 	}
 	buf.WriteString(" ]")
-	return MakeStr(buf.String()), nil
+	return MakeStr(buf.String())
 }
 
 func (ls *list) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (ls *list) Eq(v Value) (Bool, Error) {
+func (ls *list) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *list:
-		return MakeBool(reflect.DeepEqual(ls.array, t.array)), nil
+		return MakeBool(reflect.DeepEqual(ls.array, t.array))
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -105,13 +99,12 @@ func (ls *list) Set(index Value, val Value) Error {
 	return nil
 }
 
-func (ls *list) Append(val Value) Error {
+func (ls *list) Append(val Value) {
 	ls.array = append(ls.array, val)
-	return nil
 }
 
-func (ls *list) Len() (Int, Error) {
-	return MakeInt(int64(len(ls.array))), nil
+func (ls *list) Len() Int {
+	return MakeInt(int64(len(ls.array)))
 }
 
 func (ls *list) Slice(from Value, to Value) (Value, Error) {

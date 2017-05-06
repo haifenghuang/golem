@@ -35,25 +35,19 @@ func NewTuple(values []Value) Tuple {
 
 func (tp *tuple) compositeMarker() {}
 
-func (tp *tuple) TypeOf() (Type, Error) {
-	return TTUPLE, nil
-}
+func (tp *tuple) TypeOf() Type { return TTUPLE }
 
-func (tp *tuple) ToStr() (Str, Error) {
+func (tp *tuple) ToStr() Str {
 	var buf bytes.Buffer
 	buf.WriteString("(")
 	for idx, v := range tp.array {
 		if idx > 0 {
 			buf.WriteString(", ")
 		}
-		s, err := v.ToStr()
-		if err != nil {
-			return nil, err
-		}
-		buf.WriteString(s.String())
+		buf.WriteString(v.ToStr().String())
 	}
 	buf.WriteString(")")
-	return MakeStr(buf.String()), nil
+	return MakeStr(buf.String())
 }
 
 func (tp *tuple) HashCode() (Int, Error) {
@@ -75,12 +69,12 @@ func (tp *tuple) HashCode() (Int, Error) {
 	return MakeInt(hash), nil
 }
 
-func (tp *tuple) Eq(v Value) (Bool, Error) {
+func (tp *tuple) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *tuple:
-		return MakeBool(reflect.DeepEqual(tp.array, t.array)), nil
+		return MakeBool(reflect.DeepEqual(tp.array, t.array))
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -107,6 +101,6 @@ func (tp *tuple) Get(index Value) (Value, Error) {
 	return tp.array[idx.IntVal()], nil
 }
 
-func (tp *tuple) Len() (Int, Error) {
-	return MakeInt(int64(len(tp.array))), nil
+func (tp *tuple) Len() Int {
+	return MakeInt(int64(len(tp.array)))
 }

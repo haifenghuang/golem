@@ -48,24 +48,22 @@ func NewRange(from int64, to int64, step int64) (Range, Error) {
 
 func (r *rng) compositeMarker() {}
 
-func (r *rng) TypeOf() (Type, Error) {
-	return TRANGE, nil
-}
+func (r *rng) TypeOf() Type { return TRANGE }
 
-func (r *rng) ToStr() (Str, Error) {
-	return MakeStr(fmt.Sprintf("range<%d, %d, %d>", r.from, r.to, r.step)), nil
+func (r *rng) ToStr() Str {
+	return MakeStr(fmt.Sprintf("range<%d, %d, %d>", r.from, r.to, r.step))
 }
 
 func (r *rng) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (r *rng) Eq(v Value) (Bool, Error) {
+func (r *rng) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *rng:
-		return MakeBool(reflect.DeepEqual(r, t)), nil
+		return MakeBool(reflect.DeepEqual(r, t))
 	default:
-		return FALSE, nil
+		return FALSE
 	}
 }
 
@@ -92,8 +90,8 @@ func (r *rng) Get(index Value) (Value, Error) {
 	return MakeInt(r.from + idx.IntVal()*r.step), nil
 }
 
-func (r *rng) Len() (Int, Error) {
-	return MakeInt(r.count), nil
+func (r *rng) Len() Int {
+	return MakeInt(r.count)
 }
 
 func (r *rng) Slice(from Value, to Value) (Value, Error) {

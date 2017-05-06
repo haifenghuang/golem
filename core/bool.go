@@ -33,13 +33,13 @@ func (b _bool) BoolVal() bool {
 
 func (b _bool) basicMarker() {}
 
-func (b _bool) TypeOf() (Type, Error) { return TBOOL, nil }
+func (b _bool) TypeOf() Type { return TBOOL }
 
-func (b _bool) ToStr() (Str, Error) {
+func (b _bool) ToStr() Str {
 	if b {
-		return MakeStr("true"), nil
+		return MakeStr("true")
 	} else {
-		return MakeStr("false"), nil
+		return MakeStr("false")
 	}
 }
 
@@ -51,16 +51,16 @@ func (b _bool) HashCode() (Int, Error) {
 	}
 }
 
-func (b _bool) Eq(v Value) (Bool, Error) {
+func (b _bool) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case _bool:
 		if b == t {
-			return _bool(true), nil
+			return _bool(true)
 		} else {
-			return _bool(false), nil
+			return _bool(false)
 		}
 	default:
-		return _bool(false), nil
+		return _bool(false)
 	}
 }
 

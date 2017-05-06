@@ -23,13 +23,13 @@ func TestObj(t *testing.T) {
 	o := NewObj([]*ObjEntry{})
 	okType(t, o, TOBJ)
 
-	s, err := o.ToStr()
-	ok(t, s, err, MakeStr("obj {}"))
+	s := o.ToStr()
+	ok(t, s, nil, MakeStr("obj {}"))
 
-	z, err := o.Eq(NewObj([]*ObjEntry{}))
-	ok(t, z, err, TRUE)
-	z, err = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
-	ok(t, z, err, FALSE)
+	z := o.Eq(NewObj([]*ObjEntry{}))
+	ok(t, z, nil, TRUE)
+	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
+	ok(t, z, nil, FALSE)
 
 	val, err := o.Add(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj {}a"))
@@ -48,13 +48,13 @@ func TestObj(t *testing.T) {
 	o = NewObj([]*ObjEntry{&ObjEntry{"a", ONE}})
 	okType(t, o, TOBJ)
 
-	s, err = o.ToStr()
-	ok(t, s, err, MakeStr("obj { a: 1 }"))
+	s = o.ToStr()
+	ok(t, s, nil, MakeStr("obj { a: 1 }"))
 
-	z, err = o.Eq(NewObj([]*ObjEntry{}))
-	ok(t, z, err, FALSE)
-	z, err = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
-	ok(t, z, err, TRUE)
+	z = o.Eq(NewObj([]*ObjEntry{}))
+	ok(t, z, nil, FALSE)
+	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
+	ok(t, z, nil, TRUE)
 
 	val, err = o.Add(MakeStr("a"))
 	ok(t, val, err, MakeStr("obj { a: 1 }a"))
@@ -112,32 +112,33 @@ func TestList(t *testing.T) {
 	okType(t, ls, TLIST)
 
 	var v Value
-	v, err := ls.ToStr()
-	ok(t, v, err, MakeStr("[]"))
+	var err Error
 
-	v, err = ls.Eq(NewList([]Value{}))
-	ok(t, v, err, TRUE)
+	v = ls.ToStr()
+	ok(t, v, nil, MakeStr("[]"))
 
-	v, err = ls.Eq(NewList([]Value{MakeStr("a")}))
-	ok(t, v, err, FALSE)
+	v = ls.Eq(NewList([]Value{}))
+	ok(t, v, nil, TRUE)
 
-	v, err = ls.Eq(NULL)
-	ok(t, v, err, FALSE)
+	v = ls.Eq(NewList([]Value{MakeStr("a")}))
+	ok(t, v, nil, FALSE)
 
-	v, err = ls.Len()
-	ok(t, v, err, ZERO)
+	v = ls.Eq(NULL)
+	ok(t, v, nil, FALSE)
 
-	err = ls.Append(MakeStr("a"))
-	assert(t, err == nil)
+	v = ls.Len()
+	ok(t, v, nil, ZERO)
 
-	v, err = ls.Eq(NewList([]Value{}))
-	ok(t, v, err, FALSE)
+	ls.Append(MakeStr("a"))
 
-	v, err = ls.Eq(NewList([]Value{MakeStr("a")}))
-	ok(t, v, err, TRUE)
+	v = ls.Eq(NewList([]Value{}))
+	ok(t, v, nil, FALSE)
 
-	v, err = ls.Len()
-	ok(t, v, err, ONE)
+	v = ls.Eq(NewList([]Value{MakeStr("a")}))
+	ok(t, v, nil, TRUE)
+
+	v = ls.Len()
+	ok(t, v, nil, ONE)
 
 	v, err = ls.Get(ZERO)
 	ok(t, v, err, MakeStr("a"))
@@ -160,14 +161,13 @@ func TestList(t *testing.T) {
 	err = ls.Set(ONE, TRUE)
 	fail(t, nil, err, "IndexOutOfBounds")
 
-	v, err = ls.ToStr()
-	ok(t, v, err, MakeStr("[ b ]"))
+	v = ls.ToStr()
+	ok(t, v, nil, MakeStr("[ b ]"))
 
-	err = ls.Append(MakeStr("z"))
-	assert(t, err == nil)
+	ls.Append(MakeStr("z"))
 
-	v, err = ls.ToStr()
-	ok(t, v, err, MakeStr("[ b, z ]"))
+	v = ls.ToStr()
+	ok(t, v, nil, MakeStr("[ b, z ]"))
 
 	//////////////////////////////
 	// sliceable
@@ -222,17 +222,19 @@ func TestDict(t *testing.T) {
 	okType(t, d, TDICT)
 
 	var v Value
-	v, err := d.ToStr()
+	var err Error
+
+	v = d.ToStr()
 	ok(t, v, err, MakeStr("dict {}"))
 
-	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{})))
-	ok(t, v, err, TRUE)
+	v = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	ok(t, v, nil, TRUE)
 
-	v, err = d.Eq(NULL)
-	ok(t, v, err, FALSE)
+	v = d.Eq(NULL)
+	ok(t, v, nil, FALSE)
 
-	v, err = d.Len()
-	ok(t, v, err, ZERO)
+	v = d.Len()
+	ok(t, v, nil, ZERO)
 
 	v, err = d.Get(MakeStr("a"))
 	ok(t, v, err, NULL)
@@ -243,18 +245,18 @@ func TestDict(t *testing.T) {
 	v, err = d.Get(MakeStr("a"))
 	ok(t, v, err, ONE)
 
-	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{})))
-	ok(t, v, err, FALSE)
+	v = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	ok(t, v, nil, FALSE)
 
-	v, err = d.Eq(NewDict(NewHashMap([]*HEntry{
+	v = d.Eq(NewDict(NewHashMap([]*HEntry{
 		&HEntry{MakeStr("a"), ONE}})))
-	ok(t, v, err, TRUE)
+	ok(t, v, nil, TRUE)
 
-	v, err = d.Len()
-	ok(t, v, err, ONE)
+	v = d.Len()
+	ok(t, v, nil, ONE)
 
-	v, err = d.ToStr()
-	ok(t, v, err, MakeStr("dict { a: 1 }"))
+	v = d.ToStr()
+	ok(t, v, nil, MakeStr("dict { a: 1 }"))
 
 	err = d.Set(MakeStr("b"), MakeInt(2))
 	assert(t, err == nil)
@@ -262,15 +264,15 @@ func TestDict(t *testing.T) {
 	v, err = d.Get(MakeStr("b"))
 	ok(t, v, err, MakeInt(2))
 
-	v, err = d.ToStr()
-	ok(t, v, err, MakeStr("dict { b: 2, a: 1 }"))
+	v = d.ToStr()
+	ok(t, v, nil, MakeStr("dict { b: 2, a: 1 }"))
 
 	tp := NewTuple([]Value{ONE, ZERO})
 	d = NewDict(NewHashMap([]*HEntry{
 		&HEntry{tp, TRUE}}))
 
-	v, err = d.ToStr()
-	ok(t, v, err, MakeStr("dict { (1, 0): true }"))
+	v = d.ToStr()
+	ok(t, v, nil, MakeStr("dict { (1, 0): true }"))
 
 	v, err = d.Get(tp)
 	ok(t, v, err, TRUE)
@@ -278,18 +280,19 @@ func TestDict(t *testing.T) {
 
 func TestTuple(t *testing.T) {
 	var v Value
+	var err Error
 
 	tp := NewTuple([]Value{ONE, ZERO})
 	okType(t, tp, TTUPLE)
 
-	v, err := tp.Eq(NewTuple([]Value{ZERO, ZERO}))
-	ok(t, v, err, FALSE)
+	v = tp.Eq(NewTuple([]Value{ZERO, ZERO}))
+	ok(t, v, nil, FALSE)
 
-	v, err = tp.Eq(NewTuple([]Value{ONE, ZERO}))
-	ok(t, v, err, TRUE)
+	v = tp.Eq(NewTuple([]Value{ONE, ZERO}))
+	ok(t, v, nil, TRUE)
 
-	v, err = tp.Eq(NULL)
-	ok(t, v, err, FALSE)
+	v = tp.Eq(NULL)
+	ok(t, v, nil, FALSE)
 
 	v, err = tp.Get(ZERO)
 	ok(t, v, err, ONE)
@@ -303,11 +306,11 @@ func TestTuple(t *testing.T) {
 	v, err = tp.Get(MakeInt(2))
 	fail(t, v, err, "IndexOutOfBounds")
 
-	v, err = tp.ToStr()
-	ok(t, v, err, MakeStr("(1, 0)"))
+	v = tp.ToStr()
+	ok(t, v, nil, MakeStr("(1, 0)"))
 
-	v, err = tp.Len()
-	ok(t, v, err, MakeInt(2))
+	v = tp.Len()
+	ok(t, v, nil, MakeInt(2))
 }
 
 func newRange(from int64, to int64, step int64) Range {
@@ -320,43 +323,44 @@ func newRange(from int64, to int64, step int64) Range {
 
 func TestRange(t *testing.T) {
 	var v Value
+	var err Error
 
 	r := newRange(0, 5, 1)
 	okType(t, r, TRANGE)
 
-	v, err := r.Eq(newRange(0, 5, 2))
+	v = r.Eq(newRange(0, 5, 2))
 	ok(t, v, err, FALSE)
 
-	v, err = r.Eq(newRange(0, 5, 1))
+	v = r.Eq(newRange(0, 5, 1))
 	ok(t, v, err, TRUE)
 
-	v, err = r.Eq(NULL)
+	v = r.Eq(NULL)
 	ok(t, v, err, FALSE)
 
-	v, err = r.Len()
-	ok(t, v, err, MakeInt(5))
+	v = r.Len()
+	ok(t, v, nil, MakeInt(5))
 
-	v, err = newRange(0, 6, 3).Len()
-	ok(t, v, err, MakeInt(2))
-	v, err = newRange(0, 7, 3).Len()
-	ok(t, v, err, MakeInt(2))
-	v, err = newRange(0, 8, 3).Len()
-	ok(t, v, err, MakeInt(2))
-	v, err = newRange(0, 9, 3).Len()
-	ok(t, v, err, MakeInt(3))
+	v = newRange(0, 6, 3).Len()
+	ok(t, v, nil, MakeInt(2))
+	v = newRange(0, 7, 3).Len()
+	ok(t, v, nil, MakeInt(2))
+	v = newRange(0, 8, 3).Len()
+	ok(t, v, nil, MakeInt(2))
+	v = newRange(0, 9, 3).Len()
+	ok(t, v, nil, MakeInt(3))
 
-	v, err = newRange(0, 0, 3).Len()
-	ok(t, v, err, MakeInt(0))
-	v, err = newRange(1, 0, 1).Len()
-	ok(t, v, err, MakeInt(0))
+	v = newRange(0, 0, 3).Len()
+	ok(t, v, nil, MakeInt(0))
+	v = newRange(1, 0, 1).Len()
+	ok(t, v, nil, MakeInt(0))
 
 	v, err = NewRange(1, 0, 0)
 	fail(t, v, err, "InvalidArgument: step cannot be 0")
 
-	v, err = newRange(0, -5, -1).Len()
-	ok(t, v, err, MakeInt(5))
-	v, err = newRange(-1, -8, -3).Len()
-	ok(t, v, err, MakeInt(2))
+	v = newRange(0, -5, -1).Len()
+	ok(t, v, nil, MakeInt(5))
+	v = newRange(-1, -8, -3).Len()
+	ok(t, v, nil, MakeInt(2))
 
 	r = newRange(0, 5, 1)
 	v, err = r.Get(ONE)
