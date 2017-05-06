@@ -142,20 +142,18 @@ type rangeIterator struct {
 
 func (r *rng) NewIterator() Iterator {
 
+	next := &nativeIterNext{&nativeFunc{}, nil}
+	get := &nativeIterGet{&nativeFunc{}, nil}
 	// TODO make this immutable
-	obj := NewObj()
+	obj := NewObj([]*ObjEntry{
+		&ObjEntry{"nextValue", next},
+		&ObjEntry{"getValue", get}})
 
-	iter := &rangeIterator{obj, r, -1}
+	itr := &rangeIterator{obj, r, -1}
 
-	obj.Init(
-		&ObjDef{[]string{
-			"nextValue",
-			"getValue"}},
-		[]Value{
-			&nativeIterNext{&nativeFunc{}, iter},
-			&nativeIterGet{&nativeFunc{}, iter}})
-
-	return iter
+	next.itr = itr
+	get.itr = itr
+	return itr
 }
 
 func (i *rangeIterator) IterNext() Bool {

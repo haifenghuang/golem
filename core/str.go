@@ -173,20 +173,18 @@ type strIterator struct {
 
 func (s str) NewIterator() Iterator {
 
+	next := &nativeIterNext{&nativeFunc{}, nil}
+	get := &nativeIterGet{&nativeFunc{}, nil}
 	// TODO make this immutable
-	obj := NewObj()
+	obj := NewObj([]*ObjEntry{
+		&ObjEntry{"nextValue", next},
+		&ObjEntry{"getValue", get}})
 
-	iter := &strIterator{obj, s, -1}
+	itr := &strIterator{obj, s, -1}
 
-	obj.Init(
-		&ObjDef{[]string{
-			"nextValue",
-			"getValue"}},
-		[]Value{
-			&nativeIterNext{&nativeFunc{}, iter},
-			&nativeIterGet{&nativeFunc{}, iter}})
-
-	return iter
+	next.itr = itr
+	get.itr = itr
+	return itr
 }
 
 func (i *strIterator) IterNext() Bool {

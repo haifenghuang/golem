@@ -18,13 +18,9 @@ import (
 	"reflect"
 )
 
-//---------------------------------------------------------------
-// An ObjDef contains the information needed to instantiate an Obj
-// instance.  ObjDefs are created at compile time, and
-// are immutable at run time.
-
-type ObjDef struct {
-	Keys []string
+type ObjEntry struct {
+	Key   string
+	Value Value
 }
 
 //---------------------------------------------------------------
@@ -33,36 +29,31 @@ type ObjDef struct {
 type obj struct {
 	// TODO replace this with a more efficient data structure
 	fields map[string]Value
-	inited bool
 }
 
-func NewObj() Obj {
-	return &obj{nil, false}
-}
-
-func (o *obj) Init(def *ObjDef, vals []Value) {
-	o.fields = make(map[string]Value)
-	for i, k := range def.Keys {
-		o.fields[k] = vals[i]
+func NewObj(entries []*ObjEntry) Obj {
+	o := &obj{make(map[string]Value)}
+	for _, e := range entries {
+		o.fields[e.Key] = e.Value
 	}
-	o.inited = true
+	return o
+}
+
+func BlankObj(keys []string) Obj {
+	o := &obj{make(map[string]Value)}
+	for _, k := range keys {
+		o.fields[k] = NULL
+	}
+	return o
 }
 
 func (o *obj) compositeMarker() {}
 
 func (o *obj) TypeOf() (Type, Error) {
-	if !o.inited {
-		return TOBJ, UninitializedObjError()
-	}
-
 	return TOBJ, nil
 }
 
 func (o *obj) ToStr() (Str, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	if len(o.fields) == 0 {
 		return MakeStr("obj {}"), nil
 	}
@@ -90,19 +81,11 @@ func (o *obj) ToStr() (Str, Error) {
 }
 
 func (o *obj) HashCode() (Int, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	// TODO $hash()
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
 func (o *obj) Eq(v Value) (Bool, Error) {
-	if !o.inited {
-		return FALSE, UninitializedObjError()
-	}
-
 	// TODO $eq()
 	switch t := v.(type) {
 	case *obj:
@@ -113,18 +96,10 @@ func (o *obj) Eq(v Value) (Bool, Error) {
 }
 
 func (o *obj) Cmp(v Value) (Int, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
 func (o *obj) Add(v Value) (Value, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	switch t := v.(type) {
 
 	case Str:
@@ -136,10 +111,6 @@ func (o *obj) Add(v Value) (Value, Error) {
 }
 
 func (o *obj) Get(index Value) (Value, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	if s, ok := index.(Str); ok {
 		return o.GetField(s)
 	} else {
@@ -148,10 +119,6 @@ func (o *obj) Get(index Value) (Value, Error) {
 }
 
 func (o *obj) Set(index Value, val Value) Error {
-	if !o.inited {
-		return UninitializedObjError()
-	}
-
 	if s, ok := index.(Str); ok {
 		return o.PutField(s, val)
 	} else {
@@ -160,10 +127,6 @@ func (o *obj) Set(index Value, val Value) Error {
 }
 
 func (o *obj) GetField(key Str) (Value, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	v, ok := o.fields[key.String()]
 	if ok {
 		return v, nil
@@ -173,10 +136,6 @@ func (o *obj) GetField(key Str) (Value, Error) {
 }
 
 func (o *obj) PutField(key Str, val Value) Error {
-	if !o.inited {
-		return UninitializedObjError()
-	}
-
 	_, ok := o.fields[key.String()]
 	if ok {
 		o.fields[key.String()] = val
@@ -187,10 +146,6 @@ func (o *obj) PutField(key Str, val Value) Error {
 }
 
 func (o *obj) Has(key Value) (Bool, Error) {
-	if !o.inited {
-		return nil, UninitializedObjError()
-	}
-
 	if s, ok := key.(Str); ok {
 		_, has := o.fields[s.String()]
 		return MakeBool(has), nil

@@ -36,7 +36,7 @@ type compiler struct {
 
 	funcs     []*ast.FnExpr
 	templates []*g.Template
-	defs      []*g.ObjDef
+	defs      []g.ObjDef
 	idx       int
 }
 
@@ -44,7 +44,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
-	defs := []*g.ObjDef{}
+	defs := []g.ObjDef{}
 	return &compiler{anl, g.EmptyHashMap(), nil, nil, funcs, templates, defs, 0}
 }
 
@@ -750,16 +750,18 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 
 func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 
-	// create ObjDef for keys
-	def := &g.ObjDef{make([]string, len(obj.Keys), len(obj.Keys))}
-	for i, k := range obj.Keys {
-		def.Keys[i] = k.Text
+	// create def and entries
+	def := []string{}
+	entries := []*g.ObjEntry{}
+	for _, k := range obj.Keys {
+		def = append(def, k.Text)
+		entries = append(entries, &g.ObjEntry{k.Text, g.NULL})
 	}
 	defIdx := len(c.defs)
-	c.defs = append(c.defs, def)
+	c.defs = append(c.defs, g.ObjDef(def))
 
-	// create un-initialized obj
-	c.push(obj.Begin(), g.NEW_OBJ)
+	// create new obj
+	c.pushIndex(obj.Begin(), g.NEW_OBJ, defIdx)
 
 	// if the obj is referenced by a 'this', then store local
 	if obj.LocalThisIndex != -1 {
@@ -767,13 +769,17 @@ func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
 		c.pushIndex(obj.Begin(), g.STORE_LOCAL, obj.LocalThisIndex)
 	}
 
-	// eval each value
-	for _, v := range obj.Values {
+	// put each value
+	for i, k := range obj.Keys {
+		v := obj.Values[i]
+		c.push(k.Position, g.DUP)
 		c.Visit(v)
+		c.pushIndex(
+			v.Begin(),
+			g.PUT_FIELD,
+			poolIndex(c.pool, g.MakeStr(k.Text)))
+		c.push(k.Position, g.POP)
 	}
-
-	// initialize the object
-	c.pushIndex(obj.End(), g.INIT_OBJ, defIdx)
 }
 
 func (c *compiler) visitThisExpr(this *ast.ThisExpr) {

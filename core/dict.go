@@ -121,20 +121,18 @@ type dictIterator struct {
 
 func (d *dict) NewIterator() Iterator {
 
+	next := &nativeIterNext{&nativeFunc{}, nil}
+	get := &nativeIterGet{&nativeFunc{}, nil}
 	// TODO make this immutable
-	obj := NewObj()
+	obj := NewObj([]*ObjEntry{
+		&ObjEntry{"nextValue", next},
+		&ObjEntry{"getValue", get}})
 
-	iter := &dictIterator{obj, d, d.hashMap.Iterator(), false}
+	itr := &dictIterator{obj, d, d.hashMap.Iterator(), false}
 
-	obj.Init(
-		&ObjDef{[]string{
-			"nextValue",
-			"getValue"}},
-		[]Value{
-			&nativeIterNext{&nativeFunc{}, iter},
-			&nativeIterGet{&nativeFunc{}, iter}})
-
-	return iter
+	next.itr = itr
+	get.itr = itr
+	return itr
 }
 
 func (i *dictIterator) IterNext() Bool {

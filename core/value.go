@@ -166,8 +166,6 @@ type (
 		Composite
 		Indexable
 
-		Init(*ObjDef, []Value)
-
 		GetField(Str) (Value, Error)
 		PutField(Str, Value) Error
 		Has(Value) (Bool, Error)

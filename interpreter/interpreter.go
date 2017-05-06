@@ -73,7 +73,6 @@ func (inp *Interpreter) Init() (g.Value, *ErrorStack) {
 func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value, *ErrorStack) {
 
 	pool := inp.mod.Pool
-	defs := inp.mod.ObjDefs
 	opc := curFunc.Template().OpCodes
 
 	// stack and instruction pointer
@@ -204,29 +203,8 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			ip += 3
 
 		case g.NEW_OBJ:
-			s = append(s, g.NewObj())
-			ip++
-
-		case g.INIT_OBJ:
-
-			// look up ObjDef
-			def := defs[index(opc, ip)]
-			size := len(def.Keys)
-
-			// get obj and values
-			obj, ok := s[n-size].(g.Obj)
-			if !ok {
-				panic("Invalid INIT_OBJ")
-			}
-			vals := s[n-size+1:]
-
-			// initialize object
-			obj.Init(def, vals)
-
-			// pop values
-			s = s[:n-size+1]
-
-			// done
+			def := inp.mod.ObjDefs[index(opc, ip)]
+			s = append(s, g.BlankObj(def))
 			ip += 3
 
 		case g.NEW_LIST:

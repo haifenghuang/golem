@@ -156,20 +156,18 @@ type listIterator struct {
 
 func (ls *list) NewIterator() Iterator {
 
+	next := &nativeIterNext{&nativeFunc{}, nil}
+	get := &nativeIterGet{&nativeFunc{}, nil}
 	// TODO make this immutable
-	obj := NewObj()
+	obj := NewObj([]*ObjEntry{
+		&ObjEntry{"nextValue", next},
+		&ObjEntry{"getValue", get}})
 
-	iter := &listIterator{obj, ls, -1}
+	itr := &listIterator{obj, ls, -1}
 
-	obj.Init(
-		&ObjDef{[]string{
-			"nextValue",
-			"getValue"}},
-		[]Value{
-			&nativeIterNext{&nativeFunc{}, iter},
-			&nativeIterGet{&nativeFunc{}, iter}})
-
-	return iter
+	next.itr = itr
+	get.itr = itr
+	return itr
 }
 
 func (i *listIterator) IterNext() Bool {

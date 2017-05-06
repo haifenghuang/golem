@@ -19,28 +19,16 @@ import (
 	"testing"
 )
 
-func newObj(fields map[string]Value) Obj {
-	o := NewObj()
-	def := &ObjDef{[]string{}}
-	values := []Value{}
-	for k, v := range fields {
-		def.Keys = append(def.Keys, k)
-		values = append(values, v)
-	}
-	o.Init(def, values)
-	return o
-}
-
 func TestObj(t *testing.T) {
-	o := newObj(map[string]Value{})
+	o := NewObj([]*ObjEntry{})
 	okType(t, o, TOBJ)
 
 	s, err := o.ToStr()
 	ok(t, s, err, MakeStr("obj {}"))
 
-	z, err := o.Eq(newObj(map[string]Value{}))
+	z, err := o.Eq(NewObj([]*ObjEntry{}))
 	ok(t, z, err, TRUE)
-	z, err = o.Eq(newObj(map[string]Value{"a": ONE}))
+	z, err = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
 	ok(t, z, err, FALSE)
 
 	val, err := o.Add(MakeStr("a"))
@@ -57,15 +45,15 @@ func TestObj(t *testing.T) {
 
 	//////////////////
 
-	o = newObj(map[string]Value{"a": ONE})
+	o = NewObj([]*ObjEntry{&ObjEntry{"a", ONE}})
 	okType(t, o, TOBJ)
 
 	s, err = o.ToStr()
 	ok(t, s, err, MakeStr("obj { a: 1 }"))
 
-	z, err = o.Eq(newObj(map[string]Value{}))
+	z, err = o.Eq(NewObj([]*ObjEntry{}))
 	ok(t, z, err, FALSE)
-	z, err = o.Eq(newObj(map[string]Value{"a": ONE}))
+	z, err = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
 	ok(t, z, err, TRUE)
 
 	val, err = o.Add(MakeStr("a"))
@@ -113,42 +101,10 @@ func TestObj(t *testing.T) {
 
 	val, err = o.Has(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
-}
 
-func uninitErr(t *testing.T, err Error) {
-	if err.Error() != "UninitializedObj: Obj is not yet initialized" {
-		t.Error("bad uninitialized error")
-	}
-}
-
-func TestUninitialized(t *testing.T) {
-	o := NewObj()
-	_, e0 := o.TypeOf()
-	_, e1 := o.Eq(NULL)
-	_, e2 := o.ToStr()
-	_, e3 := o.Cmp(NULL)
-	_, e4 := o.Add(NULL)
-
-	_, e5 := o.GetField(MakeStr(""))
-	e6 := o.PutField(MakeStr(""), NULL)
-
-	_, e7 := o.Get(MakeStr(""))
-	e8 := o.Set(MakeStr(""), NULL)
-
-	_, e9 := o.Has(NULL)
-	_, e10 := o.HashCode()
-
-	uninitErr(t, e0)
-	uninitErr(t, e1)
-	uninitErr(t, e2)
-	uninitErr(t, e3)
-	uninitErr(t, e4)
-	uninitErr(t, e5)
-	uninitErr(t, e6)
-	uninitErr(t, e7)
-	uninitErr(t, e8)
-	uninitErr(t, e9)
-	uninitErr(t, e10)
+	o = BlankObj([]string{"a"})
+	val, err = o.GetField(MakeStr("a"))
+	ok(t, val, err, NULL)
 }
 
 func TestList(t *testing.T) {
@@ -257,7 +213,7 @@ func TestCompositeHashCode(t *testing.T) {
 	h, err = NewList([]Value{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
-	h, err = newObj(map[string]Value{}).HashCode()
+	h, err = NewObj([]*ObjEntry{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 }
 

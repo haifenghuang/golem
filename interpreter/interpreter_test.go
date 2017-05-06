@@ -15,7 +15,7 @@
 package interpreter
 
 import (
-	//"fmt"
+	"fmt"
 	"golem/analyzer"
 	"golem/compiler"
 	g "golem/core"
@@ -31,7 +31,7 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 
 	result, errStack := intp.Init()
 	if errStack != nil {
-		panic(errStack)
+		panic(errStack.Err.Error())
 	}
 
 	b, err := result.Eq(expect)
@@ -40,6 +40,7 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 	}
 	if !b.BoolVal() {
 		t.Error(result, " != ", expect)
+		//panic("ok_expr")
 	}
 }
 
@@ -110,12 +111,12 @@ func newCompiler(source string) compiler.Compiler {
 	parser := parser.NewParser(scanner)
 	mod, err := parser.ParseModule()
 	if err != nil {
-		panic("oops")
+		panic(err.Error())
 	}
 	anl := analyzer.NewAnalyzer(mod)
 	errors := anl.Analyze()
 	if len(errors) > 0 {
-		panic("oops")
+		panic(fmt.Sprintf("%v", errors))
 	}
 
 	return compiler.NewCompiler(anl)
@@ -211,7 +212,6 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "obj{a: 1} has 'b';", g.FALSE)
 
 	fail_expr(t, "obj{a: 1}[0];", "TypeMismatch: Expected 'Str'")
-	fail_expr(t, "obj{a: this has 1};", "UninitializedObj: Obj is not yet initialized")
 }
 
 func TestAssignment(t *testing.T) {
@@ -450,18 +450,6 @@ let y = a(1);
 
 }
 
-func newObj(fields map[string]g.Value) g.Obj {
-	o := g.NewObj()
-	def := &g.ObjDef{[]string{}}
-	values := []g.Value{}
-	for k, v := range fields {
-		def.Keys = append(def.Keys, k)
-		values = append(values, v)
-	}
-	o.Init(def, values)
-	return o
-}
-
 func TestObj(t *testing.T) {
 
 	source := `
@@ -473,11 +461,11 @@ let z = obj { a: 3, b: 4, c: obj { d: 5 } };
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{}))
-	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"a": g.MakeInt(0)}))
-	ok_ref(t, mod.Locals[2], newObj(map[string]g.Value{"a": g.MakeInt(1), "b": g.MakeInt(2)}))
-	ok_ref(t, mod.Locals[3],
-		newObj(map[string]g.Value{"a": g.MakeInt(3), "b": g.MakeInt(4), "c": newObj(map[string]g.Value{"d": g.MakeInt(5)})}))
+	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{}))
+	ok_ref(t, mod.Locals[1], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(0)}}))
+	ok_ref(t, mod.Locals[2], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(1)}, &g.ObjEntry{"b", g.MakeInt(2)}}))
+	ok_ref(t, mod.Locals[3], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(3)}, &g.ObjEntry{"b", g.MakeInt(4)},
+		&g.ObjEntry{"c", g.NewObj([]*g.ObjEntry{&g.ObjEntry{"d", g.MakeInt(5)}})}}))
 
 	source = `
 let x = obj { a: 5 };
@@ -491,7 +479,7 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"a": g.MakeInt(6)}))
+	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(6)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(5))
 
 	source = `
@@ -532,9 +520,21 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.MakeInt(4)}))
+	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"x", g.MakeInt(4)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(3))
 	ok_ref(t, mod.Locals[2], g.MakeInt(4))
+
+	source = `
+let a = obj { x: 8 };
+assert(a has 'x');
+assert(!(a has 'z'));
+assert(a has 'x');
+let b = obj { x: this has 'x', y: this has 'z' };
+assert(b.x);
+assert(!b.y);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }
 
 func TestErrStack(t *testing.T) {
@@ -590,8 +590,8 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newObj(map[string]g.Value{"x": g.MakeInt(11)}))
-	ok_ref(t, mod.Locals[1], newObj(map[string]g.Value{"y": g.MakeInt(19)}))
+	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"x", g.MakeInt(11)}}))
+	ok_ref(t, mod.Locals[1], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"y", g.MakeInt(19)}}))
 	ok_ref(t, mod.Locals[2], g.MakeInt(10))
 	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 }

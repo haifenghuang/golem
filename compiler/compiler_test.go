@@ -88,7 +88,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-2)),
 			g.MakeInt(int64(2))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -119,7 +119,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-4)),
 			g.MakeInt(int64(10))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -142,7 +142,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -167,7 +167,7 @@ func TestExpression(t *testing.T) {
 			g.MakeStr("a"),
 			g.MakeFloat(float64(12300))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -187,7 +187,7 @@ func TestExpression(t *testing.T) {
 		[]g.Basic{
 			g.MakeStr("a")},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -206,7 +206,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -223,7 +223,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -241,7 +241,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -262,7 +262,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -288,7 +288,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -317,7 +317,7 @@ func TestAssignment(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 2,
@@ -366,7 +366,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(42)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -400,7 +400,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 4,
@@ -437,7 +437,7 @@ func TestWhile(t *testing.T) {
 		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 2,
@@ -466,7 +466,7 @@ func TestWhile(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 3,
@@ -502,7 +502,7 @@ func TestReturn(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -524,7 +524,7 @@ func TestReturn(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -574,7 +574,7 @@ let b = fn(x) {
 			g.MakeInt(42),
 			g.MakeInt(7)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 2,
 				[]byte{
@@ -651,7 +651,7 @@ c(2, 3);
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 3,
 				[]byte{
@@ -732,7 +732,7 @@ const accumGen = fn(n) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 1,
 				[]byte{
@@ -793,7 +793,7 @@ const accumGen = fn(n) {
 		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 2,
 				[]byte{
@@ -841,201 +841,6 @@ const accumGen = fn(n) {
 					g.OpcLine{20, 0}}}}})
 }
 
-func TestObj(t *testing.T) {
-
-	source := `
-let w = obj {};
-let x = obj { a: 0 };
-let y = obj { a: 1, b: 2 };
-let z = obj { a: 3, b: 4, c: obj { d: 5 } };
-`
-
-	anl := newAnalyzer(source)
-	mod := NewCompiler(anl).Compile()
-	//fmt.Println("----------------------------")
-	//fmt.Println(source)
-	//fmt.Println("----------------------------")
-	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
-	//fmt.Println(mod)
-
-	ok(t, mod, &g.Module{
-		[]g.Basic{
-			g.MakeInt(2),
-			g.MakeInt(3),
-			g.MakeInt(4),
-			g.MakeInt(5)},
-		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{}},
-			&g.ObjDef{[]string{"a"}},
-			&g.ObjDef{[]string{"a", "b"}},
-			&g.ObjDef{[]string{"a", "b", "c"}},
-			&g.ObjDef{[]string{"d"}}},
-		[]*g.Template{
-			&g.Template{0, 0, 4,
-				[]byte{
-					g.LOAD_NULL,
-					g.NEW_OBJ,
-					g.INIT_OBJ, 0, 0,
-					g.STORE_LOCAL, 0, 0,
-					g.NEW_OBJ,
-					g.LOAD_ZERO,
-					g.INIT_OBJ, 0, 1,
-					g.STORE_LOCAL, 0, 1,
-					g.NEW_OBJ,
-					g.LOAD_ONE,
-					g.LOAD_CONST, 0, 0,
-					g.INIT_OBJ, 0, 2,
-					g.STORE_LOCAL, 0, 2,
-					g.NEW_OBJ,
-					g.LOAD_CONST, 0, 1,
-					g.LOAD_CONST, 0, 2,
-					g.NEW_OBJ,
-					g.LOAD_CONST, 0, 3,
-					g.INIT_OBJ, 0, 4,
-					g.INIT_OBJ, 0, 3,
-					g.STORE_LOCAL, 0, 3,
-					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 2},
-					g.OpcLine{8, 3},
-					g.OpcLine{16, 4},
-					g.OpcLine{27, 5},
-					g.OpcLine{47, 0}}}}})
-
-	source = `
-let x = obj { a: 0 };
-let y = x.a;
-x.a = 3;
-`
-	anl = newAnalyzer(source)
-	mod = NewCompiler(anl).Compile()
-
-	ok(t, mod, &g.Module{
-		[]g.Basic{
-			g.MakeStr("a"),
-			g.MakeInt(3)},
-		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{"a"}}},
-		[]*g.Template{
-			&g.Template{0, 0, 2,
-				[]byte{
-					g.LOAD_NULL,
-					g.NEW_OBJ,
-					g.LOAD_ZERO,
-					g.INIT_OBJ, 0, 0,
-					g.STORE_LOCAL, 0, 0,
-					g.LOAD_LOCAL, 0, 0,
-					g.GET_FIELD, 0, 0,
-					g.STORE_LOCAL, 0, 1,
-					g.LOAD_LOCAL, 0, 0,
-					g.LOAD_CONST, 0, 1,
-					g.PUT_FIELD, 0, 0,
-					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 2},
-					g.OpcLine{9, 3},
-					g.OpcLine{18, 4},
-					g.OpcLine{27, 0}}}}})
-
-	source = `
-let a = obj {
-    x: 8,
-    y: 5,
-    plus:  fn() { return this.x + this.y; },
-    minus: fn() { return this.x - this.y; }
-};
-let b = a.plus();
-let c = a.minus();
-`
-	anl = newAnalyzer(source)
-	mod = NewCompiler(anl).Compile()
-	//fmt.Println("----------------------------")
-	//fmt.Println(source)
-	//fmt.Println("----------------------------")
-	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
-	//fmt.Println(mod)
-
-	ok(t, mod, &g.Module{
-		[]g.Basic{
-			g.MakeInt(8),
-			g.MakeInt(5),
-			g.MakeStr("plus"),
-			g.MakeStr("minus"),
-			g.MakeStr("x"),
-			g.MakeStr("y")},
-		nil,
-		[]*g.ObjDef{
-			&g.ObjDef{[]string{"x", "y", "plus", "minus"}}},
-		[]*g.Template{
-			&g.Template{0, 0, 4,
-				[]byte{
-					g.LOAD_NULL,
-					g.NEW_OBJ,
-					g.DUP,
-					g.STORE_LOCAL, 0, 0,
-					g.LOAD_CONST, 0, 0,
-					g.LOAD_CONST, 0, 1,
-					g.NEW_FUNC, 0, 1,
-					g.FUNC_LOCAL, 0, 0,
-					g.NEW_FUNC, 0, 2,
-					g.FUNC_LOCAL, 0, 0,
-					g.INIT_OBJ, 0, 0,
-					g.STORE_LOCAL, 0, 1,
-					g.LOAD_LOCAL, 0, 1,
-					g.GET_FIELD, 0, 2,
-					g.INVOKE, 0, 0,
-					g.STORE_LOCAL, 0, 2,
-					g.LOAD_LOCAL, 0, 1,
-					g.GET_FIELD, 0, 3,
-					g.INVOKE, 0, 0,
-					g.STORE_LOCAL, 0, 3,
-					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 2},
-					g.OpcLine{6, 3},
-					g.OpcLine{9, 4},
-					g.OpcLine{12, 5},
-					g.OpcLine{18, 6},
-					g.OpcLine{24, 7},
-					g.OpcLine{27, 2},
-					g.OpcLine{30, 8},
-					g.OpcLine{42, 9},
-					g.OpcLine{54, 0}}},
-			&g.Template{0, 1, 0,
-				[]byte{
-					g.LOAD_NULL,
-					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 4,
-					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 5,
-					g.ADD,
-					g.RETURN,
-					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 5},
-					g.OpcLine{15, 0}}},
-			&g.Template{0, 1, 0,
-				[]byte{
-					g.LOAD_NULL,
-					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 4,
-					g.LOAD_CAPTURE, 0, 0,
-					g.GET_FIELD, 0, 5,
-					g.SUB,
-					g.RETURN,
-					g.RETURN},
-				[]g.OpcLine{
-					g.OpcLine{0, 0},
-					g.OpcLine{1, 6},
-					g.OpcLine{15, 0}}}}})
-}
-
 func TestPostfix(t *testing.T) {
 
 	source := `
@@ -1057,7 +862,7 @@ let d = b--;
 			g.MakeInt(int64(10)),
 			g.MakeInt(int64(20))},
 		nil,
-		[]*g.ObjDef{},
+		[]g.ObjDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 4,
@@ -1087,52 +892,6 @@ let d = b--;
 					g.OpcLine{13, 4},
 					g.OpcLine{25, 5},
 					g.OpcLine{37, 0}}}}})
-
-	source = `
-let a = obj { x: 10 };
-let b = obj { y: 20 };
-let c = a.x++;
-let d = b.y--;
-`
-	anl = newAnalyzer(source)
-	mod = NewCompiler(anl).Compile()
-	//fmt.Println("----------------------------")
-	//fmt.Println(source)
-	////fmt.Println("----------------------------")
-	////fmt.Printf("%s\n", ast.Dump(anl.Module()))
-	//fmt.Println(mod)
-
-	ok(t, mod, &g.Module{
-		[]g.Basic{
-			g.MakeInt(10),
-			g.MakeInt(20),
-			g.MakeStr("x"),
-			g.MakeStr("y")},
-		nil,
-		[]*g.ObjDef{},
-		[]*g.Template{
-			&g.Template{
-				0, 0, 4,
-				[]byte{
-					g.LOAD_NULL,
-					g.NEW_OBJ,
-					g.LOAD_CONST, 0, 0,
-					g.INIT_OBJ, 0, 0,
-					g.STORE_LOCAL, 0, 0,
-					g.NEW_OBJ,
-					g.LOAD_CONST, 0, 1,
-					g.INIT_OBJ, 0, 1,
-					g.STORE_LOCAL, 0, 1,
-					g.LOAD_LOCAL, 0, 0,
-					g.LOAD_ONE,
-					g.INC_FIELD, 0, 2,
-					g.STORE_LOCAL, 0, 2,
-					g.LOAD_LOCAL, 0, 1,
-					g.LOAD_NEG_ONE,
-					g.INC_FIELD, 0, 3,
-					g.STORE_LOCAL, 0, 3,
-					g.RETURN},
-				nil}}})
 }
 
 func TestPool(t *testing.T) {

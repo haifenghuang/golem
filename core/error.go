@@ -55,10 +55,6 @@ func ArityMismatchError(expected string, actual int) Error {
 		fmt.Sprintf("Expected %s params, got %d", expected, actual)}
 }
 
-func UninitializedObjError() Error {
-	return &serror{"UninitializedObj", "Obj is not yet initialized"}
-}
-
 func DivideByZeroError() Error {
 	return &serror{"DivideByZero", ""}
 }
