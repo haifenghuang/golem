@@ -16,31 +16,28 @@ package core
 
 import (
 	"bytes"
-	"reflect"
 )
 
 //---------------------------------------------------------------
 // tuple
 
-type tuple struct {
-	array []Value
-}
+type tuple []Value
 
 func NewTuple(values []Value) Tuple {
 	if len(values) < 2 {
 		panic("invalid tuple size")
 	}
-	return &tuple{values}
+	return tuple(values)
 }
 
-func (tp *tuple) compositeMarker() {}
+func (tp tuple) compositeMarker() {}
 
-func (tp *tuple) TypeOf() Type { return TTUPLE }
+func (tp tuple) TypeOf() Type { return TTUPLE }
 
-func (tp *tuple) ToStr() Str {
+func (tp tuple) ToStr() Str {
 	var buf bytes.Buffer
 	buf.WriteString("(")
-	for idx, v := range tp.array {
+	for idx, v := range tp {
 		if idx > 0 {
 			buf.WriteString(", ")
 		}
@@ -50,11 +47,11 @@ func (tp *tuple) ToStr() Str {
 	return MakeStr(buf.String())
 }
 
-func (tp *tuple) HashCode() (Int, Error) {
+func (tp tuple) HashCode() (Int, Error) {
 
 	// https://en.wikipedia.org/wiki/Jenkins_hash_function
 	var hash int64 = 0
-	for _, v := range tp.array {
+	for _, v := range tp {
 		h, err := v.HashCode()
 		if err != nil {
 			return nil, err
@@ -69,20 +66,20 @@ func (tp *tuple) HashCode() (Int, Error) {
 	return MakeInt(hash), nil
 }
 
-func (tp *tuple) Eq(v Value) Bool {
+func (tp tuple) Eq(v Value) Bool {
 	switch t := v.(type) {
-	case *tuple:
-		return MakeBool(reflect.DeepEqual(tp.array, t.array))
+	case tuple:
+		return valuesEq(tp, t)
 	default:
 		return FALSE
 	}
 }
 
-func (tp *tuple) Cmp(v Value) (Int, Error) {
+func (tp tuple) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (tp *tuple) Add(v Value) (Value, Error) {
+func (tp tuple) Add(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
@@ -93,14 +90,14 @@ func (tp *tuple) Add(v Value) (Value, Error) {
 	}
 }
 
-func (tp *tuple) Get(index Value) (Value, Error) {
-	idx, err := ParseIndex(index, len(tp.array))
+func (tp tuple) Get(index Value) (Value, Error) {
+	idx, err := ParseIndex(index, len(tp))
 	if err != nil {
 		return nil, err
 	}
-	return tp.array[idx.IntVal()], nil
+	return tp[idx.IntVal()], nil
 }
 
-func (tp *tuple) Len() Int {
-	return MakeInt(int64(len(tp.array)))
+func (tp tuple) Len() Int {
+	return MakeInt(int64(len(tp)))
 }

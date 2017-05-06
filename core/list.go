@@ -16,7 +16,6 @@ package core
 
 import (
 	"bytes"
-	"reflect"
 )
 
 //---------------------------------------------------------------
@@ -60,7 +59,7 @@ func (ls *list) HashCode() (Int, Error) {
 func (ls *list) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case *list:
-		return MakeBool(reflect.DeepEqual(ls.array, t.array))
+		return valuesEq(ls.array, t.array)
 	default:
 		return FALSE
 	}
