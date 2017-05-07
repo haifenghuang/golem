@@ -764,6 +764,15 @@ assert(a.clear != a.addAll);
 	source = "let a = dict{}; a.addAll([(1,2,3)]);"
 	failErr(t, source, g.TupleLengthError(2, 3))
 
+	source = "let a = dict{}; a[[1,2]];"
+	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+
+	source = "let a = dict{}; a[[1,2]] = 3;"
+	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+
+	source = "let a = dict{}; a.containsKey([1,2]);"
+	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+
 	source = `
 let a = dict {};
 assert(a.isEmpty());
@@ -825,8 +834,11 @@ assert(a.add != a.addAll);
 	source = "let a = set{}; a.add(3,4);"
 	failErr(t, source, g.ArityMismatchError("1", 2))
 
-	//	source = "let a = set{}; a.add([1,2]);"
-	//	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+	source = "let a = set{}; a.add([1,2]);"
+	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+
+	source = "let a = set{}; a.contains([1,2]);"
+	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
 
 	source = `
 let a = set{};

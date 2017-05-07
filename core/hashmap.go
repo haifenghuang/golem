@@ -52,14 +52,15 @@ func NewHashMap(entries []*HEntry) *HashMap {
 
 func (hm *HashMap) Get(key Value) (value Value, err Error) {
 
-	// panic-recover is the cleanest approach
+	// recover from an un-hashable value
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(Error); ok {
 				value = nil
 				err = e
+			} else {
+				panic(r)
 			}
-			panic(r)
 		}
 	}()
 
@@ -74,14 +75,15 @@ func (hm *HashMap) Get(key Value) (value Value, err Error) {
 
 func (hm *HashMap) ContainsKey(key Value) (flag Bool, err Error) {
 
-	// panic-recover is the cleanest approach
+	// recover from an un-hashable value
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(Error); ok {
 				flag = nil
 				err = e
+			} else {
+				panic(r)
 			}
-			panic(r)
 		}
 	}()
 
@@ -96,13 +98,14 @@ func (hm *HashMap) ContainsKey(key Value) (flag Bool, err Error) {
 
 func (hm *HashMap) Put(key Value, value Value) (err Error) {
 
-	// panic-recover is the cleanest approach
+	// recover from an un-hashable value
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(Error); ok {
 				err = e
+			} else {
+				panic(r)
 			}
-			panic(r)
 		}
 	}()
 
@@ -159,7 +162,7 @@ func (hm *HashMap) rehash() {
 
 func (hm *HashMap) hashBucket(key Value) int {
 
-	// panic-recover is the cleanest approach
+	// panic on an un-hashable value
 	hc, err := key.HashCode()
 	if err != nil {
 		panic(err)
@@ -193,7 +196,7 @@ func (h *HIterator) Next() bool {
 	// if we are not pointing at a valid entry
 	if (h.bucketIdx == -1) || (h.entryIdx >= len(h.curBucket())) {
 
-		// advance to next non-empty bucket
+		// then advance to next non-empty bucket
 		h.bucketIdx++
 		for (h.bucketIdx < len(h.hm.buckets)) && (len(h.curBucket()) == 0) {
 			h.bucketIdx++
@@ -202,7 +205,7 @@ func (h *HIterator) Next() bool {
 			return false
 		}
 
-		// point at first entry
+		// and point at first entry of the new bucket
 		h.entryIdx = 0
 	}
 

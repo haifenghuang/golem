@@ -152,3 +152,20 @@ func TestHashMapIterator(t *testing.T) {
 			{MakeStr("a"), MakeInt(1)},
 			{MakeStr("c"), MakeInt(3)}})
 }
+
+func TestBogusHashCode(t *testing.T) {
+
+	key := NewList([]Value{})
+	var v Value
+	var err Error
+
+	hm := NewHashMap(nil)
+	v, err = hm.Get(key)
+	fail(t, v, err, "TypeMismatch: Expected Hashable Type")
+
+	v, err = hm.ContainsKey(key)
+	fail(t, v, err, "TypeMismatch: Expected Hashable Type")
+
+	err = hm.Put(key, ZERO)
+	fail(t, nil, err, "TypeMismatch: Expected Hashable Type")
+}
