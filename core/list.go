@@ -29,11 +29,12 @@ type list struct {
 	isEmpty  *listIsEmpty
 	contains *listContains
 	indexOf  *listIndexOf
+	join     *listJoin
 }
 
 func NewList(values []Value) List {
 
-	ls := &list{values, nil, nil, nil, nil, nil, nil}
+	ls := &list{values, nil, nil, nil, nil, nil, nil, nil}
 
 	ls.add = &listAdd{&nativeFunc{}, ls}
 	ls.addAll = &listAddAll{&nativeFunc{}, ls}
@@ -41,6 +42,7 @@ func NewList(values []Value) List {
 	ls.isEmpty = &listIsEmpty{&nativeFunc{}, ls}
 	ls.contains = &listContains{&nativeFunc{}, ls}
 	ls.indexOf = &listIndexOf{&nativeFunc{}, ls}
+	ls.join = &listJoin{&nativeFunc{}, ls}
 
 	return ls
 }
@@ -155,6 +157,24 @@ func (ls *list) IsEmpty() Bool {
 	return MakeBool(len(ls.array) == 0)
 }
 
+func (ls *list) Join(delim Str) Str {
+
+	var dr []rune
+	if delim != nil {
+		dr = delim.Runes()
+	}
+
+	result := make(str, 0, 0)
+	for i, v := range ls.array {
+		if (i > 0) && (delim != nil) {
+			result = append(result, runesCopy(dr)...)
+		}
+		r := valToRunes(v)
+		result = append(result, runesCopy(r)...)
+	}
+	return result
+}
+
 func (ls *list) Len() Int {
 	return MakeInt(int64(len(ls.array)))
 }
@@ -247,6 +267,8 @@ func (ls *list) GetField(key Str) (Value, Error) {
 		return ls.contains, nil
 	case "indexOf":
 		return ls.indexOf, nil
+	case "join":
+		return ls.join, nil
 	default:
 		return nil, NoSuchFieldError(key.String())
 	}
@@ -278,6 +300,11 @@ type listContains struct {
 }
 
 type listIndexOf struct {
+	*nativeFunc
+	ls *list
+}
+
+type listJoin struct {
 	*nativeFunc
 	ls *list
 }
@@ -329,4 +356,22 @@ func (f *listIndexOf) Invoke(values []Value) (Value, Error) {
 		return nil, ArityMismatchError("1", len(values))
 	}
 	return f.ls.IndexOf(values[0]), nil
+}
+
+func (f *listJoin) Invoke(values []Value) (Value, Error) {
+	var delim Str
+	switch len(values) {
+	case 0:
+		delim = nil
+	case 1:
+		if s, ok := values[0].(Str); ok {
+			delim = s
+		} else {
+			return nil, TypeMismatchError("Expected Str")
+		}
+	default:
+		return nil, ArityMismatchError("0 or 1", len(values))
+	}
+
+	return f.ls.Join(delim), nil
 }

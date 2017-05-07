@@ -33,27 +33,28 @@ func ParseIndex(val Value, max int) (Int, Error) {
 
 func Strcat(a Value, b Value) (Str, Error) {
 
-	sa := fromValue(a)
-	sb := fromValue(b)
+	ra := valToRunes(a)
+	rb := valToRunes(b)
+	result := make(str, 0, len(ra)+len(rb))
 
-	// copy to avoid memory leaks
-	ca := make([]rune, len(sa))
-	copy(ca, sa)
+	result = append(result, runesCopy(ra)...)
+	result = append(result, runesCopy(rb)...)
 
-	cb := make([]rune, len(sb))
-	copy(cb, sb)
-
-	result := make(str, 0, len(ca)+len(cb))
-	result = append(result, ca...)
-	result = append(result, cb...)
 	return result, nil
 }
 
-func fromValue(v Value) str {
+// copy to avoid memory leaks
+func runesCopy(s []rune) []rune {
+	c := make([]rune, len(s))
+	copy(c, s)
+	return c
+}
+
+func valToRunes(v Value) []rune {
 	if sv, ok := v.(str); ok {
 		return sv
 	} else {
-		return toRunes(v.ToStr().String())
+		return v.ToStr().Runes()
 	}
 }
 

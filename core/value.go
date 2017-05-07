@@ -85,6 +85,7 @@ type (
 	Str interface {
 		Basic
 		fmt.Stringer
+		Runes() []rune
 
 		Getable
 		Lenable

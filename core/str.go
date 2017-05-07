@@ -28,6 +28,10 @@ func MakeStr(str string) Str {
 	return toRunes(str)
 }
 
+func (s str) Runes() []rune {
+	return s
+}
+
 func (s str) basicMarker() {}
 
 func (s str) TypeOf() Type { return TSTR }
@@ -109,11 +113,8 @@ func (s str) Slice(from Value, to Value) (Value, Error) {
 		return nil, IndexOutOfBoundsError()
 	}
 
-	// copy to avoid memory leaks
-	a := s[f.IntVal():t.IntVal()]
-	b := make([]rune, len(a))
-	copy(b, a)
-	return str(b), nil
+	slice := s[f.IntVal():t.IntVal()]
+	return str(runesCopy(slice)), nil
 }
 
 func (s str) SliceFrom(from Value) (Value, Error) {

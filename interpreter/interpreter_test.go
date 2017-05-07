@@ -696,6 +696,22 @@ assert(a.indexOf('x') == 1);
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
+	source = `
+let a = [];
+assert(a.join() == '');
+assert(a.join(',') == '');
+a.add(1);
+assert(a.join() == '1');
+assert(a.join(',') == '1');
+a.add(2);
+assert(a.join() == '12');
+assert(a.join(',') == '1,2');
+a.add('abc');
+assert(a.join() == '12abc');
+assert(a.join(',') == '1,2,abc');
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }
 
 func TestDict(t *testing.T) {
