@@ -26,7 +26,7 @@ type scopeType int
 const (
 	funcType scopeType = iota
 	blockType
-	objType
+	structType
 )
 
 func (s scopeType) String() string {
@@ -35,7 +35,7 @@ func (s scopeType) String() string {
 	} else if s == blockType {
 		return "Block"
 	} else {
-		return "Obj"
+		return "Struct"
 	}
 }
 
@@ -43,9 +43,9 @@ type scope struct {
 	parent *scope
 	defs   map[string]*ast.Variable
 
-	scopeType scopeType
-	funcScope *funcScope
-	objScope  *objScope
+	scopeType   scopeType
+	funcScope   *funcScope
+	structScope *structScope
 }
 
 type funcScope struct {
@@ -54,8 +54,8 @@ type funcScope struct {
 	parentCaptures map[string]*ast.Variable
 }
 
-type objScope struct {
-	obj *ast.ObjExpr
+type structScope struct {
+	stc *ast.StructExpr
 }
 
 func newFuncScope(parent *scope) *scope {
@@ -72,22 +72,22 @@ func newBlockScope(parent *scope) *scope {
 	return newScope(parent, blockType, nil, nil)
 }
 
-func newObjScope(parent *scope, obj *ast.ObjExpr) *scope {
-	return newScope(parent, objType, nil, &objScope{obj})
+func newStructScope(parent *scope, stc *ast.StructExpr) *scope {
+	return newScope(parent, structType, nil, &structScope{stc})
 }
 
 func newScope(
 	parent *scope,
 	scopeType scopeType,
 	funcScope *funcScope,
-	objScope *objScope) *scope {
+	structScope *structScope) *scope {
 
 	s := &scope{
 		parent,
 		make(map[string]*ast.Variable),
 		scopeType,
 		funcScope,
-		objScope}
+		structScope}
 
 	return s
 }
@@ -150,19 +150,19 @@ func (s *scope) put(sym string, isConst bool) *ast.Variable {
 // Create a variable for 'this', or return an existing 'this' variable.
 func (s *scope) this() *ast.Variable {
 
-	// find the nearest parent objScope
+	// find the nearest parent structScope
 	os := s
-	for os.scopeType != objType {
+	for os.scopeType != structType {
 		os = os.parent
 	}
 
-	// define a 'this' variable on the objScope, if its not already defined
+	// define a 'this' variable on the structScope, if its not already defined
 	v, ok := os.defs["this"]
 	if !ok {
 		idx := incrementNumLocals(os)
 		v = &ast.Variable{idx, true, false}
 		os.defs["this"] = v
-		os.objScope.obj.LocalThisIndex = idx
+		os.structScope.stc.LocalThisIndex = idx
 	}
 
 	// now call get(), from the original scope, to trigger captures in

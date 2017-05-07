@@ -196,25 +196,25 @@ func (ls *list) SliceTo(to Value) (Value, Error) {
 // Iterator
 
 type listIterator struct {
-	Obj
+	Struct
 	ls *list
 	n  int
 }
 
 func (ls *list) NewIterator() Iterator {
 
-	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", NULL},
-		&ObjEntry{"getValue", NULL}})
+	s := NewStruct([]*StructEntry{
+		&StructEntry{"nextValue", NULL},
+		&StructEntry{"getValue", NULL}})
 
-	itr := &listIterator{obj, ls, -1}
+	itr := &listIterator{s, ls, -1}
 
-	// TODO make the obj immutable once we have set the functions
-	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+	// TODO make the struct immutable once we have set the functions
+	s.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	obj.PutField(MakeStr("getValue"), &nativeFunc{
+	s.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

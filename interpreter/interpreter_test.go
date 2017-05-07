@@ -214,11 +214,11 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "[6,7,8,9][1:3];", g.NewList([]g.Value{g.MakeInt(7), g.MakeInt(8)}))
 	ok_expr(t, "[6,7,8,9][1:1];", g.NewList([]g.Value{}))
 
-	ok_expr(t, "obj{a: 1}['a'];", g.ONE)
-	ok_expr(t, "obj{a: 1} has 'a';", g.TRUE)
-	ok_expr(t, "obj{a: 1} has 'b';", g.FALSE)
+	ok_expr(t, "struct{a: 1}['a'];", g.ONE)
+	ok_expr(t, "struct{a: 1} has 'a';", g.TRUE)
+	ok_expr(t, "struct{a: 1} has 'b';", g.FALSE)
 
-	fail_expr(t, "obj{a: 1}[0];", "TypeMismatch: Expected 'Str'")
+	fail_expr(t, "struct{a: 1}[0];", "TypeMismatch: Expected 'Str'")
 }
 
 func TestAssignment(t *testing.T) {
@@ -457,25 +457,25 @@ let y = a(1);
 
 }
 
-func TestObj(t *testing.T) {
+func TestStruct(t *testing.T) {
 
 	source := `
-let w = obj {};
-let x = obj { a: 0 };
-let y = obj { a: 1, b: 2 };
-let z = obj { a: 3, b: 4, c: obj { d: 5 } };
+let w = struct {};
+let x = struct { a: 0 };
+let y = struct { a: 1, b: 2 };
+let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{}))
-	ok_ref(t, mod.Locals[1], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(0)}}))
-	ok_ref(t, mod.Locals[2], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(1)}, &g.ObjEntry{"b", g.MakeInt(2)}}))
-	ok_ref(t, mod.Locals[3], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(3)}, &g.ObjEntry{"b", g.MakeInt(4)},
-		&g.ObjEntry{"c", g.NewObj([]*g.ObjEntry{&g.ObjEntry{"d", g.MakeInt(5)}})}}))
+	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{}))
+	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(0)}}))
+	ok_ref(t, mod.Locals[2], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(1)}, {"b", g.MakeInt(2)}}))
+	ok_ref(t, mod.Locals[3], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
+		{"c", g.NewStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
 
 	source = `
-let x = obj { a: 5 };
+let x = struct { a: 5 };
 let y = x.a;
 x.a = 6;
 `
@@ -486,11 +486,11 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"a", g.MakeInt(6)}}))
+	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(5))
 
 	source = `
-let a = obj {
+let a = struct {
     x: 8,
     y: 5,
     plus:  fn() { return this.x + this.y; },
@@ -507,7 +507,7 @@ let c = a.minus();
 
 	source = `
 let a = null;
-a = obj { x: 8 }.x = 5;
+a = struct { x: 8 }.x = 5;
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -515,7 +515,7 @@ a = obj { x: 8 }.x = 5;
 	ok_ref(t, mod.Locals[0], g.MakeInt(5))
 
 	source = `
-let a = obj { x: 8 };
+let a = struct { x: 8 };
 a['x'] = 3;
 let b = a['x']++;
 let c = a['x'];
@@ -527,16 +527,16 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"x", g.MakeInt(4)}}))
+	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(3))
 	ok_ref(t, mod.Locals[2], g.MakeInt(4))
 
 	source = `
-let a = obj { x: 8 };
+let a = struct { x: 8 };
 assert(a has 'x');
 assert(!(a has 'z'));
 assert(a has 'x');
-let b = obj { x: this has 'x', y: this has 'z' };
+let b = struct { x: this has 'x', y: this has 'z' };
 assert(b.x);
 assert(!b.y);
 `
@@ -585,8 +585,8 @@ let d = b--;
 	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 
 	source = `
-let a = obj { x: 10 };
-let b = obj { y: 20 };
+let a = struct { x: 10 };
+let b = struct { y: 20 };
 let c = a.x++;
 let d = b.y--;
 `
@@ -597,8 +597,8 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"x", g.MakeInt(11)}}))
-	ok_ref(t, mod.Locals[1], g.NewObj([]*g.ObjEntry{&g.ObjEntry{"y", g.MakeInt(19)}}))
+	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
+	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
 	ok_ref(t, mod.Locals[2], g.MakeInt(10))
 	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 }
@@ -1012,7 +1012,7 @@ func TestGetField(t *testing.T) {
 	failErr(t, "range(1,2).bogus;", err)
 	failErr(t, "[1,2].bogus;", err)
 	failErr(t, "dict {'a':1}.bogus;", err)
-	failErr(t, "obj {a:1}.bogus;", err)
+	failErr(t, "struct {a:1}.bogus;", err)
 
 	failErr(t, "(fn() {}).bogus;", err)
 }

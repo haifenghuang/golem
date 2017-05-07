@@ -148,7 +148,7 @@ func (s *set) Len() Int {
 //// Iterator
 //
 //type setIterator struct {
-//	Obj
+//	Struct
 //	s       *set
 //	itr     *HIterator
 //	hasNext bool
@@ -160,11 +160,11 @@ func (s *set) NewIterator() Iterator {
 	//	next := &nativeIterNext{nativeFunc{}, nil}
 	//	get := &nativeIterGet{nativeFunc{}, nil}
 	//	// TODO make this immutable
-	//	obj := NewObj([]*ObjEntry{
-	//		&ObjEntry{"nextValue", next},
-	//		&ObjEntry{"getValue", get}})
+	//	struct := NewStruct([]*StructEntry{
+	//		&StructEntry{"nextValue", next},
+	//		&StructEntry{"getValue", get}})
 	//
-	//	itr := &setIterator{obj, s, s.hashMap.Iterator(), false}
+	//	itr := &setIterator{struct, s, s.hashMap.Iterator(), false}
 	//
 	//	next.itr = itr
 	//	get.itr = itr

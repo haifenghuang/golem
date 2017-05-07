@@ -18,48 +18,48 @@ import (
 	"reflect"
 )
 
-type ObjEntry struct {
+type StructEntry struct {
 	Key   string
 	Value Value
 }
 
 //---------------------------------------------------------------
-// obj
+// struct
 
-type obj struct {
+type _struct struct {
 	// TODO replace this with a more efficient data structure
 	fields map[string]Value
 }
 
-func NewObj(entries []*ObjEntry) Obj {
-	o := &obj{make(map[string]Value)}
+func NewStruct(entries []*StructEntry) Struct {
+	stc := &_struct{make(map[string]Value)}
 	for _, e := range entries {
-		o.fields[e.Key] = e.Value
+		stc.fields[e.Key] = e.Value
 	}
-	return o
+	return stc
 }
 
-func BlankObj(keys []string) Obj {
-	o := &obj{make(map[string]Value)}
+func BlankStruct(keys []string) Struct {
+	stc := &_struct{make(map[string]Value)}
 	for _, k := range keys {
-		o.fields[k] = NULL
+		stc.fields[k] = NULL
 	}
-	return o
+	return stc
 }
 
-func (o *obj) compositeMarker() {}
+func (stc *_struct) compositeMarker() {}
 
-func (o *obj) TypeOf() Type { return TOBJ }
+func (stc *_struct) TypeOf() Type { return TSTRUCT }
 
-func (o *obj) ToStr() Str {
-	if len(o.fields) == 0 {
-		return MakeStr("obj {}")
+func (stc *_struct) ToStr() Str {
+	if len(stc.fields) == 0 {
+		return MakeStr("struct {}")
 	}
 
 	var buf bytes.Buffer
-	buf.WriteString("obj {")
+	buf.WriteString("struct {")
 	idx := 0
-	for k, v := range o.fields {
+	for k, v := range stc.fields {
 		if idx > 0 {
 			buf.WriteString(",")
 		}
@@ -74,54 +74,55 @@ func (o *obj) ToStr() Str {
 	return MakeStr(buf.String())
 }
 
-func (o *obj) HashCode() (Int, Error) {
+func (stc *_struct) HashCode() (Int, Error) {
 	// TODO $hash()
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (o *obj) Eq(v Value) Bool {
+func (stc *_struct) Eq(v Value) Bool {
+
 	// TODO $eq()
 	switch t := v.(type) {
-	case *obj:
-		return MakeBool(reflect.DeepEqual(o.fields, t.fields))
+	case *_struct:
+		return MakeBool(reflect.DeepEqual(stc, t))
 	default:
 		return FALSE
 	}
 }
 
-func (o *obj) Cmp(v Value) (Int, Error) {
+func (stc *_struct) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (o *obj) Plus(v Value) (Value, Error) {
+func (stc *_struct) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(o, t)
+		return Strcat(stc, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (o *obj) Get(index Value) (Value, Error) {
+func (stc *_struct) Get(index Value) (Value, Error) {
 	if s, ok := index.(Str); ok {
-		return o.GetField(s)
+		return stc.GetField(s)
 	} else {
 		return nil, TypeMismatchError("Expected 'Str'")
 	}
 }
 
-func (o *obj) Set(index Value, val Value) Error {
+func (stc *_struct) Set(index Value, val Value) Error {
 	if s, ok := index.(Str); ok {
-		return o.PutField(s, val)
+		return stc.PutField(s, val)
 	} else {
 		return TypeMismatchError("Expected 'Str'")
 	}
 }
 
-func (o *obj) GetField(key Str) (Value, Error) {
-	v, ok := o.fields[key.String()]
+func (stc *_struct) GetField(key Str) (Value, Error) {
+	v, ok := stc.fields[key.String()]
 	if ok {
 		return v, nil
 	} else {
@@ -129,19 +130,19 @@ func (o *obj) GetField(key Str) (Value, Error) {
 	}
 }
 
-func (o *obj) PutField(key Str, val Value) Error {
-	_, ok := o.fields[key.String()]
+func (stc *_struct) PutField(key Str, val Value) Error {
+	_, ok := stc.fields[key.String()]
 	if ok {
-		o.fields[key.String()] = val
+		stc.fields[key.String()] = val
 		return nil
 	} else {
 		return NoSuchFieldError(key.String())
 	}
 }
 
-func (o *obj) Has(key Value) (Bool, Error) {
+func (stc *_struct) Has(key Value) (Bool, Error) {
 	if s, ok := key.(Str); ok {
-		_, has := o.fields[s.String()]
+		_, has := stc.fields[s.String()]
 		return MakeBool(has), nil
 	} else {
 		return nil, TypeMismatchError("Expected 'Str'")

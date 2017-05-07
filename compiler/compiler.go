@@ -36,7 +36,7 @@ type compiler struct {
 
 	funcs     []*ast.FnExpr
 	templates []*g.Template
-	defs      []g.ObjDef
+	defs      []g.StructDef
 	idx       int
 }
 
@@ -44,7 +44,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
-	defs := []g.ObjDef{}
+	defs := []g.StructDef{}
 	return &compiler{anl, g.EmptyHashMap(), nil, nil, funcs, templates, defs, 0}
 }
 
@@ -140,8 +140,8 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.InvokeExpr:
 		c.visitInvoke(t)
 
-	case *ast.ObjExpr:
-		c.visitObjExpr(t)
+	case *ast.StructExpr:
+		c.visitStructExpr(t)
 
 	case *ast.ThisExpr:
 		c.visitThisExpr(t)
@@ -748,30 +748,30 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 	c.pushIndex(inv.Begin(), g.INVOKE, len(inv.Params))
 }
 
-func (c *compiler) visitObjExpr(obj *ast.ObjExpr) {
+func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 
 	// create def and entries
 	def := []string{}
-	entries := []*g.ObjEntry{}
-	for _, k := range obj.Keys {
+	entries := []*g.StructEntry{}
+	for _, k := range stc.Keys {
 		def = append(def, k.Text)
-		entries = append(entries, &g.ObjEntry{k.Text, g.NULL})
+		entries = append(entries, &g.StructEntry{k.Text, g.NULL})
 	}
 	defIdx := len(c.defs)
-	c.defs = append(c.defs, g.ObjDef(def))
+	c.defs = append(c.defs, g.StructDef(def))
 
-	// create new obj
-	c.pushIndex(obj.Begin(), g.NEW_OBJ, defIdx)
+	// create new struct
+	c.pushIndex(stc.Begin(), g.NEW_OBJ, defIdx)
 
-	// if the obj is referenced by a 'this', then store local
-	if obj.LocalThisIndex != -1 {
-		c.push(obj.Begin(), g.DUP)
-		c.pushIndex(obj.Begin(), g.STORE_LOCAL, obj.LocalThisIndex)
+	// if the struct is referenced by a 'this', then store local
+	if stc.LocalThisIndex != -1 {
+		c.push(stc.Begin(), g.DUP)
+		c.pushIndex(stc.Begin(), g.STORE_LOCAL, stc.LocalThisIndex)
 	}
 
 	// put each value
-	for i, k := range obj.Keys {
-		v := obj.Values[i]
+	for i, k := range stc.Keys {
+		v := stc.Values[i]
 		c.push(k.Position, g.DUP)
 		c.Visit(v)
 		c.pushIndex(

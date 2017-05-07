@@ -211,8 +211,8 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			ip += 3
 
 		case g.NEW_OBJ:
-			def := inp.mod.ObjDefs[index(opc, ip)]
-			s = append(s, g.BlankObj(def))
+			def := inp.mod.StructDefs[index(opc, ip)]
+			s = append(s, g.BlankStruct(def))
 			ip += 3
 
 		case g.NEW_LIST:
@@ -296,18 +296,18 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				panic("Invalid PUT_FIELD Key")
 			}
 
-			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			// get struct from stack
+			stc, ok := s[n-1].(g.Struct)
 			if !ok {
 				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Obj'"),
+					g.TypeMismatchError("Expected 'Struct'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			// get value from stack
 			value := s[n]
 
-			err := obj.PutField(key, value)
+			err := stc.PutField(key, value)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
@@ -324,18 +324,18 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				panic("Invalid GET_FIELD Key")
 			}
 
-			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			// get struct from stack
+			stc, ok := s[n-1].(g.Struct)
 			if !ok {
 				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Obj'"),
+					g.TypeMismatchError("Expected 'Struct'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
 			// get value from stack
 			value := s[n]
 
-			before, err := obj.GetField(key)
+			before, err := stc.GetField(key)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
@@ -345,7 +345,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			err = obj.PutField(key, after)
+			err = stc.PutField(key, after)
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}
@@ -646,15 +646,15 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 
 		case g.HAS:
 
-			// get obj from stack
-			obj, ok := s[n-1].(g.Obj)
+			// get struct from stack
+			stc, ok := s[n-1].(g.Struct)
 			if !ok {
 				return nil, &ErrorStack{
-					g.TypeMismatchError("Expected 'Obj'"),
+					g.TypeMismatchError("Expected 'Struct'"),
 					inp.stringFrames(curFunc, locals, s, ip)}
 			}
 
-			val, err := obj.Has(s[n])
+			val, err := stc.Has(s[n])
 			if err != nil {
 				return nil, &ErrorStack{err, inp.stringFrames(curFunc, locals, s, ip)}
 			}

@@ -32,7 +32,7 @@ type analyzer struct {
 	rootScope *scope
 	curScope  *scope
 	loops     []ast.Loop
-	objs      []*ast.ObjExpr
+	structs   []*ast.StructExpr
 	errors    []error
 }
 
@@ -40,7 +40,7 @@ func NewAnalyzer(mod *ast.FnExpr) Analyzer {
 
 	rootScope := newFuncScope(nil)
 
-	return &analyzer{mod, rootScope, rootScope, []ast.Loop{}, []*ast.ObjExpr{}, nil}
+	return &analyzer{mod, rootScope, rootScope, []ast.Loop{}, []*ast.StructExpr{}, nil}
 }
 
 func (a *analyzer) scope() *scope {
@@ -102,8 +102,8 @@ func (a *analyzer) Visit(node ast.Node) {
 			a.errors = append(a.errors, &aerror{"'continue' outside of loop"})
 		}
 
-	case *ast.ObjExpr:
-		a.visitObjExpr(t)
+	case *ast.StructExpr:
+		a.visitStructExpr(t)
 
 	case *ast.ThisExpr:
 		a.visitThisExpr(t)
@@ -268,19 +268,19 @@ func (a *analyzer) visitIdentExpr(ident *ast.IdentExpr) {
 	}
 }
 
-func (a *analyzer) visitObjExpr(obj *ast.ObjExpr) {
-	a.objs = append(a.objs, obj)
+func (a *analyzer) visitStructExpr(stc *ast.StructExpr) {
+	a.structs = append(a.structs, stc)
 
-	a.curScope = newObjScope(a.curScope, obj)
-	obj.Traverse(a)
+	a.curScope = newStructScope(a.curScope, stc)
+	stc.Traverse(a)
 	a.curScope = a.curScope.parent
 
-	a.objs = a.objs[:len(a.objs)-1]
+	a.structs = a.structs[:len(a.structs)-1]
 }
 
 func (a *analyzer) visitThisExpr(this *ast.ThisExpr) {
 
-	n := len(a.objs)
+	n := len(a.structs)
 	if n == 0 {
 		a.errors = append(a.errors, &aerror{"'this' outside of loop"})
 	} else {

@@ -214,15 +214,15 @@ type (
 		RParen *Token
 	}
 
-	ObjExpr struct {
-		ObjToken *Token
-		LBrace   *Token
-		Keys     []*Token
-		Values   []Expr
-		RBrace   *Token
+	StructExpr struct {
+		StructToken *Token
+		LBrace      *Token
+		Keys        []*Token
+		Values      []Expr
+		RBrace      *Token
 
-		// The index of the obj expression in the local variable array.
-		// '-1' means that the obj is not referenced by a 'this', and thus
+		// The index of the struct expression in the local variable array.
+		// '-1' means that the struct is not referenced by a 'this', and thus
 		// is not stored in the local variable array
 		LocalThisIndex int
 	}
@@ -310,7 +310,7 @@ func (*FnExpr) exprMarker()        {}
 func (*InvokeExpr) exprMarker()    {}
 func (*ListExpr) exprMarker()      {}
 func (*TupleExpr) exprMarker()     {}
-func (*ObjExpr) exprMarker()       {}
+func (*StructExpr) exprMarker()    {}
 func (*ThisExpr) exprMarker()      {}
 func (*FieldExpr) exprMarker()     {}
 func (*DictExpr) exprMarker()      {}
@@ -418,8 +418,8 @@ func (n *ListExpr) End() Pos   { return n.RBracket.Position }
 func (n *TupleExpr) Begin() Pos { return n.LParen.Position }
 func (n *TupleExpr) End() Pos   { return n.RParen.Position }
 
-func (n *ObjExpr) Begin() Pos { return n.ObjToken.Position }
-func (n *ObjExpr) End() Pos   { return n.RBrace.Position }
+func (n *StructExpr) Begin() Pos { return n.StructToken.Position }
+func (n *StructExpr) End() Pos   { return n.RBrace.Position }
 
 func (n *ThisExpr) Begin() Pos { return n.Token.Position }
 func (n *ThisExpr) End() Pos {
@@ -676,16 +676,16 @@ func (tp *TupleExpr) String() string {
 	return buf.String()
 }
 
-func (obj *ObjExpr) String() string {
+func (stc *StructExpr) String() string {
 	var buf bytes.Buffer
-	buf.WriteString("obj { ")
-	for idx, k := range obj.Keys {
+	buf.WriteString("struct { ")
+	for idx, k := range stc.Keys {
 		if idx > 0 {
 			buf.WriteString(", ")
 		}
 		buf.WriteString(k.Text)
 		buf.WriteString(": ")
-		buf.WriteString(obj.Values[idx].String())
+		buf.WriteString(stc.Values[idx].String())
 	}
 	buf.WriteString(" }")
 	return buf.String()

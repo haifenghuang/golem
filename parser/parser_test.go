@@ -380,27 +380,27 @@ func TestInvoke(t *testing.T) {
 	ok_expr(t, p, "a(1, 2, 3)")
 }
 
-func TestObj(t *testing.T) {
-	p := newParser("obj{}")
-	ok_expr(t, p, "obj {  }")
+func TestStruct(t *testing.T) {
+	p := newParser("struct{}")
+	ok_expr(t, p, "struct {  }")
 
-	p = newParser("obj{a:1}")
-	ok_expr(t, p, "obj { a: 1 }")
+	p = newParser("struct{a:1}")
+	ok_expr(t, p, "struct { a: 1 }")
 
-	p = newParser("obj{a:1,b:2}")
-	ok_expr(t, p, "obj { a: 1, b: 2 }")
+	p = newParser("struct{a:1,b:2}")
+	ok_expr(t, p, "struct { a: 1, b: 2 }")
 
-	p = newParser("obj{a:1,b:2,c:3}")
-	ok_expr(t, p, "obj { a: 1, b: 2, c: 3 }")
+	p = newParser("struct{a:1,b:2,c:3}")
+	ok_expr(t, p, "struct { a: 1, b: 2, c: 3 }")
 
-	p = newParser("obj{a:1,b:2,c:obj{d:3}}")
-	ok_expr(t, p, "obj { a: 1, b: 2, c: obj { d: 3 } }")
+	p = newParser("struct{a:1,b:2,c:struct{d:3}}")
+	ok_expr(t, p, "struct { a: 1, b: 2, c: struct { d: 3 } }")
 
-	p = newParser("obj{a:1, b: fn(x) { y + x;} }")
-	ok_expr(t, p, "obj { a: 1, b: fn(x) { (y + x); } }")
+	p = newParser("struct{a:1, b: fn(x) { y + x;} }")
+	ok_expr(t, p, "struct { a: 1, b: fn(x) { (y + x); } }")
 
-	p = newParser("obj{a:1, b: fn(x) { y + x;}, c: obj {d:3} }")
-	ok_expr(t, p, "obj { a: 1, b: fn(x) { (y + x); }, c: obj { d: 3 } }")
+	p = newParser("struct{a:1, b: fn(x) { y + x;}, c: struct {d:3} }")
+	ok_expr(t, p, "struct { a: 1, b: fn(x) { (y + x); }, c: struct { d: 3 } }")
 
 	p = newParser("a.b")
 	ok_expr(t, p, "a.b")
@@ -414,32 +414,32 @@ func TestObj(t *testing.T) {
 	p = newParser("this")
 	ok_expr(t, p, "this")
 
-	p = newParser("obj{a:this + true, b: this}")
-	ok_expr(t, p, "obj { a: (this + true), b: this }")
+	p = newParser("struct{a:this + true, b: this}")
+	ok_expr(t, p, "struct { a: (this + true), b: this }")
 
 	p = newParser("a = this")
 	ok_expr(t, p, "(a = this)")
 
-	p = newParser("obj{ a: this }")
-	ok_expr(t, p, "obj { a: this }")
+	p = newParser("struct{ a: this }")
+	ok_expr(t, p, "struct { a: this }")
 
-	p = newParser("obj{ a: this == 2 }")
-	ok_expr(t, p, "obj { a: (this == 2) }")
+	p = newParser("struct{ a: this == 2 }")
+	ok_expr(t, p, "struct { a: (this == 2) }")
 
 	p = newParser("a = this.b = 3")
 	ok_expr(t, p, "(a = (this.b = 3))")
 
-	p = newParser("obj { a: this.b = 3 }")
-	ok_expr(t, p, "obj { a: (this.b = 3) }")
+	p = newParser("struct { a: this.b = 3 }")
+	ok_expr(t, p, "struct { a: (this.b = 3) }")
 
 	p = newParser("b = this")
 	ok_expr(t, p, "(b = this)")
 
-	p = newParser("obj { a: b = this }")
-	ok_expr(t, p, "obj { a: (b = this) }")
+	p = newParser("struct { a: b = this }")
+	ok_expr(t, p, "struct { a: (b = this) }")
 
-	p = newParser("a = obj { x: 8 }.x = 5")
-	ok_expr(t, p, "(a = (obj { x: 8 }.x = 5))")
+	p = newParser("a = struct { x: 8 }.x = 5")
+	ok_expr(t, p, "(a = (struct { x: 8 }.x = 5))")
 
 	p = newParser("this = b")
 	fail(t, p, "Unexpected Token '=' at (1, 6)")
@@ -536,11 +536,11 @@ func TestPos(t *testing.T) {
 	p = newParser("a(b,c)")
 	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 6})
 
-	p = newParser("obj{}")
-	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 5})
+	p = newParser("struct{}")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 8})
 
-	p = newParser("obj { a: 1 }")
-	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 12})
+	p = newParser("struct { a: 1 }")
+	okExprPos(t, p, ast.Pos{1, 1}, ast.Pos{1, 15})
 
 	p = newParser("   this")
 	okExprPos(t, p, ast.Pos{1, 4}, ast.Pos{1, 7})
@@ -592,8 +592,8 @@ func TestList(t *testing.T) {
 	p = newParser("[a, b]")
 	ok_expr(t, p, "[ a, b ]")
 
-	p = newParser("[a, b, [], obj{z:1   }]")
-	ok_expr(t, p, "[ a, b, [  ], obj { z: 1 } ]")
+	p = newParser("[a, b, [], struct{z:1   }]")
+	ok_expr(t, p, "[ a, b, [  ], struct { z: 1 } ]")
 }
 
 func TestDict(t *testing.T) {
@@ -626,8 +626,8 @@ func TestTuple(t *testing.T) {
 	p := newParser("(a, b)")
 	ok_expr(t, p, "(a, b)")
 
-	p = newParser("(a, b, obj { z: 1 })[2]")
-	ok_expr(t, p, "(a, b, obj { z: 1 })[2]")
+	p = newParser("(a, b, struct { z: 1 })[2]")
+	ok_expr(t, p, "(a, b, struct { z: 1 })[2]")
 }
 
 func TestSwitch(t *testing.T) {

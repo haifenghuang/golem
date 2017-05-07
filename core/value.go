@@ -171,7 +171,7 @@ type (
 		Iterable
 	}
 
-	Obj interface {
+	Struct interface {
 		Composite
 		Indexable
 
@@ -180,7 +180,7 @@ type (
 	}
 
 	Iterator interface {
-		Obj
+		Struct
 		IterNext() Bool
 		IterGet() (Value, Error)
 	}
@@ -212,7 +212,7 @@ const (
 	TTUPLE
 	TDICT
 	TSET
-	TOBJ
+	TSTRUCT
 )
 
 func (t Type) String() string {
@@ -239,8 +239,8 @@ func (t Type) String() string {
 		return "Dict"
 	case TSET:
 		return "Set"
-	case TOBJ:
-		return "Obj"
+	case TSTRUCT:
+		return "Struct"
 
 	default:
 		panic("unreachable")

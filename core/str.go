@@ -171,25 +171,25 @@ func runesCmp(a str, b str) int {
 // Iterator
 
 type strIterator struct {
-	Obj
+	Struct
 	s str
 	n int
 }
 
 func (s str) NewIterator() Iterator {
 
-	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", NULL},
-		&ObjEntry{"getValue", NULL}})
+	stc := NewStruct([]*StructEntry{
+		&StructEntry{"nextValue", NULL},
+		&StructEntry{"getValue", NULL}})
 
-	itr := &strIterator{obj, s, -1}
+	itr := &strIterator{stc, s, -1}
 
-	// TODO make the obj immutable once we have set the functions
-	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+	// TODO make the struct immutable once we have set the functions
+	stc.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	obj.PutField(MakeStr("getValue"), &nativeFunc{
+	stc.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

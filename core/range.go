@@ -137,25 +137,25 @@ func (r *rng) Step() Int { return MakeInt(r.step) }
 // Iterator
 
 type rangeIterator struct {
-	Obj
+	Struct
 	r *rng
 	n int64
 }
 
 func (r *rng) NewIterator() Iterator {
 
-	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", NULL},
-		&ObjEntry{"getValue", NULL}})
+	s := NewStruct([]*StructEntry{
+		&StructEntry{"nextValue", NULL},
+		&StructEntry{"getValue", NULL}})
 
-	itr := &rangeIterator{obj, r, -1}
+	itr := &rangeIterator{s, r, -1}
 
-	// TODO make the obj immutable once we have set the functions
-	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+	// TODO make the struct immutable once we have set the functions
+	s.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	obj.PutField(MakeStr("getValue"), &nativeFunc{
+	s.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

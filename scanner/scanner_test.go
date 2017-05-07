@@ -288,12 +288,12 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.DEFAULT, "default", 1, 13)
 	ok(t, s, ast.EOF, "", 1, 20)
 
-	s = NewScanner("obj this has dict")
-	ok(t, s, ast.OBJ, "obj", 1, 1)
-	ok(t, s, ast.THIS, "this", 1, 5)
-	ok(t, s, ast.HAS, "has", 1, 10)
-	ok(t, s, ast.DICT, "dict", 1, 14)
-	ok(t, s, ast.EOF, "", 1, 18)
+	s = NewScanner("struct this has dict")
+	ok(t, s, ast.OBJ, "struct", 1, 1)
+	ok(t, s, ast.THIS, "this", 1, 8)
+	ok(t, s, ast.HAS, "has", 1, 13)
+	ok(t, s, ast.DICT, "dict", 1, 17)
+	ok(t, s, ast.EOF, "", 1, 21)
 
 	s = NewScanner("print println str len range assert")
 	ok(t, s, ast.FN_PRINT, "print", 1, 1)

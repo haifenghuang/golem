@@ -372,104 +372,104 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 `)
 }
 
-func TestObj(t *testing.T) {
+func TestStruct(t *testing.T) {
 
 	errors := newAnalyzer("this;").Analyze()
 	fail(t, errors, "['this' outside of loop]")
 
 	source := `
-obj{ };
+struct{ };
 `
 	anl := newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:0 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([],-1)
+.   .   StructExpr([],-1)
 `)
 
 	source = `
-obj{ a: 1 };
+struct{ a: 1 };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:0 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a],-1)
+.   .   StructExpr([a],-1)
 .   .   .   BasicExpr(INT,"1")
 `)
 
 	source = `
-obj{ a: this };
+struct{ a: this };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:1 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a],0)
+.   .   StructExpr([a],0)
 .   .   .   ThisExpr((0,true,false))
 `)
 
 	source = `
-obj{ a: obj { b: this } };
+struct{ a: struct { b: this } };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:1 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a],-1)
-.   .   .   ObjExpr([b],0)
+.   .   StructExpr([a],-1)
+.   .   .   StructExpr([b],0)
 .   .   .   .   ThisExpr((0,true,false))
 `)
 
 	source = `
-obj{ a: obj { b: 1 }, c: this.a };
+struct{ a: struct { b: 1 }, c: this.a };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:1 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a, c],0)
-.   .   .   ObjExpr([b],-1)
+.   .   StructExpr([a, c],0)
+.   .   .   StructExpr([b],-1)
 .   .   .   .   BasicExpr(INT,"1")
 .   .   .   FieldExpr(a)
 .   .   .   .   ThisExpr((0,true,false))
 `)
 
 	source = `
-obj{ a: obj { b: this }, c: this };
+struct{ a: struct { b: this }, c: this };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a, c],1)
-.   .   .   ObjExpr([b],0)
+.   .   StructExpr([a, c],1)
+.   .   .   StructExpr([b],0)
 .   .   .   .   ThisExpr((0,true,false))
 .   .   .   ThisExpr((1,true,false))
 `)
 
 	source = `
-obj{ a: this, b: obj { c: this } };
+struct{ a: this, b: struct { c: this } };
 `
 	anl = newAnalyzer(source)
 	errors = anl.Analyze()
 	ok(t, anl, errors, `
 FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   Block
-.   .   ObjExpr([a, b],0)
+.   .   StructExpr([a, b],0)
 .   .   .   ThisExpr((0,true,false))
-.   .   .   ObjExpr([c],1)
+.   .   .   StructExpr([c],1)
 .   .   .   .   ThisExpr((1,true,false))
 `)
 
 	source = `
-let a = obj {
+let a = struct {
     x: 8,
     y: 5,
     plus:  fn() { return this.x + this.y; },
@@ -486,7 +486,7 @@ FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 .   Block
 .   .   Let
 .   .   .   IdentExpr(a,(1,false,false))
-.   .   .   ObjExpr([x, y, plus, minus],0)
+.   .   .   StructExpr([x, y, plus, minus],0)
 .   .   .   .   BasicExpr(INT,"8")
 .   .   .   .   BasicExpr(INT,"5")
 .   .   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(0,true,false)])
@@ -521,7 +521,7 @@ FnExpr(numLocals:4 numCaptures:0 parentCaptures:[])
 func TestAssignment(t *testing.T) {
 
 	source := `
-let x = obj { a: 0 };
+let x = struct { a: 0 };
 let y = x.a;
 x.a = 3;
 x.a++;
@@ -545,7 +545,7 @@ FnExpr(numLocals:6 numCaptures:0 parentCaptures:[])
 .   Block
 .   .   Let
 .   .   .   IdentExpr(x,(0,false,false))
-.   .   .   ObjExpr([a],-1)
+.   .   .   StructExpr([a],-1)
 .   .   .   .   BasicExpr(INT,"0")
 .   .   Let
 .   .   .   IdentExpr(y,(1,false,false))

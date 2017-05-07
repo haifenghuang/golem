@@ -33,7 +33,6 @@ func ok(t *testing.T, val Value, err Error, expect Value) {
 	}
 
 	if !reflect.DeepEqual(val, expect) {
-		//panic("asdfasfad")
 		t.Error(val, " != ", expect)
 	}
 }
@@ -507,24 +506,24 @@ func TestBasicHashCode(t *testing.T) {
 	ok(t, h, err, MakeInt(436938535))
 }
 
-func objFuncField(t *testing.T, obj Obj, name Str) NativeFunc {
-	v, err := obj.GetField(name)
+func structFuncField(t *testing.T, stc Struct, name Str) NativeFunc {
+	v, err := stc.GetField(name)
 	assert(t, err == nil)
 	f, ok := v.(NativeFunc)
 	assert(t, ok)
 	return f
 }
 
-func objInvokeFunc(t *testing.T, obj Obj, name Str) Value {
-	f := objFuncField(t, obj, name)
+func structInvokeFunc(t *testing.T, stc Struct, name Str) Value {
+	f := structFuncField(t, stc, name)
 	v, err := f.Invoke([]Value{})
 	assert(t, err == nil)
 
 	return v
 }
 
-func objInvokeBoolFunc(t *testing.T, obj Obj, name Str) Bool {
-	v := objInvokeFunc(t, obj, name)
+func structInvokeBoolFunc(t *testing.T, stc Struct, name Str) Bool {
+	v := structInvokeFunc(t, stc, name)
 	b, ok := v.(Bool)
 	assert(t, ok)
 	return b
@@ -550,8 +549,8 @@ func TestStrIterator(t *testing.T) {
 
 	itr = ibl.NewIterator()
 	s = MakeStr("")
-	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
-		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := structInvokeFunc(t, itr, MakeStr("getValue"))
 		s, err = Strcat(s, v)
 		assert(t, err == nil)
 	}

@@ -20,11 +20,11 @@ import (
 )
 
 //---------------------------------------------------------------
-// An ObjDef contains the information needed to instantiate an Obj
-// instance.  ObjDefs are created at compile time, and
+// An StructDef contains the information needed to instantiate an Struct
+// instance.  StructDefs are created at compile time, and
 // are immutable at run time.
 
-type ObjDef []string
+type StructDef []string
 
 //---------------------------------------------------------------
 // Ref
@@ -32,7 +32,7 @@ type ObjDef []string
 type Module struct {
 	Pool      []Basic
 	Locals    []*Ref
-	ObjDefs   []ObjDef
+	StructDefs   []StructDef
 	Templates []*Template
 }
 
@@ -54,8 +54,8 @@ func (m *Module) String() string {
 		buf.WriteString(fmt.Sprintf("%d: %v\n", i, ref))
 	}
 
-	buf.WriteString("    ObjDefs:\n")
-	for i, def := range m.ObjDefs {
+	buf.WriteString("    StructDefs:\n")
+	for i, def := range m.StructDefs {
 		buf.WriteString("        ")
 		buf.WriteString(fmt.Sprintf("%d: %v\n", i, def))
 	}

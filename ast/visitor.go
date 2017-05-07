@@ -174,8 +174,8 @@ func (tp *TupleExpr) Traverse(v Visitor) {
 	}
 }
 
-func (obj *ObjExpr) Traverse(v Visitor) {
-	for _, val := range obj.Values {
+func (stc *StructExpr) Traverse(v Visitor) {
+	for _, val := range stc.Values {
 		v.Visit(val)
 	}
 }
@@ -286,8 +286,8 @@ func (p *dump) Visit(node Node) {
 	case *BuiltinExpr:
 		p.buf.WriteString(fmt.Sprintf("BuiltinExpr(%q)\n", t.Fn.Text))
 
-	case *ObjExpr:
-		p.buf.WriteString(fmt.Sprintf("ObjExpr(%v,%d)\n", tokensString(t.Keys), t.LocalThisIndex))
+	case *StructExpr:
+		p.buf.WriteString(fmt.Sprintf("StructExpr(%v,%d)\n", tokensString(t.Keys), t.LocalThisIndex))
 	case *DictExpr:
 		p.buf.WriteString("DictExpr\n")
 	case *DictEntryExpr:

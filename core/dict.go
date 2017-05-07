@@ -141,7 +141,7 @@ func (d *dict) AddAll(val Value) Error {
 // Iterator
 
 type dictIterator struct {
-	Obj
+	Struct
 	d       *dict
 	itr     *HIterator
 	hasNext bool
@@ -149,18 +149,18 @@ type dictIterator struct {
 
 func (d *dict) NewIterator() Iterator {
 
-	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", NULL},
-		&ObjEntry{"getValue", NULL}})
+	s := NewStruct([]*StructEntry{
+		&StructEntry{"nextValue", NULL},
+		&StructEntry{"getValue", NULL}})
 
-	itr := &dictIterator{obj, d, d.hashMap.Iterator(), false}
+	itr := &dictIterator{s, d, d.hashMap.Iterator(), false}
 
-	// TODO make the obj immutable once we have set the functions
-	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+	// TODO make the struct immutable once we have set the functions
+	s.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	obj.PutField(MakeStr("getValue"), &nativeFunc{
+	s.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

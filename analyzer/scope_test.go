@@ -112,61 +112,61 @@ Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:2
 `)
 }
 
-func TestPlainObjScope(test *testing.T) {
+func TestPlainStructScope(test *testing.T) {
 
-	obj := &ast.ObjExpr{nil, nil, nil, nil, nil, -1}
+	stc := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
-	s2 := newObjScope(s1, obj)
+	s2 := newStructScope(s1, stc)
 
 	testScopeOk(test, s2, `
-Obj defs:{}
+Struct defs:{}
 Block defs:{}
 Func  defs:{} captures:{} parentCaptures:{} numLocals:0
 `)
 
-	if obj.LocalThisIndex != -1 {
-		test.Error("LocalThisIndex is wrong", obj.LocalThisIndex, -1)
+	if stc.LocalThisIndex != -1 {
+		test.Error("LocalThisIndex is wrong", stc.LocalThisIndex, -1)
 	}
 }
 
-func TestThisObjScope(test *testing.T) {
+func TestThisStructScope(test *testing.T) {
 
-	obj2 := &ast.ObjExpr{nil, nil, nil, nil, nil, -1}
-	obj3 := &ast.ObjExpr{nil, nil, nil, nil, nil, -1}
+	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
+	struct3 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
-	s2 := newObjScope(s1, obj2)
-	s3 := newObjScope(s2, obj3)
+	s2 := newStructScope(s1, struct2)
+	s3 := newStructScope(s2, struct3)
 
 	s0.put("a", false)
 	s1.put("b", false)
 	s3.this()
 
 	testScopeOk(test, s3, `
-Obj defs:{this: (2,true,false)}
-Obj defs:{}
+Struct defs:{this: (2,true,false)}
+Struct defs:{}
 Block defs:{b: (1,false,false)}
 Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:3
 `)
 
-	if obj2.LocalThisIndex != -1 {
-		test.Error("LocalThisIndex is wrong", obj2.LocalThisIndex, -1)
+	if struct2.LocalThisIndex != -1 {
+		test.Error("LocalThisIndex is wrong", struct2.LocalThisIndex, -1)
 	}
-	if obj3.LocalThisIndex != 2 {
-		test.Error("LocalThisIndex is wrong", obj3.LocalThisIndex, 2)
+	if struct3.LocalThisIndex != 2 {
+		test.Error("LocalThisIndex is wrong", struct3.LocalThisIndex, 2)
 	}
 }
 
 func TestMethodScope(test *testing.T) {
 
-	obj2 := &ast.ObjExpr{nil, nil, nil, nil, nil, -1}
+	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
-	s2 := newObjScope(s1, obj2)
+	s2 := newStructScope(s1, struct2)
 	s3 := newFuncScope(s2)
 	s4 := newBlockScope(s3)
 
@@ -177,12 +177,12 @@ func TestMethodScope(test *testing.T) {
 	testScopeOk(test, s4, `
 Block defs:{}
 Func  defs:{} captures:{this: (0,true,true)} parentCaptures:{this: (0,true,false)} numLocals:0
-Obj defs:{this: (0,true,false)}
+Struct defs:{this: (0,true,false)}
 Block defs:{}
 Func  defs:{} captures:{} parentCaptures:{} numLocals:1
 `)
 
-	if obj2.LocalThisIndex != 0 {
-		test.Error("LocalThisIndex is wrong", obj2.LocalThisIndex, 0)
+	if struct2.LocalThisIndex != 0 {
+		test.Error("LocalThisIndex is wrong", struct2.LocalThisIndex, 0)
 	}
 }

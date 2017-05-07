@@ -371,7 +371,7 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.CASE, text, pos}
 	case "default":
 		return &ast.Token{ast.DEFAULT, text, pos}
-	case "obj":
+	case "struct":
 		return &ast.Token{ast.OBJ, text, pos}
 	case "dict":
 		return &ast.Token{ast.DICT, text, pos}

@@ -653,7 +653,7 @@ func (p *Parser) primary() ast.Expr {
 		return p.fnExpr(p.consume())
 
 	case p.cur.Kind == ast.OBJ:
-		return p.objExpr(p.consume())
+		return p.structExpr(p.consume())
 
 	case p.cur.Kind == ast.DICT:
 		return p.dictExpr(p.consume())
@@ -708,7 +708,7 @@ func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
 	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
 }
 
-func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
+func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 
 	keys := []*ast.Token{}
 	values := []ast.Expr{}
@@ -750,7 +750,7 @@ func (p *Parser) objExpr(objToken *ast.Token) ast.Expr {
 		panic(p.unexpected())
 	}
 
-	return &ast.ObjExpr{objToken, lbrace, keys, values, rbrace, -1}
+	return &ast.StructExpr{structToken, lbrace, keys, values, rbrace, -1}
 }
 
 func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {

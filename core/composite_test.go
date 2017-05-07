@@ -19,91 +19,91 @@ import (
 	"testing"
 )
 
-func TestObj(t *testing.T) {
-	o := NewObj([]*ObjEntry{})
-	okType(t, o, TOBJ)
+func TestStruct(t *testing.T) {
+	stc := NewStruct([]*StructEntry{})
+	okType(t, stc, TSTRUCT)
 
-	s := o.ToStr()
-	ok(t, s, nil, MakeStr("obj {}"))
+	s := stc.ToStr()
+	ok(t, s, nil, MakeStr("struct {}"))
 
-	z := o.Eq(NewObj([]*ObjEntry{}))
+	z := stc.Eq(NewStruct([]*StructEntry{}))
 	ok(t, z, nil, TRUE)
-	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
+	z = stc.Eq(NewStruct([]*StructEntry{{"a", ONE}}))
 	ok(t, z, nil, FALSE)
 
-	val, err := o.Plus(MakeStr("a"))
-	ok(t, val, err, MakeStr("obj {}a"))
+	val, err := stc.Plus(MakeStr("a"))
+	ok(t, val, err, MakeStr("struct {}a"))
 
-	val, err = o.GetField(MakeStr("a"))
+	val, err = stc.GetField(MakeStr("a"))
 	fail(t, val, err, "NoSuchField: Field 'a' not found")
 
-	val, err = o.Get(MakeStr("a"))
+	val, err = stc.Get(MakeStr("a"))
 	fail(t, val, err, "NoSuchField: Field 'a' not found")
 
-	val, err = o.Get(ZERO)
+	val, err = stc.Get(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
 	//////////////////
 
-	o = NewObj([]*ObjEntry{&ObjEntry{"a", ONE}})
-	okType(t, o, TOBJ)
+	stc = NewStruct([]*StructEntry{{"a", ONE}})
+	okType(t, stc, TSTRUCT)
 
-	s = o.ToStr()
-	ok(t, s, nil, MakeStr("obj { a: 1 }"))
+	s = stc.ToStr()
+	ok(t, s, nil, MakeStr("struct { a: 1 }"))
 
-	z = o.Eq(NewObj([]*ObjEntry{}))
+	z = stc.Eq(NewStruct([]*StructEntry{}))
 	ok(t, z, nil, FALSE)
-	z = o.Eq(NewObj([]*ObjEntry{&ObjEntry{"a", ONE}}))
+	z = stc.Eq(NewStruct([]*StructEntry{{"a", ONE}}))
 	ok(t, z, nil, TRUE)
 
-	val, err = o.Plus(MakeStr("a"))
-	ok(t, val, err, MakeStr("obj { a: 1 }a"))
+	val, err = stc.Plus(MakeStr("a"))
+	ok(t, val, err, MakeStr("struct { a: 1 }a"))
 
-	val, err = o.GetField(MakeStr("a"))
+	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, ONE)
 
-	val, err = o.GetField(MakeStr("b"))
+	val, err = stc.GetField(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found")
 
-	val, err = o.Get(MakeStr("a"))
+	val, err = stc.Get(MakeStr("a"))
 	ok(t, val, err, ONE)
 
-	val, err = o.Get(MakeStr("b"))
+	val, err = stc.Get(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found")
 
-	err = o.PutField(MakeStr("a"), MakeInt(123))
+	err = stc.PutField(MakeStr("a"), MakeInt(123))
 	if err != nil {
 		panic("unexpected error")
 	}
 
-	val, err = o.GetField(MakeStr("a"))
+	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
 
-	val, err = o.Get(MakeStr("a"))
+	val, err = stc.Get(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
 
-	err = o.Set(MakeStr("a"), MakeInt(456))
+	err = stc.Set(MakeStr("a"), MakeInt(456))
 	if err != nil {
 		panic("unexpected error")
 	}
 
-	val, err = o.GetField(MakeStr("a"))
+	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, MakeInt(456))
 
-	val, err = o.Get(MakeStr("a"))
+	val, err = stc.Get(MakeStr("a"))
 	ok(t, val, err, MakeInt(456))
 
-	val, err = o.Has(MakeStr("a"))
+	val, err = stc.Has(MakeStr("a"))
 	ok(t, val, err, TRUE)
 
-	val, err = o.Has(MakeStr("abc"))
+	val, err = stc.Has(MakeStr("abc"))
 	ok(t, val, err, FALSE)
 
-	val, err = o.Has(ZERO)
+	val, err = stc.Has(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
-	o = BlankObj([]string{"a"})
-	val, err = o.GetField(MakeStr("a"))
+	stc = BlankStruct([]string{"a"})
+	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, NULL)
 }
 
@@ -213,7 +213,7 @@ func TestCompositeHashCode(t *testing.T) {
 	h, err = NewList([]Value{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
-	h, err = NewObj([]*ObjEntry{}).HashCode()
+	h, err = NewStruct([]*StructEntry{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 }
 
@@ -407,8 +407,8 @@ func TestRangeIterator(t *testing.T) {
 
 	itr = ibl.NewIterator()
 	n = 1
-	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
-		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := structInvokeFunc(t, itr, MakeStr("getValue"))
 
 		i, ok := v.(Int)
 		assert(t, ok)
@@ -440,8 +440,8 @@ func TestListIterator(t *testing.T) {
 
 	itr = ibl.NewIterator()
 	n = 1
-	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
-		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := structInvokeFunc(t, itr, MakeStr("getValue"))
 
 		i, ok := v.(Int)
 		assert(t, ok)
@@ -477,8 +477,8 @@ func TestDictIterator(t *testing.T) {
 
 	itr = ibl.NewIterator()
 	s = MakeStr("")
-	for objInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
-		v := objInvokeFunc(t, itr, MakeStr("getValue"))
+	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := structInvokeFunc(t, itr, MakeStr("getValue"))
 
 		tp, ok := v.(Tuple)
 		assert(t, ok)
