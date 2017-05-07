@@ -165,6 +165,12 @@ type (
 		Iterable
 	}
 
+	Set interface {
+		Composite
+		Lenable
+		Iterable
+	}
+
 	Obj interface {
 		Composite
 		Indexable
@@ -204,6 +210,7 @@ const (
 	TRANGE
 	TTUPLE
 	TDICT
+	TSET
 	TOBJ
 )
 
@@ -229,6 +236,8 @@ func (t Type) String() string {
 		return "Tuple"
 	case TDICT:
 		return "Dict"
+	case TSET:
+		return "Set"
 	case TOBJ:
 		return "Obj"
 

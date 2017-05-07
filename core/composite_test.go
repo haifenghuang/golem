@@ -207,7 +207,7 @@ func TestList(t *testing.T) {
 }
 
 func TestCompositeHashCode(t *testing.T) {
-	h, err := NewDict(NewHashMap([]*HEntry{})).HashCode()
+	h, err := NewDict([]*HEntry{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
 	h, err = NewList([]Value{}).HashCode()
@@ -218,7 +218,7 @@ func TestCompositeHashCode(t *testing.T) {
 }
 
 func TestDict(t *testing.T) {
-	d := NewDict(NewHashMap([]*HEntry{}))
+	d := NewDict([]*HEntry{})
 	okType(t, d, TDICT)
 
 	var v Value
@@ -227,7 +227,7 @@ func TestDict(t *testing.T) {
 	v = d.ToStr()
 	ok(t, v, err, MakeStr("dict {}"))
 
-	v = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	v = d.Eq(NewDict([]*HEntry{}))
 	ok(t, v, nil, TRUE)
 
 	v = d.Eq(NULL)
@@ -245,11 +245,10 @@ func TestDict(t *testing.T) {
 	v, err = d.Get(MakeStr("a"))
 	ok(t, v, err, ONE)
 
-	v = d.Eq(NewDict(NewHashMap([]*HEntry{})))
+	v = d.Eq(NewDict([]*HEntry{}))
 	ok(t, v, nil, FALSE)
 
-	v = d.Eq(NewDict(NewHashMap([]*HEntry{
-		&HEntry{MakeStr("a"), ONE}})))
+	v = d.Eq(NewDict([]*HEntry{{MakeStr("a"), ONE}}))
 	ok(t, v, nil, TRUE)
 
 	v = d.Len()
@@ -268,8 +267,7 @@ func TestDict(t *testing.T) {
 	ok(t, v, nil, MakeStr("dict { b: 2, a: 1 }"))
 
 	tp := NewTuple([]Value{ONE, ZERO})
-	d = NewDict(NewHashMap([]*HEntry{
-		&HEntry{tp, TRUE}}))
+	d = NewDict([]*HEntry{{tp, TRUE}})
 
 	v = d.ToStr()
 	ok(t, v, nil, MakeStr("dict { (1, 0): true }"))
@@ -455,10 +453,10 @@ func TestListIterator(t *testing.T) {
 func TestDictIterator(t *testing.T) {
 
 	var ibl Iterable = NewDict(
-		NewHashMap([]*HEntry{
-			&HEntry{MakeStr("a"), ONE},
-			&HEntry{MakeStr("b"), MakeInt(2)},
-			&HEntry{MakeStr("c"), MakeInt(3)}}))
+		[]*HEntry{
+			{MakeStr("a"), ONE},
+			{MakeStr("b"), MakeInt(2)},
+			{MakeStr("c"), MakeInt(3)}})
 
 	var itr Iterator = ibl.NewIterator()
 	v, err := itr.IterGet()

@@ -27,7 +27,9 @@ type dict struct {
 	containsKey *dictContainsKey
 }
 
-func NewDict(hashMap *HashMap) Dict {
+func NewDict(entries []*HEntry) Dict {
+
+	hashMap := NewHashMap(entries)
 
 	d := &dict{hashMap, nil, nil, nil, nil}
 
