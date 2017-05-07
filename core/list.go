@@ -22,29 +22,11 @@ import (
 // list
 
 type list struct {
-	array    []Value
-	add      *listAdd
-	addAll   *listAddAll
-	clear    *listClear
-	isEmpty  *listIsEmpty
-	contains *listContains
-	indexOf  *listIndexOf
-	join     *listJoin
+	array []Value
 }
 
 func NewList(values []Value) List {
-
-	ls := &list{values, nil, nil, nil, nil, nil, nil, nil}
-
-	ls.add = &listAdd{&nativeFunc{}, ls}
-	ls.addAll = &listAddAll{&nativeFunc{}, ls}
-	ls.clear = &listClear{&nativeFunc{}, ls}
-	ls.isEmpty = &listIsEmpty{&nativeFunc{}, ls}
-	ls.contains = &listContains{&nativeFunc{}, ls}
-	ls.indexOf = &listIndexOf{&nativeFunc{}, ls}
-	ls.join = &listJoin{&nativeFunc{}, ls}
-
-	return ls
+	return &list{values}
 }
 
 func (ls *list) compositeMarker() {}
@@ -221,28 +203,31 @@ type listIterator struct {
 
 func (ls *list) NewIterator() Iterator {
 
-	next := &nativeIterNext{nativeFunc{}, nil}
-	get := &nativeIterGet{nativeFunc{}, nil}
-	// TODO make this immutable
 	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", next},
-		&ObjEntry{"getValue", get}})
+		&ObjEntry{"nextValue", NULL},
+		&ObjEntry{"getValue", NULL}})
 
 	itr := &listIterator{obj, ls, -1}
 
-	next.itr = itr
-	get.itr = itr
+	// TODO make the obj immutable once we have set the functions
+	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterNext(), nil
+		}})
+	obj.PutField(MakeStr("getValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterGet()
+		}})
+
 	return itr
 }
 
 func (i *listIterator) IterNext() Bool {
-
 	i.n++
 	return MakeBool(i.n < len(i.ls.array))
 }
 
 func (i *listIterator) IterGet() (Value, Error) {
-
 	if (i.n >= 0) && (i.n < len(i.ls.array)) {
 		return i.ls.array[i.n], nil
 	} else {
@@ -255,123 +240,89 @@ func (i *listIterator) IterGet() (Value, Error) {
 
 func (ls *list) GetField(key Str) (Value, Error) {
 	switch key.String() {
+
 	case "add":
-		return ls.add, nil
+		return &intrinsicFunc{ls, "add", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				ls.Add(values[0])
+				return ls, nil
+			}}}, nil
+
 	case "addAll":
-		return ls.addAll, nil
+		return &intrinsicFunc{ls, "addAll", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				err := ls.AddAll(values[0])
+				if err != nil {
+					return nil, err
+				} else {
+					return ls, nil
+				}
+			}}}, nil
+
 	case "clear":
-		return ls.clear, nil
+		return &intrinsicFunc{ls, "clear", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 0 {
+					return nil, ArityMismatchError("0", len(values))
+				}
+				ls.Clear()
+				return ls, nil
+			}}}, nil
+
 	case "isEmpty":
-		return ls.isEmpty, nil
+		return &intrinsicFunc{ls, "isEmpty", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 0 {
+					return nil, ArityMismatchError("0", len(values))
+				}
+				return ls.IsEmpty(), nil
+			}}}, nil
+
 	case "contains":
-		return ls.contains, nil
+		return &intrinsicFunc{ls, "contains", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				return ls.Contains(values[0]), nil
+			}}}, nil
+
 	case "indexOf":
-		return ls.indexOf, nil
+		return &intrinsicFunc{ls, "indexOf", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				return ls.IndexOf(values[0]), nil
+			}}}, nil
+
 	case "join":
-		return ls.join, nil
+		return &intrinsicFunc{ls, "join", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				var delim Str
+				switch len(values) {
+				case 0:
+					delim = nil
+				case 1:
+					if s, ok := values[0].(Str); ok {
+						delim = s
+					} else {
+						return nil, TypeMismatchError("Expected Str")
+					}
+				default:
+					return nil, ArityMismatchError("0 or 1", len(values))
+				}
+
+				return ls.Join(delim), nil
+			}}}, nil
+
 	default:
 		return nil, NoSuchFieldError(key.String())
 	}
-}
-
-type listAdd struct {
-	*nativeFunc
-	ls *list
-}
-
-type listAddAll struct {
-	*nativeFunc
-	ls *list
-}
-
-type listClear struct {
-	*nativeFunc
-	ls *list
-}
-
-type listIsEmpty struct {
-	*nativeFunc
-	ls *list
-}
-
-type listContains struct {
-	*nativeFunc
-	ls *list
-}
-
-type listIndexOf struct {
-	*nativeFunc
-	ls *list
-}
-
-type listJoin struct {
-	*nativeFunc
-	ls *list
-}
-
-func (f *listAdd) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-	f.ls.Add(values[0])
-	return f.ls, nil
-}
-
-func (f *listAddAll) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-	err := f.ls.AddAll(values[0])
-	if err != nil {
-		return nil, err
-	} else {
-		return f.ls, nil
-	}
-}
-
-func (f *listClear) Invoke(values []Value) (Value, Error) {
-	if len(values) != 0 {
-		return nil, ArityMismatchError("0", len(values))
-	}
-	f.ls.Clear()
-	return f.ls, nil
-}
-
-func (f *listIsEmpty) Invoke(values []Value) (Value, Error) {
-	if len(values) != 0 {
-		return nil, ArityMismatchError("0", len(values))
-	}
-	return f.ls.IsEmpty(), nil
-}
-
-func (f *listContains) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-	return f.ls.Contains(values[0]), nil
-}
-
-func (f *listIndexOf) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-	return f.ls.IndexOf(values[0]), nil
-}
-
-func (f *listJoin) Invoke(values []Value) (Value, Error) {
-	var delim Str
-	switch len(values) {
-	case 0:
-		delim = nil
-	case 1:
-		if s, ok := values[0].(Str); ok {
-			delim = s
-		} else {
-			return nil, TypeMismatchError("Expected Str")
-		}
-	default:
-		return nil, ArityMismatchError("0 or 1", len(values))
-	}
-
-	return f.ls.Join(delim), nil
 }

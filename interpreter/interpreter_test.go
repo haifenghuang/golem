@@ -653,7 +653,9 @@ let b = [];
 b.add(4);
 assert(b == [4]);
 assert(a.add == a.add);
+assert(b.add == b.add);
 assert(a.add != b.add);
+assert(b.add != a.add);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -666,6 +668,11 @@ let b = [];
 b.addAll(range(0,3));
 b.addAll(dict { 'x': 1, 'y': 2 });
 assert(b == [ 0, 1, 2, ('y', 2), ('x', 1) ]);
+assert(a.addAll == a.addAll);
+assert(b.addAll == b.addAll);
+assert(a.addAll != b.addAll);
+assert(b.addAll != a.addAll);
+assert(a.add != a.addAll);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -742,7 +749,10 @@ a.addAll([(1,2)]).addAll([(3,4)]);
 assert(a == dict {1:2,3:4});
 let b = dict {};
 assert(a.addAll == a.addAll);
+assert(b.addAll == b.addAll);
 assert(a.addAll != b.addAll);
+assert(b.addAll != a.addAll);
+assert(a.clear != a.addAll);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)

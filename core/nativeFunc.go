@@ -18,84 +18,83 @@ import (
 	"fmt"
 )
 
-// NativeFunc represents a function that is defined
-// natively within Go.
+//--------------------------------------------------------------
+// NativeFunc
+
 type NativeFunc interface {
 	Func
 	Invoke([]Value) (Value, Error)
 }
 
-// NOTE: 'nativeFunc' cannot be an empty struct, because empty structs have
-// unusual semantics in Go, i.e. they all point to the same address.
-//
-// https://golang.org/ref/spec#Size_and_alignment_guarantees
-//
-// To work around that, we place an arbitrary value inside the struct, so
-// that it wont be empty.
-//
 type nativeFunc struct {
-	placeholder int
+	invoke func([]Value) (Value, Error)
 }
 
-func (nf *nativeFunc) funcMarker() {}
+func (f *nativeFunc) funcMarker() {}
 
-func (nf *nativeFunc) TypeOf() Type { return TFUNC }
+func (f *nativeFunc) TypeOf() Type { return TFUNC }
 
-func (nf *nativeFunc) HashCode() (Int, Error) {
-	return nil, TypeMismatchError("Expected Hashable Type")
-}
-
-func (nf *nativeFunc) GetField(key Str) (Value, Error) {
-	return nil, NoSuchFieldError(key.String())
-}
-
-func (nf *nativeFunc) Cmp(v Value) (Int, Error) {
-	return nil, TypeMismatchError("Expected Comparable Type")
-}
-
-func (nf *nativeFunc) Eq(v Value) Bool {
+func (f *nativeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case NativeFunc:
-		return nf.ToStr().Eq(t.ToStr())
+		// equality is based on identity
+		return MakeBool(f == t)
 	default:
 		return FALSE
 	}
 }
 
-func (nf *nativeFunc) Plus(v Value) (Value, Error) {
+func (f *nativeFunc) HashCode() (Int, Error) {
+	return nil, TypeMismatchError("Expected Hashable Type")
+}
+
+func (f *nativeFunc) GetField(key Str) (Value, Error) {
+	return nil, NoSuchFieldError(key.String())
+}
+
+func (f *nativeFunc) Cmp(v Value) (Int, Error) {
+	return nil, TypeMismatchError("Expected Comparable Type")
+}
+
+func (f *nativeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(nf, t)
+		return Strcat(f, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (nf *nativeFunc) ToStr() Str {
-	return MakeStr(fmt.Sprintf("native<%p>", nf))
+func (f *nativeFunc) ToStr() Str {
+	return MakeStr(fmt.Sprintf("nativeFunc<%p>", f))
+}
+
+func (f *nativeFunc) Invoke(values []Value) (Value, Error) {
+	return f.invoke(values)
 }
 
 //---------------------------------------------------------------
-// nativeFuncs that support iteration
+// An intrinsic function is a function that is an intrinsic
+// part of a given Type. These functions are created on the
+// fly.
 
-type nativeIterNext struct {
-	nativeFunc
-	itr Iterator
+type intrinsicFunc struct {
+	owner Value
+	name  string
+	*nativeFunc
 }
 
-type nativeIterGet struct {
-	nativeFunc
-	itr Iterator
-}
-
-func (fn *nativeIterNext) Invoke(values []Value) (Value, Error) {
-	return fn.itr.IterNext(), nil
-}
-
-func (fn *nativeIterGet) Invoke(values []Value) (Value, Error) {
-	return fn.itr.IterGet()
+func (f *intrinsicFunc) Eq(v Value) Bool {
+	switch t := v.(type) {
+	case *intrinsicFunc:
+		// equality for intrinsic functions is based on whether
+		// they have the same owner, and the same name
+		return MakeBool(f.owner.Eq(t.owner).BoolVal() && (f.name == t.name))
+	default:
+		return FALSE
+	}
 }
 
 //---------------------------------------------------------------
@@ -110,24 +109,15 @@ const (
 	ASSERT
 )
 
-type (
-	nativePrint   struct{ *nativeFunc }
-	nativePrintln struct{ *nativeFunc }
-	nativeStr     struct{ *nativeFunc }
-	nativeLen     struct{ *nativeFunc }
-	nativeRange   struct{ *nativeFunc }
-	nativeAssert  struct{ *nativeFunc }
-)
-
 var Builtins = []NativeFunc{
-	&nativePrint{&nativeFunc{}},
-	&nativePrintln{&nativeFunc{}},
-	&nativeStr{&nativeFunc{}},
-	&nativeLen{&nativeFunc{}},
-	&nativeRange{&nativeFunc{}},
-	&nativeAssert{&nativeFunc{}}}
+	&nativeFunc{builtinPrint},
+	&nativeFunc{builtinPrintln},
+	&nativeFunc{builtinStr},
+	&nativeFunc{builtinLen},
+	&nativeFunc{builtinRange},
+	&nativeFunc{builtinAssert}}
 
-func (fn *nativePrint) Invoke(values []Value) (Value, Error) {
+var builtinPrint = func(values []Value) (Value, Error) {
 	for _, v := range values {
 		fmt.Print(v.ToStr().String())
 	}
@@ -135,7 +125,7 @@ func (fn *nativePrint) Invoke(values []Value) (Value, Error) {
 	return NULL, nil
 }
 
-func (fn *nativePrintln) Invoke(values []Value) (Value, Error) {
+var builtinPrintln = func(values []Value) (Value, Error) {
 	for _, v := range values {
 		fmt.Print(v.ToStr().String())
 	}
@@ -144,7 +134,7 @@ func (fn *nativePrintln) Invoke(values []Value) (Value, Error) {
 	return NULL, nil
 }
 
-func (fn *nativeStr) Invoke(values []Value) (Value, Error) {
+var builtinStr = func(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
@@ -152,7 +142,7 @@ func (fn *nativeStr) Invoke(values []Value) (Value, Error) {
 	return values[0].ToStr(), nil
 }
 
-func (fn *nativeLen) Invoke(values []Value) (Value, Error) {
+var builtinLen = func(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}
@@ -164,7 +154,7 @@ func (fn *nativeLen) Invoke(values []Value) (Value, Error) {
 	}
 }
 
-func (fn *nativeRange) Invoke(values []Value) (Value, Error) {
+var builtinRange = func(values []Value) (Value, Error) {
 	if len(values) < 2 || len(values) > 3 {
 		return nil, ArityMismatchError("2 or 3", len(values))
 	}
@@ -190,7 +180,7 @@ func (fn *nativeRange) Invoke(values []Value) (Value, Error) {
 	return NewRange(from.IntVal(), to.IntVal(), step.IntVal())
 }
 
-func (fn *nativeAssert) Invoke(values []Value) (Value, Error) {
+var builtinAssert = func(values []Value) (Value, Error) {
 	if len(values) != 1 {
 		return nil, ArityMismatchError("1", len(values))
 	}

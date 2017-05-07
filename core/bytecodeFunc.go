@@ -39,56 +39,57 @@ func NewBytecodeFunc(template *Template) BytecodeFunc {
 	return &bytecodeFunc{template, captures}
 }
 
-func (bf *bytecodeFunc) funcMarker() {}
+func (f *bytecodeFunc) funcMarker() {}
 
-func (bf *bytecodeFunc) TypeOf() Type { return TFUNC }
+func (f *bytecodeFunc) TypeOf() Type { return TFUNC }
 
-func (bf *bytecodeFunc) HashCode() (Int, Error) {
+func (f *bytecodeFunc) HashCode() (Int, Error) {
 	return nil, TypeMismatchError("Expected Hashable Type")
 }
 
-func (bf *bytecodeFunc) GetField(key Str) (Value, Error) {
+func (f *bytecodeFunc) GetField(key Str) (Value, Error) {
 	return nil, NoSuchFieldError(key.String())
 }
 
-func (bf *bytecodeFunc) Cmp(v Value) (Int, Error) {
+func (f *bytecodeFunc) Cmp(v Value) (Int, Error) {
 	return nil, TypeMismatchError("Expected Comparable Type")
 }
 
-func (bf *bytecodeFunc) ToStr() Str {
-	return MakeStr(fmt.Sprintf("func<%p>", bf))
+func (f *bytecodeFunc) ToStr() Str {
+	return MakeStr(fmt.Sprintf("func<%p>", f))
 }
 
-func (bf *bytecodeFunc) Eq(v Value) Bool {
+func (f *bytecodeFunc) Eq(v Value) Bool {
 	switch t := v.(type) {
 	case BytecodeFunc:
-		return bf.ToStr().Eq(t.ToStr())
+		// equality is based on identity
+		return MakeBool(f == t)
 	default:
 		return FALSE
 	}
 }
 
-func (bf *bytecodeFunc) Plus(v Value) (Value, Error) {
+func (f *bytecodeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(bf, t)
+		return Strcat(f, t)
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
 	}
 }
 
-func (bf *bytecodeFunc) Template() *Template {
-	return bf.template
+func (f *bytecodeFunc) Template() *Template {
+	return f.template
 }
 
-func (bf *bytecodeFunc) GetCapture(idx int) *Ref {
-	return bf.captures[idx]
+func (f *bytecodeFunc) GetCapture(idx int) *Ref {
+	return f.captures[idx]
 }
 
-func (bf *bytecodeFunc) PushCapture(ref *Ref) {
-	bf.captures = append(bf.captures, ref)
+func (f *bytecodeFunc) PushCapture(ref *Ref) {
+	f.captures = append(f.captures, ref)
 }
 
 //---------------------------------------------------------------

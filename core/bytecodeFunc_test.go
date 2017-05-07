@@ -33,20 +33,6 @@ func TestBytecodeFunc(t *testing.T) {
 	assert(t, !b.Eq(a).BoolVal())
 }
 
-func TestBuiltinFunc(t *testing.T) {
-
-	a := Builtins[PRINT]
-	b := Builtins[PRINTLN]
-
-	okType(t, a, TFUNC)
-	okType(t, b, TFUNC)
-
-	assert(t, a.Eq(a).BoolVal())
-	assert(t, b.Eq(b).BoolVal())
-	assert(t, !a.Eq(b).BoolVal())
-	assert(t, !b.Eq(a).BoolVal())
-}
-
 func TestLineNumber(t *testing.T) {
 
 	tp := &Template{0, 0, 0, nil,

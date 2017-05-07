@@ -20,25 +20,11 @@ import (
 )
 
 type dict struct {
-	hashMap     *HashMap
-	addAll      *dictAddAll
-	clear       *dictClear
-	isEmpty     *dictIsEmpty
-	containsKey *dictContainsKey
+	hashMap *HashMap
 }
 
 func NewDict(entries []*HEntry) Dict {
-
-	hashMap := NewHashMap(entries)
-
-	d := &dict{hashMap, nil, nil, nil, nil}
-
-	d.addAll = &dictAddAll{&nativeFunc{}, d}
-	d.clear = &dictClear{&nativeFunc{}, d}
-	d.isEmpty = &dictIsEmpty{&nativeFunc{}, d}
-	d.containsKey = &dictContainsKey{&nativeFunc{}, d}
-
-	return d
+	return &dict{NewHashMap(entries)}
 }
 
 func (d *dict) compositeMarker() {}
@@ -163,17 +149,22 @@ type dictIterator struct {
 
 func (d *dict) NewIterator() Iterator {
 
-	next := &nativeIterNext{nativeFunc{}, nil}
-	get := &nativeIterGet{nativeFunc{}, nil}
-	// TODO make this immutable
 	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", next},
-		&ObjEntry{"getValue", get}})
+		&ObjEntry{"nextValue", NULL},
+		&ObjEntry{"getValue", NULL}})
 
 	itr := &dictIterator{obj, d, d.hashMap.Iterator(), false}
 
-	next.itr = itr
-	get.itr = itr
+	// TODO make the obj immutable once we have set the functions
+	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterNext(), nil
+		}})
+	obj.PutField(MakeStr("getValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterGet()
+		}})
+
 	return itr
 }
 
@@ -197,70 +188,50 @@ func (i *dictIterator) IterGet() (Value, Error) {
 
 func (d *dict) GetField(key Str) (Value, Error) {
 	switch key.String() {
+
 	case "addAll":
-		return d.addAll, nil
+		return &intrinsicFunc{d, "addAll", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				err := d.AddAll(values[0])
+				if err != nil {
+					return nil, err
+				} else {
+					return d, nil
+				}
+			}}}, nil
+
 	case "clear":
-		return d.clear, nil
+		return &intrinsicFunc{d, "clear", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 0 {
+					return nil, ArityMismatchError("0", len(values))
+				}
+				d.Clear()
+				return d, nil
+			}}}, nil
+
 	case "isEmpty":
-		return d.isEmpty, nil
+		return &intrinsicFunc{d, "isEmpty", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 0 {
+					return nil, ArityMismatchError("0", len(values))
+				}
+				return d.IsEmpty(), nil
+			}}}, nil
+
 	case "containsKey":
-		return d.containsKey, nil
+		return &intrinsicFunc{d, "containsKey", &nativeFunc{
+			func(values []Value) (Value, Error) {
+				if len(values) != 1 {
+					return nil, ArityMismatchError("1", len(values))
+				}
+				return d.ContainsKey(values[0])
+			}}}, nil
+
 	default:
 		return nil, NoSuchFieldError(key.String())
 	}
-}
-
-type dictAddAll struct {
-	*nativeFunc
-	d *dict
-}
-
-type dictClear struct {
-	*nativeFunc
-	d *dict
-}
-
-type dictIsEmpty struct {
-	*nativeFunc
-	d *dict
-}
-
-type dictContainsKey struct {
-	*nativeFunc
-	d *dict
-}
-
-func (f *dictAddAll) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-
-	err := f.d.AddAll(values[0])
-	if err != nil {
-		return nil, err
-	} else {
-		return f.d, nil
-	}
-}
-
-func (f *dictClear) Invoke(values []Value) (Value, Error) {
-	if len(values) != 0 {
-		return nil, ArityMismatchError("0", len(values))
-	}
-	f.d.Clear()
-	return f.d, nil
-}
-
-func (f *dictIsEmpty) Invoke(values []Value) (Value, Error) {
-	if len(values) != 0 {
-		return nil, ArityMismatchError("0", len(values))
-	}
-	return f.d.IsEmpty(), nil
-}
-
-func (f *dictContainsKey) Invoke(values []Value) (Value, Error) {
-	if len(values) != 1 {
-		return nil, ArityMismatchError("1", len(values))
-	}
-	return f.d.ContainsKey(values[0])
 }

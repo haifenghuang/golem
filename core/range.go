@@ -144,17 +144,22 @@ type rangeIterator struct {
 
 func (r *rng) NewIterator() Iterator {
 
-	next := &nativeIterNext{nativeFunc{}, nil}
-	get := &nativeIterGet{nativeFunc{}, nil}
-	// TODO make this immutable
 	obj := NewObj([]*ObjEntry{
-		&ObjEntry{"nextValue", next},
-		&ObjEntry{"getValue", get}})
+		&ObjEntry{"nextValue", NULL},
+		&ObjEntry{"getValue", NULL}})
 
 	itr := &rangeIterator{obj, r, -1}
 
-	next.itr = itr
-	get.itr = itr
+	// TODO make the obj immutable once we have set the functions
+	obj.PutField(MakeStr("nextValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterNext(), nil
+		}})
+	obj.PutField(MakeStr("getValue"), &nativeFunc{
+		func(values []Value) (Value, Error) {
+			return itr.IterGet()
+		}})
+
 	return itr
 }
 

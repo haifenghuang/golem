@@ -15,12 +15,13 @@
 package core
 
 // NOTE: 'null' cannot be an empty struct, because empty structs have
-// unusual semantics in Go, i.e. they all point to the same address.
+// unusual semantics in Go, insofar as they all point to the same address.
 //
 // https://golang.org/ref/spec#Size_and_alignment_guarantees
 //
 // To work around that, we place an arbitrary value inside the struct, so
-// that it wont be empty.
+// that it wont be empty.  This gives the singleton instance of null
+// its own address
 //
 type null struct {
 	placeholder int
