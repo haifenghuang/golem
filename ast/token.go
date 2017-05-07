@@ -120,10 +120,11 @@ const (
 	CASE
 	DEFAULT
 
-	OBJ
+	STRUCT
 	THIS
 	HAS
 	DICT
+	SET
 
 	FN_PRINT
 	FN_PRINTLN
@@ -255,14 +256,16 @@ func (t TokenKind) String() string {
 	case DEFAULT:
 		return "DEFAULT"
 
-	case OBJ:
-		return "OBJ"
+	case STRUCT:
+		return "STRUCT"
 	case THIS:
 		return "THIS"
 	case HAS:
 		return "HAS"
 	case DICT:
 		return "DICT"
+	case SET:
+		return "SET"
 
 	case FN_PRINT:
 		return "FN_PRINT"

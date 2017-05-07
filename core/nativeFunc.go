@@ -60,7 +60,7 @@ func (f *nativeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(f, t)
+		return Strcat(f, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

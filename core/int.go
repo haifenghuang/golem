@@ -107,7 +107,7 @@ func (i _int) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(i, t)
+		return Strcat(i, t), nil
 
 	case _int:
 		return i + t, nil

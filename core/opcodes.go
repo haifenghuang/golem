@@ -72,6 +72,7 @@ const (
 	NEW_OBJ
 	NEW_DICT
 	NEW_LIST
+	NEW_SET
 	NEW_TUPLE
 
 	GET_FIELD
@@ -109,8 +110,8 @@ func OpCodeSize(opc byte) int {
 		LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
-		NEW_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD, NEW_DICT, NEW_LIST,
-		NEW_TUPLE, CHECK_TUPLE:
+		NEW_OBJ, GET_FIELD, PUT_FIELD, INC_FIELD,
+		NEW_DICT, NEW_LIST, NEW_SET, NEW_TUPLE, CHECK_TUPLE:
 
 		return 3
 
@@ -211,6 +212,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmtIndex(opcodes, i, "NEW_DICT")
 	case NEW_LIST:
 		return fmtIndex(opcodes, i, "NEW_LIST")
+	case NEW_SET:
+		return fmtIndex(opcodes, i, "NEW_SET")
 	case NEW_TUPLE:
 		return fmtIndex(opcodes, i, "NEW_TUPLE")
 

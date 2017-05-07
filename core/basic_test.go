@@ -540,8 +540,7 @@ func TestStrIterator(t *testing.T) {
 	for itr.IterNext().BoolVal() {
 		v, err = itr.IterGet()
 		assert(t, err == nil)
-		s, err = Strcat(s, v)
-		assert(t, err == nil)
+		s = Strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("abc"))
 	v, err = itr.IterGet()
@@ -551,8 +550,7 @@ func TestStrIterator(t *testing.T) {
 	s = MakeStr("")
 	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
 		v := structInvokeFunc(t, itr, MakeStr("getValue"))
-		s, err = Strcat(s, v)
-		assert(t, err == nil)
+		s = Strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("abc"))
 }

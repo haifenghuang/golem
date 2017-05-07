@@ -135,9 +135,15 @@ type (
 		Indexable
 		Lenable
 		Iterable
-
 		Sliceable
-		Add(Value)
+
+		Add(Value) Error
+		AddAll(Value) Error
+		Clear()
+		Contains(Value) (Bool, Error)
+		IndexOf(Value) Int
+		IsEmpty() Bool
+		Join(Str) Str
 	}
 
 	Range interface {
@@ -163,12 +169,23 @@ type (
 		Indexable
 		Lenable
 		Iterable
+
+		AddAll(Value) Error
+		Clear()
+		ContainsKey(Value) (Bool, Error)
+		IsEmpty() Bool
 	}
 
 	Set interface {
 		Composite
 		Lenable
 		Iterable
+
+		Add(Value) Error
+		AddAll(Value) Error
+		Clear()
+		Contains(Value) (Bool, Error)
+		IsEmpty() Bool
 	}
 
 	Struct interface {

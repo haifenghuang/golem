@@ -130,25 +130,25 @@ func TestHashMapIterator(t *testing.T) {
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{MakeStr("a"), MakeInt(1)}},
+			{MakeStr("a"), MakeInt(1)}},
 		[]*HEntry{
-			&HEntry{MakeStr("a"), MakeInt(1)}})
+			{MakeStr("a"), MakeInt(1)}})
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{MakeStr("a"), MakeInt(1)},
-			&HEntry{MakeStr("b"), MakeInt(2)}},
+			{MakeStr("a"), MakeInt(1)},
+			{MakeStr("b"), MakeInt(2)}},
 		[]*HEntry{
-			&HEntry{MakeStr("b"), MakeInt(2)},
-			&HEntry{MakeStr("a"), MakeInt(1)}})
+			{MakeStr("b"), MakeInt(2)},
+			{MakeStr("a"), MakeInt(1)}})
 
 	testIteratorEntries(t,
 		[]*HEntry{
-			&HEntry{MakeStr("a"), MakeInt(1)},
-			&HEntry{MakeStr("b"), MakeInt(2)},
-			&HEntry{MakeStr("c"), MakeInt(3)}},
+			{MakeStr("a"), MakeInt(1)},
+			{MakeStr("b"), MakeInt(2)},
+			{MakeStr("c"), MakeInt(3)}},
 		[]*HEntry{
-			&HEntry{MakeStr("b"), MakeInt(2)},
-			&HEntry{MakeStr("a"), MakeInt(1)},
-			&HEntry{MakeStr("c"), MakeInt(3)}})
+			{MakeStr("b"), MakeInt(2)},
+			{MakeStr("a"), MakeInt(1)},
+			{MakeStr("c"), MakeInt(3)}})
 }

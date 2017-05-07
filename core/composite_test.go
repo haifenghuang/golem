@@ -276,6 +276,54 @@ func TestDict(t *testing.T) {
 	ok(t, v, err, TRUE)
 }
 
+func TestSet(t *testing.T) {
+	s := NewSet([]Value{})
+	okType(t, s, TDICT)
+
+	var v Value
+	var err Error
+
+	v = s.ToStr()
+	ok(t, v, err, MakeStr("set {}"))
+
+	v = s.Eq(NewSet([]Value{}))
+	ok(t, v, nil, TRUE)
+
+	v = s.Eq(NewSet([]Value{ONE}))
+	ok(t, v, nil, FALSE)
+
+	v = s.Eq(NULL)
+	ok(t, v, nil, FALSE)
+
+	v = s.Len()
+	ok(t, v, nil, ZERO)
+
+	s = NewSet([]Value{ONE})
+
+	v = s.ToStr()
+	ok(t, v, err, MakeStr("set { 1 }"))
+
+	v = s.Eq(NewSet([]Value{}))
+	ok(t, v, nil, FALSE)
+
+	v = s.Eq(NewSet([]Value{ONE, ONE, ONE}))
+	ok(t, v, nil, TRUE)
+
+	v = s.Eq(NULL)
+	ok(t, v, nil, FALSE)
+
+	v = s.Len()
+	ok(t, v, nil, ONE)
+
+	s = NewSet([]Value{ONE, ZERO, ZERO, ONE})
+
+	v = s.ToStr()
+	ok(t, v, err, MakeStr("set { 0, 1 }"))
+
+	v = s.Len()
+	ok(t, v, nil, MakeInt(2))
+}
+
 func TestTuple(t *testing.T) {
 	var v Value
 	var err Error
@@ -468,8 +516,7 @@ func TestDictIterator(t *testing.T) {
 
 		tp, ok := v.(Tuple)
 		assert(t, ok)
-		s, err = Strcat(s, tp)
-		assert(t, err == nil)
+		s = Strcat(s, tp)
 	}
 	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
 	v, err = itr.IterGet()
@@ -482,8 +529,36 @@ func TestDictIterator(t *testing.T) {
 
 		tp, ok := v.(Tuple)
 		assert(t, ok)
-		s, err = Strcat(s, tp)
-		assert(t, err == nil)
+		s = Strcat(s, tp)
 	}
 	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
+}
+
+func TestSetIterator(t *testing.T) {
+
+	var ibl Iterable = NewSet(
+		[]Value{MakeStr("a"), MakeStr("b"), MakeStr("c")})
+
+	var itr Iterator = ibl.NewIterator()
+	v, err := itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+	s := MakeStr("")
+	for itr.IterNext().BoolVal() {
+		v, err = itr.IterGet()
+		assert(t, err == nil)
+
+		s = Strcat(s, v)
+	}
+	ok(t, s, nil, MakeStr("bac"))
+	v, err = itr.IterGet()
+	fail(t, v, err, "NoSuchElement")
+
+	itr = ibl.NewIterator()
+	s = MakeStr("")
+	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
+		v := structInvokeFunc(t, itr, MakeStr("getValue"))
+
+		s = Strcat(s, v)
+	}
+	ok(t, s, nil, MakeStr("bac"))
 }

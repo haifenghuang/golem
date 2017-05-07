@@ -596,6 +596,20 @@ func TestList(t *testing.T) {
 	ok_expr(t, p, "[ a, b, [  ], struct { z: 1 } ]")
 }
 
+func TestSet(t *testing.T) {
+	p := newParser("set {}")
+	ok_expr(t, p, "set {  }")
+
+	p = newParser("set { a }")
+	ok_expr(t, p, "set { a }")
+
+	p = newParser("set { a, b }")
+	ok_expr(t, p, "set { a, b }")
+
+	p = newParser("set { a, b, dict {c: 1} }")
+	ok_expr(t, p, "set { a, b, dict { c: 1 } }")
+}
+
 func TestDict(t *testing.T) {
 	p := newParser("dict{}")
 	ok_expr(t, p, "dict {  }")

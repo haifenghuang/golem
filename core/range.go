@@ -79,7 +79,7 @@ func (r *rng) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(r, t)
+		return Strcat(r, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -144,18 +144,18 @@ type rangeIterator struct {
 
 func (r *rng) NewIterator() Iterator {
 
-	s := NewStruct([]*StructEntry{
-		&StructEntry{"nextValue", NULL},
-		&StructEntry{"getValue", NULL}})
+	stc := NewStruct([]*StructEntry{
+		{"nextValue", NULL},
+		{"getValue", NULL}})
 
-	itr := &rangeIterator{s, r, -1}
+	itr := &rangeIterator{stc, r, -1}
 
 	// TODO make the struct immutable once we have set the functions
-	s.PutField(MakeStr("nextValue"), &nativeFunc{
+	stc.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	s.PutField(MakeStr("getValue"), &nativeFunc{
+	stc.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

@@ -164,6 +164,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.ListExpr:
 		c.visitListExpr(t)
 
+	case *ast.SetExpr:
+		c.visitSetExpr(t)
+
 	case *ast.TupleExpr:
 		c.visitTupleExpr(t)
 
@@ -830,6 +833,14 @@ func (c *compiler) visitListExpr(ls *ast.ListExpr) {
 		c.Visit(v)
 	}
 	c.pushIndex(ls.Begin(), g.NEW_LIST, len(ls.Elems))
+}
+
+func (c *compiler) visitSetExpr(s *ast.SetExpr) {
+
+	for _, v := range s.Elems {
+		c.Visit(v)
+	}
+	c.pushIndex(s.Begin(), g.NEW_SET, len(s.Elems))
 }
 
 func (c *compiler) visitTupleExpr(tp *ast.TupleExpr) {

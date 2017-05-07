@@ -168,6 +168,12 @@ func (ls *ListExpr) Traverse(v Visitor) {
 	}
 }
 
+func (s *SetExpr) Traverse(v Visitor) {
+	for _, val := range s.Elems {
+		v.Visit(val)
+	}
+}
+
 func (tp *TupleExpr) Traverse(v Visitor) {
 	for _, val := range tp.Elems {
 		v.Visit(val)

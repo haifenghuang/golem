@@ -652,11 +652,14 @@ func (p *Parser) primary() ast.Expr {
 	case p.cur.Kind == ast.FN:
 		return p.fnExpr(p.consume())
 
-	case p.cur.Kind == ast.OBJ:
+	case p.cur.Kind == ast.STRUCT:
 		return p.structExpr(p.consume())
 
 	case p.cur.Kind == ast.DICT:
 		return p.dictExpr(p.consume())
+
+	case p.cur.Kind == ast.SET:
+		return p.setExpr(p.consume())
 
 	case p.cur.Kind == ast.LBRACKET:
 		return p.listExpr(p.consume())
@@ -794,6 +797,29 @@ func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {
 	}
 
 	return &ast.DictExpr{dictToken, lbrace, entries, rbrace}
+}
+
+func (p *Parser) setExpr(setToken *ast.Token) ast.Expr {
+
+	lbrace := p.expect(ast.LBRACE)
+
+	if p.cur.Kind == ast.RBRACE {
+		return &ast.SetExpr{setToken, lbrace, []ast.Expr{}, p.consume()}
+	} else {
+
+		elems := []ast.Expr{p.expression()}
+		for {
+			switch p.cur.Kind {
+			case ast.RBRACE:
+				return &ast.SetExpr{setToken, lbrace, elems, p.consume()}
+			case ast.COMMA:
+				p.consume()
+				elems = append(elems, p.expression())
+			default:
+				panic(p.unexpected())
+			}
+		}
+	}
 }
 
 func (p *Parser) listExpr(lbracket *ast.Token) ast.Expr {

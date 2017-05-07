@@ -73,7 +73,7 @@ func (ls *list) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(ls, t)
+		return Strcat(ls, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -98,8 +98,9 @@ func (ls *list) Set(index Value, val Value) Error {
 	return nil
 }
 
-func (ls *list) Add(val Value) {
+func (ls *list) Add(val Value) Error {
 	ls.array = append(ls.array, val)
+	return nil
 }
 
 func (ls *list) AddAll(val Value) Error {
@@ -118,8 +119,8 @@ func (ls *list) AddAll(val Value) Error {
 	}
 }
 
-func (ls *list) Contains(val Value) Bool {
-	return MakeBool(!ls.IndexOf(val).Eq(NEG_ONE).BoolVal())
+func (ls *list) Contains(val Value) (Bool, Error) {
+	return MakeBool(!ls.IndexOf(val).Eq(NEG_ONE).BoolVal()), nil
 }
 
 func (ls *list) IndexOf(val Value) Int {
@@ -203,18 +204,18 @@ type listIterator struct {
 
 func (ls *list) NewIterator() Iterator {
 
-	s := NewStruct([]*StructEntry{
-		&StructEntry{"nextValue", NULL},
-		&StructEntry{"getValue", NULL}})
+	stc := NewStruct([]*StructEntry{
+		{"nextValue", NULL},
+		{"getValue", NULL}})
 
-	itr := &listIterator{s, ls, -1}
+	itr := &listIterator{stc, ls, -1}
 
 	// TODO make the struct immutable once we have set the functions
-	s.PutField(MakeStr("nextValue"), &nativeFunc{
+	stc.PutField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	s.PutField(MakeStr("getValue"), &nativeFunc{
+	stc.PutField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})
@@ -247,8 +248,12 @@ func (ls *list) GetField(key Str) (Value, Error) {
 				if len(values) != 1 {
 					return nil, ArityMismatchError("1", len(values))
 				}
-				ls.Add(values[0])
-				return ls, nil
+				err := ls.Add(values[0])
+				if err != nil {
+					return nil, err
+				} else {
+					return ls, nil
+				}
 			}}}, nil
 
 	case "addAll":
@@ -290,7 +295,7 @@ func (ls *list) GetField(key Str) (Value, Error) {
 				if len(values) != 1 {
 					return nil, ArityMismatchError("1", len(values))
 				}
-				return ls.Contains(values[0]), nil
+				return ls.Contains(values[0])
 			}}}, nil
 
 	case "indexOf":

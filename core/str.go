@@ -80,7 +80,7 @@ func (s str) Cmp(v Value) (Int, Error) {
 }
 
 func (s str) Plus(v Value) (Value, Error) {
-	return Strcat(s, v)
+	return Strcat(s, v), nil
 }
 
 func (s str) Get(index Value) (Value, Error) {
@@ -179,8 +179,8 @@ type strIterator struct {
 func (s str) NewIterator() Iterator {
 
 	stc := NewStruct([]*StructEntry{
-		&StructEntry{"nextValue", NULL},
-		&StructEntry{"getValue", NULL}})
+		{"nextValue", NULL},
+		{"getValue", NULL}})
 
 	itr := &strIterator{stc, s, -1}
 

@@ -31,7 +31,7 @@ func ParseIndex(val Value, max int) (Int, Error) {
 	}
 }
 
-func Strcat(a Value, b Value) (Str, Error) {
+func Strcat(a Value, b Value) Str {
 
 	ra := valToRunes(a)
 	rb := valToRunes(b)
@@ -40,7 +40,7 @@ func Strcat(a Value, b Value) (Str, Error) {
 	result = append(result, runesCopy(ra)...)
 	result = append(result, runesCopy(rb)...)
 
-	return result, nil
+	return result
 }
 
 // copy to avoid memory leaks

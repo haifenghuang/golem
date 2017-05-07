@@ -98,7 +98,7 @@ func (stc *_struct) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(stc, t)
+		return Strcat(stc, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")

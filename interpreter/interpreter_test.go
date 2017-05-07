@@ -784,6 +784,71 @@ assert(!a.containsKey('x'));
 	interpret(mod)
 }
 
+func TestSet(t *testing.T) {
+
+	source := `
+let a = set {};
+a.add(1);
+assert(a == set {1});
+a.add(2).add(3).add(2);
+assert(a == set {1,2,3});
+let b = set { 4 };
+b.add(4);
+assert(b == set { 4 });
+assert(a.add == a.add);
+assert(b.add == b.add);
+assert(a.add != b.add);
+assert(b.add != a.add);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = set {};
+a.addAll([1,2]).addAll('bc');
+assert(a == set {1,2,'b','c'});
+let b = set {};
+b.addAll(range(0,3));
+assert(b == set { 0, 1, 2 });
+assert(a.addAll == a.addAll);
+assert(b.addAll == b.addAll);
+assert(a.addAll != b.addAll);
+assert(b.addAll != a.addAll);
+assert(a.add != a.addAll);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = "let a = set{}; a.addAll(false);"
+	failErr(t, source, g.TypeMismatchError("Expected Iterable Type"))
+
+	source = "let a = set{}; a.add(3,4);"
+	failErr(t, source, g.ArityMismatchError("1", 2))
+
+	//	source = "let a = set{}; a.add([1,2]);"
+	//	failErr(t, source, g.TypeMismatchError("Expected Hashable Type"))
+
+	source = `
+let a = set{};
+assert(a.isEmpty());
+a.add(1);
+assert(!a.isEmpty());
+a.clear();
+assert(a.isEmpty());
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = set{};
+assert(!a.contains('x'));
+a = set {'z', 'x'};
+assert(a.contains('x'));
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+}
+
 func newRange(from int64, to int64, step int64) g.Range {
 	r, err := g.NewRange(from, to, step)
 	if err != nil {
