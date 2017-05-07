@@ -39,6 +39,8 @@ func NewBytecodeFunc(template *Template) BytecodeFunc {
 	return &bytecodeFunc{template, captures}
 }
 
+func (bf *bytecodeFunc) funcMarker() {}
+
 func (bf *bytecodeFunc) TypeOf() Type { return TFUNC }
 
 func (bf *bytecodeFunc) HashCode() (Int, Error) {

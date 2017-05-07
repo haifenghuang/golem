@@ -37,6 +37,8 @@ type nativeFunc struct {
 	placeholder int
 }
 
+func (nf *nativeFunc) funcMarker() {}
+
 func (nf *nativeFunc) TypeOf() Type { return TFUNC }
 
 func (nf *nativeFunc) HashCode() (Int, Error) {

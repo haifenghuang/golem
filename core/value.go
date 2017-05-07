@@ -192,6 +192,7 @@ type (
 // Func represents an instance of a function
 type Func interface {
 	Value
+	funcMarker()
 }
 
 //---------------------------------------------------------------
