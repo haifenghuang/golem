@@ -183,50 +183,10 @@ type (
 //---------------------------------------------------------------
 // Func
 
-type (
-
-	// Func represents an instance of a function
-	Func interface {
-		Value
-	}
-
-	// BytecodeFunc represents a function that is defined
-	// via Golem source code
-	BytecodeFunc interface {
-		Func
-
-		Template() *Template
-		GetCapture(int) *Ref
-		PushCapture(*Ref)
-	}
-
-	// NativeFunc represents a function that is defined
-	// natively within Go.
-	NativeFunc interface {
-		Func
-
-		Invoke([]Value) (Value, Error)
-	}
-)
-
-type (
-	// Template represents the information needed to invoke a function
-	// instance.  Templates are created at compile time, and
-	// are immutable at run time.
-	Template struct {
-		Arity       int
-		NumCaptures int
-		NumLocals   int
-		OpCodes     []byte
-		OpcLines    []OpcLine
-	}
-
-	// OpcLine tracks which sequence of opcodes are on a ven line
-	OpcLine struct {
-		Index   int
-		LineNum int
-	}
-)
+// Func represents an instance of a function
+type Func interface {
+	Value
+}
 
 //---------------------------------------------------------------
 // Type

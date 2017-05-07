@@ -649,8 +649,10 @@ a.add(1);
 assert(a == [1]);
 a.add(2).add([3]);
 assert(a == [1,2,[3]]);
-assert(a.add == a.add);
 let b = [];
+b.add(4);
+assert(b == [4]);
+assert(a.add == a.add);
 assert(a.add != b.add);
 `
 	mod = newCompiler(source).Compile()
@@ -738,6 +740,9 @@ let d = a['x'];
 let a = dict {};
 a.addAll([(1,2)]).addAll([(3,4)]);
 assert(a == dict {1:2,3:4});
+let b = dict {};
+assert(a.addAll == a.addAll);
+assert(a.addAll != b.addAll);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -790,6 +795,8 @@ print(a);
 println(b);
 print(a,b);
 println(a,b);
+assert(print == print);
+assert(print != println);
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)

@@ -144,8 +144,8 @@ type rangeIterator struct {
 
 func (r *rng) NewIterator() Iterator {
 
-	next := &nativeIterNext{&nativeFunc{}, nil}
-	get := &nativeIterGet{&nativeFunc{}, nil}
+	next := &nativeIterNext{nativeFunc{}, nil}
+	get := &nativeIterGet{nativeFunc{}, nil}
 	// TODO make this immutable
 	obj := NewObj([]*ObjEntry{
 		&ObjEntry{"nextValue", next},

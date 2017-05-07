@@ -14,7 +14,17 @@
 
 package core
 
-type null struct{}
+// NOTE: 'null' cannot be an empty struct, because empty structs have
+// unusual semantics in Go, i.e. they all point to the same address.
+//
+// https://golang.org/ref/spec#Size_and_alignment_guarantees
+//
+// To work around that, we place an arbitrary value inside the struct, so
+// that it wont be empty.
+//
+type null struct {
+	placeholder int
+}
 
 var NULL Null = &null{}
 

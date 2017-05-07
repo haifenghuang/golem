@@ -15,7 +15,7 @@
 package core
 
 import (
-	//"fmt"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -556,4 +556,16 @@ func TestStrIterator(t *testing.T) {
 		assert(t, err == nil)
 	}
 	ok(t, s, nil, MakeStr("abc"))
+}
+
+func TestStructs(t *testing.T) {
+	// sanity check so that we can be sure our workarounds for various
+	// non-empty structs actually produce different pointer locations,
+	// even if they happen to use the same arbitraryValue.
+
+	a := &null{}
+	b := &nativeFunc{}
+	pa := fmt.Sprintf("%p", a)
+	pb := fmt.Sprintf("%p", b)
+	assert(t, pa != pb)
 }
