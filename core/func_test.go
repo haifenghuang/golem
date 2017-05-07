@@ -19,19 +19,32 @@ import (
 	"testing"
 )
 
-func TestFunc(t *testing.T) {
+func TestBytecodeFunc(t *testing.T) {
 
 	a := NewBytecodeFunc(&Template{})
 	b := NewBytecodeFunc(&Template{})
 
 	okType(t, a, TFUNC)
+	okType(t, b, TFUNC)
 
-	z := a.Eq(b)
-	ok(t, z, nil, FALSE)
-	z = b.Eq(a)
-	ok(t, z, nil, FALSE)
-	z = a.Eq(a)
-	ok(t, z, nil, TRUE)
+	assert(t, a.Eq(a).BoolVal())
+	assert(t, b.Eq(b).BoolVal())
+	assert(t, !a.Eq(b).BoolVal())
+	assert(t, !b.Eq(a).BoolVal())
+}
+
+func TestBuiltinFunc(t *testing.T) {
+
+	a := Builtins[PRINT]
+	b := Builtins[PRINTLN]
+
+	okType(t, a, TFUNC)
+	okType(t, b, TFUNC)
+
+	assert(t, a.Eq(a).BoolVal())
+	assert(t, b.Eq(b).BoolVal())
+	assert(t, !a.Eq(b).BoolVal())
+	assert(t, !b.Eq(a).BoolVal())
 }
 
 func TestLineNumber(t *testing.T) {

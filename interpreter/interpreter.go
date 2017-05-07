@@ -269,7 +269,7 @@ func (inp *Interpreter) invoke(curFunc g.BytecodeFunc, locals []*g.Ref) (g.Value
 			}
 
 			s = s[:n-numVals+1]
-			s = append(s, g.NewDict(g.NewHashMap(entries)))
+			s = append(s, g.NewDict(entries))
 			ip += 3
 
 		case g.GET_FIELD:
