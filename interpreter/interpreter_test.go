@@ -29,15 +29,15 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, errStack := intp.Init()
-	if errStack != nil {
-		panic(errStack.Err.Error())
+	result, err := intp.Init()
+	if err != nil {
+		panic(err.Error())
 	}
 
 	b := result.Eq(expect)
 	if !b.BoolVal() {
 		t.Error(result, " != ", expect)
-		//panic("ok_expr")
+		panic("ok_expr")
 	}
 }
 
@@ -52,9 +52,9 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, errStack := intp.Init()
-	if errStack != nil {
-		panic(errStack)
+	result, err := intp.Init()
+	if err != nil {
+		panic(err)
 	}
 
 	b := result.Eq(expectResult)
@@ -72,28 +72,33 @@ func fail_expr(t *testing.T, source string, expect string) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, errStack := intp.Init()
+	result, err := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if errStack.Err.Error() != expect {
-		t.Error(errStack.Err.Error(), " != ", expect)
+	if err.Error() != expect {
+		t.Error(err.Error(), " != ", expect)
 	}
 }
 
-func fail(t *testing.T, source string, expect *ErrorStack) {
+func fail(t *testing.T, source string, expectErr g.Error, expectTrace []string) {
 
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, errStack := intp.Init()
+	result, err := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if !reflect.DeepEqual(errStack, expect) {
-		t.Error(errStack, " != ", expect)
+	if !reflect.DeepEqual(err, expectErr) {
+		t.Error(err, " != ", expectErr)
+	}
+
+	trace := intp.stackTrace()
+	if !reflect.DeepEqual(trace, expectTrace) {
+		t.Error(err, " != ", expectTrace)
 	}
 }
 
@@ -102,13 +107,13 @@ func failErr(t *testing.T, source string, expect g.Error) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, errStack := intp.Init()
+	result, err := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if errStack.Err.Error() != expect.Error() {
-		t.Error(errStack, " != ", expect)
+	if err.Error() != expect.Error() {
+		t.Error(err, " != ", expect)
 	}
 }
 
@@ -132,7 +137,6 @@ func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
 	_, err := intp.Init()
 	if err != nil {
-		err.DumpStackTrace()
 		panic("interpreter failed")
 	}
 }
@@ -174,8 +178,8 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "2 >= 2;", g.TRUE)
 
 	ok_expr(t, "1 <=> 2;", g.MakeInt(-1))
-	ok_expr(t, "2 <=> 2;", g.MakeInt(0))
-	ok_expr(t, "2 <=> 1;", g.MakeInt(1))
+	ok_expr(t, "2 <=> 2;", g.ZERO)
+	ok_expr(t, "2 <=> 1;", g.ONE)
 
 	ok_expr(t, "true  && true;", g.TRUE)
 	ok_expr(t, "true  && false;", g.FALSE)
@@ -279,7 +283,7 @@ func TestIf(t *testing.T) {
 
 	ok_mod(t, "let a = 1; if (false) { a = 2; }",
 		g.NULL,
-		[]*g.Ref{&g.Ref{g.MakeInt(1)}})
+		[]*g.Ref{&g.Ref{g.ONE}})
 
 	ok_mod(t, "let a = 1; if (1 == 1) { a = 2; } else { a = 3; } let b = 4;",
 		g.MakeInt(2),
@@ -343,13 +347,22 @@ return a + 2;
 let b = 5;`,
 		g.MakeInt(3),
 		[]*g.Ref{
-			&g.Ref{g.MakeInt(1)},
+			&g.Ref{g.ONE},
 			&g.Ref{g.NULL}})
 }
 
 func TestFunc(t *testing.T) {
 
 	source := `
+let a = fn(x) { x; };
+let b = a(1);
+`
+	mod := newCompiler(source).Compile()
+
+	interpret(mod)
+	ok_ref(t, mod.Locals[1], g.ONE)
+
+	source = `
 let a = fn() { };
 let b = fn(x) { x; };
 let c = fn(x, y) { let z = 4; x * y * z; };
@@ -357,10 +370,11 @@ let d = a();
 let e = b(1);
 let f = c(b(2), 3);
 `
-	mod := newCompiler(source).Compile()
+	mod = newCompiler(source).Compile()
+
 	interpret(mod)
 	ok_ref(t, mod.Locals[3], g.NULL)
-	ok_ref(t, mod.Locals[4], g.MakeInt(1))
+	ok_ref(t, mod.Locals[4], g.ONE)
 	ok_ref(t, mod.Locals[5], g.MakeInt(24))
 
 	source = `
@@ -385,8 +399,8 @@ let f = fibonacci(6);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.MakeInt(1))
-	ok_ref(t, mod.Locals[2], g.MakeInt(1))
+	ok_ref(t, mod.Locals[1], g.ONE)
+	ok_ref(t, mod.Locals[2], g.ONE)
 	ok_ref(t, mod.Locals[3], g.MakeInt(2))
 	ok_ref(t, mod.Locals[4], g.MakeInt(3))
 	ok_ref(t, mod.Locals[5], g.MakeInt(5))
@@ -447,7 +461,7 @@ let y = a(1);
 
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(0))
+	ok_ref(t, mod.Locals[0], g.ZERO)
 	ok_ref(t, mod.Locals[3], g.MakeInt(7))
 	ok_ref(t, mod.Locals[4], g.MakeInt(8))
 
@@ -469,8 +483,8 @@ let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 	interpret(mod)
 
 	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{}))
-	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(0)}}))
-	ok_ref(t, mod.Locals[2], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(1)}, {"b", g.MakeInt(2)}}))
+	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"a", g.ZERO}}))
+	ok_ref(t, mod.Locals[2], g.NewStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
 	ok_ref(t, mod.Locals[3], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
 		{"c", g.NewStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
 
@@ -552,20 +566,20 @@ let divide = fn(x, y) {
 };
 let a = divide(3, 0);
 `
-	fail(t, source, &ErrorStack{
+	fail(t, source,
 		g.DivideByZeroError(),
 		[]string{
 			"    at line 3",
-			"    at line 5"}})
+			"    at line 5"})
 
 	source = `
 let foo = fn(n) { n + n; };
 let a = foo(5, 6);
 	`
-	fail(t, source, &ErrorStack{
+	fail(t, source,
 		g.ArityMismatchError("1", 2),
 		[]string{
-			"    at line 3"}})
+			"    at line 3"})
 }
 
 func TestPostfix(t *testing.T) {
@@ -904,20 +918,20 @@ let a = assert(true);
 	interpret(mod)
 	ok_ref(t, mod.Locals[0], g.TRUE)
 
-	fail(t, "assert(1, 2);", &ErrorStack{
+	fail(t, "assert(1, 2);",
 		g.ArityMismatchError("1", 2),
 		[]string{
-			"    at line 1"}})
+			"    at line 1"})
 
-	fail(t, "assert(1);", &ErrorStack{
+	fail(t, "assert(1);",
 		g.TypeMismatchError("Expected 'Bool'"),
 		[]string{
-			"    at line 1"}})
+			"    at line 1"})
 
-	fail(t, "assert(1 == 2);", &ErrorStack{
+	fail(t, "assert(1 == 2);",
 		g.AssertionFailedError(),
 		[]string{
-			"    at line 1"}})
+			"    at line 1"})
 }
 
 func TestTuple(t *testing.T) {
@@ -965,7 +979,7 @@ let a = 0;
 for n in [1,2,3] {
     a += n;
 }
-assert(a == 6); 
+assert(a == 6);
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
@@ -977,8 +991,8 @@ for (k, v)  in dict {'a': 1, 'b': 2, 'c': 3} {
     keys += k;
     values += v;
 }
-assert(keys == 'bac'); 
-assert(values == 6); 
+assert(keys == 'bac');
+assert(values == 6);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -988,7 +1002,7 @@ let entries = '';
 for e in dict {'a': 1, 'b': 2, 'c': 3} {
     entries += str(e);
 }
-assert(entries == '(b, 2)(a, 1)(c, 3)'); 
+assert(entries == '(b, 2)(a, 1)(c, 3)');
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
@@ -1000,37 +1014,37 @@ for (k, v)  in [('a', 1), ('b', 2), ('c', 3)] {
     keys += k;
     values += v;
 }
-assert(keys == 'abc'); 
-assert(values == 6); 
+assert(keys == 'abc');
+assert(values == 6);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
 	source = "for (k, v)  in [1, 2, 3] {}"
-	fail(t, source, &ErrorStack{
+	fail(t, source,
 		g.TypeMismatchError("Expected 'Tuple'"),
-		[]string{"    at line 1"}})
+		[]string{"    at line 1"})
 
 	source = "for (a, b, c)  in [('a', 1), ('b', 2), ('c', 3)] {}"
-	fail(t, source, &ErrorStack{
+	fail(t, source,
 		g.InvalidArgumentError("Expected Tuple of length 3"),
-		[]string{"    at line 1"}})
+		[]string{"    at line 1"})
 }
 
 func TestSwitch(t *testing.T) {
 
 	source := `
-let s = ''; 
+let s = '';
 for i in range(0, 4) {
-    switch { 
-    case i == 0: 
-        s += 'a'; 
+    switch {
+    case i == 0:
+        s += 'a';
 
-    case i == 1, i == 2: 
-        s += 'b'; 
+    case i == 1, i == 2:
+        s += 'b';
 
     default:
-        s += 'c'; 
+        s += 'c';
     }
 }
 assert(s == 'abbc');
@@ -1039,14 +1053,14 @@ assert(s == 'abbc');
 	interpret(mod)
 
 	source = `
-let s = ''; 
+let s = '';
 for i in range(0, 4) {
-    switch { 
-    case i == 0, i == 1: 
-        s += 'a'; 
+    switch {
+    case i == 0, i == 1:
+        s += 'a';
 
-    case i == 2: 
-        s += 'b'; 
+    case i == 2:
+        s += 'b';
     }
 }
 assert(s == 'aab');
@@ -1055,14 +1069,14 @@ assert(s == 'aab');
 	interpret(mod)
 
 	source = `
-let s = ''; 
+let s = '';
 for i in range(0, 4) {
-    switch i { 
-    case 0, 1: 
-        s += 'a'; 
+    switch i {
+    case 0, 1:
+        s += 'a';
 
-    case 2: 
-        s += 'b'; 
+    case 2:
+        s += 'b';
     }
 }
 assert(s == 'aab');
@@ -1074,9 +1088,9 @@ assert(s == 'aab');
 func TestGetField(t *testing.T) {
 
 	source := "null.bogus;"
-	fail(t, source, &ErrorStack{
+	fail(t, source,
 		g.NullValueError(),
-		[]string{"    at line 1"}})
+		[]string{"    at line 1"})
 
 	err := g.NoSuchFieldError("bogus")
 

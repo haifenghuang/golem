@@ -183,10 +183,25 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case DIV:
 		return fmt.Sprintf("%d: DIV\n", i)
 
+	case REM:
+		return fmt.Sprintf("%d: REM\n", i)
+	case BIT_AND:
+		return fmt.Sprintf("%d: BIT_AND\n", i)
+	case BIT_OR:
+		return fmt.Sprintf("%d: BIT_OR\n", i)
+	case BIT_XOR:
+		return fmt.Sprintf("%d: BIT_XOR\n", i)
+	case LEFT_SHIFT:
+		return fmt.Sprintf("%d: LEFT_SHIFT\n", i)
+	case RIGHT_SHIFT:
+		return fmt.Sprintf("%d: RIGHT_SHIFT\n", i)
+
 	case NEGATE:
 		return fmt.Sprintf("%d: NEGATE\n", i)
 	case NOT:
 		return fmt.Sprintf("%d: NOT\n", i)
+	case COMPLEMENT:
+		return fmt.Sprintf("%d: COMPLEMENT\n", i)
 
 	case NEW_FUNC:
 		return fmtIndex(opcodes, i, "NEW_FUNC")
@@ -252,7 +267,7 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmtIndex(opcodes, i, "CONTINUE")
 
 	default:
-		panic("unreachable")
+		panic(fmt.Sprintf("unreachable %d", opcodes[i]))
 	}
 }
 
