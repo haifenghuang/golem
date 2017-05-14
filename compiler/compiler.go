@@ -15,7 +15,7 @@
 package compiler
 
 import (
-	//"fmt"
+	"fmt"
 	"golem/analyzer"
 	"golem/ast"
 	g "golem/core"
@@ -82,6 +82,9 @@ func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {
 
 func (c *compiler) Visit(node ast.Node) {
 	switch t := node.(type) {
+
+	case *ast.Block:
+		c.visitBlock(t)
 
 	case *ast.Const:
 		c.visitDecls(t.Decls)
@@ -174,7 +177,30 @@ func (c *compiler) Visit(node ast.Node) {
 		c.visitDictExpr(t)
 
 	default:
-		t.Traverse(c)
+		panic(fmt.Sprintf("cannot compile %v\n", node))
+	}
+}
+
+func (c *compiler) visitBlock(blk *ast.Block) {
+
+	// TODO A 'standalone' expression is an expression that is evaluated
+	// but whose result is never assigned.  The *last* of these type
+	// of expressions that is evaluated at runtime should be left on the
+	// stack, since it could end up being used as an implicit return value.
+	// The rest of them must be popped once they've been evaluated, so we
+	// don't fill up the stack with un-needed values
+	//
+	// However, at the moment we do not have a Control Flow Graph, and thus
+	// have no way of knowing which expressions should be popped.
+	// So we need to write the Control Flow Graph to fix this problem.
+
+	for _, node := range blk.Nodes {
+		c.Visit(node)
+
+		// TODO
+		//if (node is ast.Expr) && someControlFlowGraphCheck() {
+		//	c.push(node.End(), g.POP)
+		//}
 	}
 }
 
@@ -208,8 +234,6 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 	case *ast.IdentExpr:
 
 		c.Visit(asn.Val)
-
-		// TODO doesn't DUP-ing have the potential to fill up the operand stack?
 		c.push(asn.Eq.Position, g.DUP)
 		c.assignIdent(t)
 
@@ -299,7 +323,7 @@ func (c *compiler) visitIf(f *ast.If) {
 	c.Visit(f.Cond)
 
 	j0 := c.push(f.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
-	f.Then.Traverse(c)
+	c.Visit(f.Then)
 
 	if f.Else == nil {
 
@@ -310,7 +334,7 @@ func (c *compiler) visitIf(f *ast.If) {
 		j1 := c.push(f.Else.Begin(), g.JUMP, 0xFF, 0xFF)
 		c.setJump(j0, c.opcLen())
 
-		f.Else.Traverse(c)
+		c.Visit(f.Else)
 		c.setJump(j1, c.opcLen())
 	}
 }
@@ -335,7 +359,7 @@ func (c *compiler) visitWhile(w *ast.While) {
 	j0 := c.push(w.Cond.End(), g.JUMP_FALSE, 0xFF, 0xFF)
 
 	body := c.opcLen()
-	w.Body.Traverse(c)
+	c.Visit(w.Body)
 	c.push(w.Body.End(), g.JUMP, begin.high, begin.low)
 
 	end := c.opcLen()
@@ -391,7 +415,7 @@ func (c *compiler) visitFor(f *ast.For) {
 
 	// compile the body
 	body := c.opcLen()
-	f.Body.Traverse(c)
+	c.Visit(f.Body)
 	c.push(f.Body.End(), g.JUMP, begin.high, begin.low)
 
 	// jump to top of loop
@@ -641,22 +665,20 @@ func (c *compiler) visitUnaryExpr(u *ast.UnaryExpr) {
 				}
 
 			default:
-				u.Operand.Traverse(c)
-				u.Traverse(c)
+				c.Visit(u.Operand)
 				c.push(u.Op.Position, g.NEGATE)
 			}
 		default:
-			u.Operand.Traverse(c)
-			u.Traverse(c)
+			c.Visit(u.Operand)
 			c.push(u.Op.Position, g.NEGATE)
 		}
 
 	case ast.NOT:
-		u.Traverse(c)
+		c.Visit(u.Operand)
 		c.push(u.Op.Position, g.NOT)
 
 	case ast.TILDE:
-		u.Traverse(c)
+		c.Visit(u.Operand)
 		c.push(u.Op.Position, g.COMPLEMENT)
 
 	default:
@@ -747,7 +769,10 @@ func (c *compiler) visitFunc(fe *ast.FnExpr) {
 
 func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 
-	inv.Traverse(c)
+	c.Visit(inv.Operand)
+	for _, n := range inv.Params {
+		c.Visit(n)
+	}
 	c.pushIndex(inv.Begin(), g.INVOKE, len(inv.Params))
 }
 
@@ -853,8 +878,9 @@ func (c *compiler) visitTupleExpr(tp *ast.TupleExpr) {
 
 func (c *compiler) visitDictExpr(d *ast.DictExpr) {
 
-	for _, v := range d.Entries {
-		c.Visit(v)
+	for _, de := range d.Entries {
+		c.Visit(de.Key)
+		c.Visit(de.Value)
 	}
 
 	c.pushIndex(d.Begin(), g.NEW_DICT, len(d.Entries))

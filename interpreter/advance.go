@@ -76,8 +76,19 @@ func (i *Interpreter) advance() g.Error {
 
 	case g.RETURN:
 
+		// TODO once we've written a Control Flow Graph
+		// turn this sanity check on to make sure we are managing
+		// the stack properly
+
+		//if len(f.stack) < 1 || len(f.stack) > 2 {
+		//	for j, v := range f.stack {
+		//		fmt.Printf("stack %d: %s\n", j, v.ToStr())
+		//	}
+		//	panic("invalid stack")
+		//}
+
 		// If we would pop the last frame, then we are done.
-		// Don't pop the last frame! We still need it.
+		// (Don't pop the last frame! We still need it.)
 		if len(i.frames) == 1 {
 			i.done = true
 		} else {
@@ -624,7 +635,7 @@ func (i *Interpreter) advance() g.Error {
 		f.ip++
 
 	case g.NEGATE:
-		z, ok := f.stack[n-1].(g.Number)
+		z, ok := f.stack[n].(g.Number)
 		if !ok {
 			return g.TypeMismatchError("Expected Number Type")
 		}
