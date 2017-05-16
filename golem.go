@@ -12,10 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package golem
+package main
 
-import "fmt"
+import (
+	"fmt"
+	"golem/analyzer"
+	"golem/compiler"
+	//g "golem/core"
+	"golem/interpreter"
+	"golem/parser"
+	"golem/scanner"
+	"io/ioutil"
+	"os"
+)
 
 func main() {
-	fmt.Println("golem version 0.0.1")
+
+	// read source
+	filename := os.Args[1]
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	source := string(buf)
+
+	// parse
+	scanner := scanner.NewScanner(source)
+	parser := parser.NewParser(scanner)
+	exprMod, err := parser.ParseModule()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// analyze
+	anl := analyzer.NewAnalyzer(exprMod)
+	errors := anl.Analyze()
+	if len(errors) > 0 {
+		panic(fmt.Sprintf("%v", errors))
+	}
+
+	// compile
+	cmp := compiler.NewCompiler(anl)
+	mod := cmp.Compile()
+
+	// interpret
+	intp := interpreter.NewInterpreter(mod)
+	_, err = intp.Init()
+	if err != nil {
+		fmt.Printf("%v\n", intp.StackTrace())
+		fmt.Printf("%v\n", err)
+		panic(err)
+	}
 }

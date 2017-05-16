@@ -68,7 +68,7 @@ func (i *Interpreter) run() (g.Value, g.Error) {
 	return f.stack[len(f.stack)-1], nil
 }
 
-func (i *Interpreter) stackTrace() []string {
+func (i *Interpreter) StackTrace() []string {
 
 	n := len(i.frames)
 	stack := []string{}

@@ -1,0 +1,16 @@
+
+let fibonacci = fn(n) {
+    let x = 1;
+    let y = 1;
+    for i in range(1, n) {
+        let z = x + y;
+        x = y;
+        y = z;
+    }
+    return y;
+};
+
+println("Fibonacci series:");
+for i in range(0, 10) {
+    println([i, "==", fibonacci(i)].join(" "));
+}
