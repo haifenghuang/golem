@@ -15,21 +15,19 @@
 package core
 
 import (
-//"fmt"
+	//"fmt"
+	"strings"
+	"unicode/utf8"
 )
 
-type str []rune
+type str string
 
 func (s str) String() string {
 	return string(s)
 }
 
-func MakeStr(str string) Str {
-	return toRunes(str)
-}
-
-func (s str) Runes() []rune {
-	return s
+func MakeStr(s string) Str {
+	return str(s)
 }
 
 func (s str) basicMarker() {}
@@ -41,23 +39,24 @@ func (s str) ToStr() Str { return s }
 func (s str) HashCode() (Int, Error) {
 
 	// https://en.wikipedia.org/wiki/Jenkins_hash_function
-	var hash rune = 0
-	for _, r := range s {
-		hash += r
+	var hash int64 = 0
+	bytes := []byte(s)
+	for _, b := range bytes {
+		hash += int64(b)
 		hash += hash << 10
 		hash ^= hash >> 6
 	}
 	hash += hash << 3
 	hash ^= hash >> 11
 	hash += hash << 15
-	return MakeInt(int64(hash)), nil
+	return MakeInt(hash), nil
 }
 
 func (s str) Eq(v Value) Bool {
 	switch t := v.(type) {
 
 	case str:
-		return MakeBool(runesEq(s, t))
+		return MakeBool(s == t)
 
 	default:
 		return FALSE
@@ -72,7 +71,8 @@ func (s str) Cmp(v Value) (Int, Error) {
 	switch t := v.(type) {
 
 	case str:
-		return MakeInt(int64(runesCmp(s, t))), nil
+		cmp := strings.Compare(string(s), string(t))
+		return MakeInt(int64(cmp)), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Comparable Type")
@@ -80,91 +80,66 @@ func (s str) Cmp(v Value) (Int, Error) {
 }
 
 func (s str) Plus(v Value) (Value, Error) {
-	return Strcat(s, v), nil
+	return strcat(s, v), nil
 }
 
 func (s str) Get(index Value) (Value, Error) {
-	idx, err := ParseIndex(index, len(s))
+	// TODO implement this more efficiently
+	runes := []rune(string(s))
+
+	idx, err := validateIndex(index, len(runes))
 	if err != nil {
 		return nil, err
 	}
 
-	return str([]rune{s[idx.IntVal()]}), nil
+	return str(string(runes[idx.IntVal()])), nil
 }
 
 func (s str) Len() Int {
-	return MakeInt(int64(len(s)))
+	n := utf8.RuneCountInString(string(s))
+	return MakeInt(int64(n))
 }
 
 func (s str) Slice(from Value, to Value) (Value, Error) {
+	runes := []rune(string(s))
 
-	f, err := ParseIndex(from, len(s))
+	f, err := validateIndex(from, len(runes))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := ParseIndex(to, len(s)+1)
+	t, err := validateIndex(to, len(runes)+1)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO do we want a different error here?
 	if t.IntVal() < f.IntVal() {
 		return nil, IndexOutOfBoundsError()
 	}
 
-	slice := s[f.IntVal():t.IntVal()]
-	return str(runesCopy(slice)), nil
+	return str(string(runes[f.IntVal():t.IntVal()])), nil
 }
 
 func (s str) SliceFrom(from Value) (Value, Error) {
-	return s.Slice(from, MakeInt(int64(len(s))))
+	runes := []rune(string(s))
+
+	f, err := validateIndex(from, len(runes))
+	if err != nil {
+		return nil, err
+	}
+
+	return str(string(runes[f.IntVal():])), nil
 }
 
 func (s str) SliceTo(to Value) (Value, Error) {
-	return s.Slice(ZERO, to)
-}
+	runes := []rune(string(s))
 
-//--------------------------------------------------------------
+	t, err := validateIndex(to, len(runes)+1)
+	if err != nil {
+		return nil, err
+	}
 
-func toRunes(s string) str {
-	z := str{}
-	for _, r := range s {
-		z = append(z, r)
-	}
-	return z
-}
-
-func runesEq(a str, b str) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, r := range a {
-		if r != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	} else {
-		return b
-	}
-}
-
-func runesCmp(a str, b str) int {
-	n := min(len(a), len(b))
-	for i := 0; i < n; i++ {
-		if a[i] < b[i] {
-			return -1
-		} else if a[i] > b[i] {
-			return 1
-		}
-	}
-	return len(a) - len(b)
+	return str(string(runes[:t.IntVal()])), nil
 }
 
 //---------------------------------------------------------------
@@ -172,8 +147,8 @@ func runesCmp(a str, b str) int {
 
 type strIterator struct {
 	Struct
-	s str
-	n int
+	runes []rune
+	n     int
 }
 
 func (s str) NewIterator() Iterator {
@@ -182,7 +157,7 @@ func (s str) NewIterator() Iterator {
 		{"nextValue", NULL},
 		{"getValue", NULL}})
 
-	itr := &strIterator{stc, s, -1}
+	itr := &strIterator{stc, []rune(string(s)), -1}
 
 	// TODO make the struct immutable once we have set the functions
 	stc.PutField(MakeStr("nextValue"), &nativeFunc{
@@ -199,13 +174,13 @@ func (s str) NewIterator() Iterator {
 
 func (i *strIterator) IterNext() Bool {
 	i.n++
-	return MakeBool(i.n < len(i.s))
+	return MakeBool(i.n < len(i.runes))
 }
 
 func (i *strIterator) IterGet() (Value, Error) {
 
-	if (i.n >= 0) && (i.n < len(i.s)) {
-		return str([]rune{i.s[i.n]}), nil
+	if (i.n >= 0) && (i.n < len(i.runes)) {
+		return str([]rune{i.runes[i.n]}), nil
 	} else {
 		return nil, NoSuchElementError()
 	}

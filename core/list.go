@@ -16,6 +16,7 @@ package core
 
 import (
 	"bytes"
+	"strings"
 )
 
 //---------------------------------------------------------------
@@ -73,7 +74,7 @@ func (ls *list) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(ls, t), nil
+		return strcat(ls, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -81,7 +82,7 @@ func (ls *list) Plus(v Value) (Value, Error) {
 }
 
 func (ls *list) Get(index Value) (Value, Error) {
-	idx, err := ParseIndex(index, len(ls.array))
+	idx, err := validateIndex(index, len(ls.array))
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (ls *list) Get(index Value) (Value, Error) {
 }
 
 func (ls *list) Set(index Value, val Value) Error {
-	idx, err := ParseIndex(index, len(ls.array))
+	idx, err := validateIndex(index, len(ls.array))
 	if err != nil {
 		return err
 	}
@@ -142,20 +143,12 @@ func (ls *list) IsEmpty() Bool {
 
 func (ls *list) Join(delim Str) Str {
 
-	var dr []rune
-	if delim != nil {
-		dr = delim.Runes()
+	s := make([]string, len(ls.array), len(ls.array))
+	for i, v := range ls.array {
+		s[i] = v.ToStr().String()
 	}
 
-	result := make(str, 0, 0)
-	for i, v := range ls.array {
-		if (i > 0) && (delim != nil) {
-			result = append(result, runesCopy(dr)...)
-		}
-		r := valToRunes(v)
-		result = append(result, runesCopy(r)...)
-	}
-	return result
+	return MakeStr(strings.Join(s, delim.ToStr().String()))
 }
 
 func (ls *list) Len() Int {
@@ -164,12 +157,12 @@ func (ls *list) Len() Int {
 
 func (ls *list) Slice(from Value, to Value) (Value, Error) {
 
-	f, err := ParseIndex(from, len(ls.array))
+	f, err := validateIndex(from, len(ls.array))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := ParseIndex(to, len(ls.array)+1)
+	t, err := validateIndex(to, len(ls.array)+1)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +306,7 @@ func (ls *list) GetField(key Str) (Value, Error) {
 				var delim Str
 				switch len(values) {
 				case 0:
-					delim = nil
+					delim = MakeStr("")
 				case 1:
 					if s, ok := values[0].(Str); ok {
 						delim = s

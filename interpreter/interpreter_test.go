@@ -137,6 +137,8 @@ func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
 	_, err := intp.Init()
 	if err != nil {
+		fmt.Printf("%v\n", err)
+		fmt.Printf("%v\n", intp.stackTrace())
 		panic("interpreter failed")
 	}
 }
@@ -681,7 +683,7 @@ assert(a == [1,2,'b','c']);
 let b = [];
 b.addAll(range(0,3));
 b.addAll(dict { 'x': 1, 'y': 2 });
-assert(b == [ 0, 1, 2, ('y', 2), ('x', 1) ]);
+assert(b == [ 0, 1, 2, ('x', 1), ('y', 2)]);
 assert(a.addAll == a.addAll);
 assert(b.addAll == b.addAll);
 assert(a.addAll != b.addAll);

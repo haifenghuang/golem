@@ -16,45 +16,21 @@ package core
 
 import ()
 
-// Parse an index value.
 // The value must be between 0 (inclusive) and max (exclusive).
-func ParseIndex(val Value, max int) (Int, Error) {
+func validateIndex(val Value, max int) (Int, Error) {
+
 	if i, ok := val.(Int); ok {
 		n := int(i.IntVal())
-		if (n < 0) || (n >= max) {
+		switch {
+		case n < 0:
 			return nil, IndexOutOfBoundsError()
-		} else {
+		case n >= max:
+			return nil, IndexOutOfBoundsError()
+		default:
 			return i, nil
 		}
 	} else {
 		return nil, TypeMismatchError("Expected 'Int'")
-	}
-}
-
-func Strcat(a Value, b Value) Str {
-
-	ra := valToRunes(a)
-	rb := valToRunes(b)
-	result := make(str, 0, len(ra)+len(rb))
-
-	result = append(result, runesCopy(ra)...)
-	result = append(result, runesCopy(rb)...)
-
-	return result
-}
-
-// copy to avoid memory leaks
-func runesCopy(s []rune) []rune {
-	c := make([]rune, len(s))
-	copy(c, s)
-	return c
-}
-
-func valToRunes(v Value) []rune {
-	if sv, ok := v.(str); ok {
-		return sv
-	} else {
-		return v.ToStr().Runes()
 	}
 }
 
@@ -71,4 +47,19 @@ func valuesEq(as []Value, bs []Value) Bool {
 	}
 
 	return TRUE
+}
+
+func strcat(a Value, b Value) Str {
+
+	sa := a.ToStr().String()
+	sb := b.ToStr().String()
+
+	return str(strcpy(sa) + strcpy(sb))
+}
+
+// copy to avoid memory leaks
+func strcpy(s string) string {
+	c := make([]byte, len(s))
+	copy(c, s)
+	return string(c)
 }

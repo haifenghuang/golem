@@ -18,20 +18,20 @@ import (
 	"testing"
 )
 
-func TestParseIndex(t *testing.T) {
-	i, err := ParseIndex(MakeInt(0), 2)
+func TestValidateIndex(t *testing.T) {
+	i, err := validateIndex(MakeInt(0), 2)
 	ok(t, i, err, MakeInt(0))
 
-	i, err = ParseIndex(MakeInt(1), 2)
+	i, err = validateIndex(MakeInt(1), 2)
 	ok(t, i, err, MakeInt(1))
 
-	i, err = ParseIndex(MakeStr(""), 2)
+	i, err = validateIndex(MakeStr(""), 2)
 	fail(t, i, err, "TypeMismatch: Expected 'Int'")
 
-	i, err = ParseIndex(MakeInt(-1), 2)
+	i, err = validateIndex(MakeInt(-1), 2)
 	fail(t, i, err, "IndexOutOfBounds")
 
-	i, err = ParseIndex(MakeInt(2), 2)
+	i, err = validateIndex(MakeInt(2), 2)
 	fail(t, i, err, "IndexOutOfBounds")
 }
 

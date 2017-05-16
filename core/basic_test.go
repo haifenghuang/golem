@@ -29,6 +29,7 @@ func assert(t *testing.T, flag bool) {
 func ok(t *testing.T, val Value, err Error, expect Value) {
 
 	if err != nil {
+		panic("ok")
 		t.Error(err, " != ", nil)
 	}
 
@@ -43,7 +44,8 @@ func fail(t *testing.T, val Value, err Error, expect string) {
 		t.Error(val, " != ", nil)
 	}
 
-	if err.Error() != expect {
+	if err == nil || err.Error() != expect {
+		panic("fail")
 		t.Error(err.Error(), " != ", expect)
 	}
 }
@@ -179,16 +181,6 @@ func TestStr(t *testing.T) {
 
 	//////////////////////////////
 	// sliceable
-
-	a = MakeStr("")
-	v, err = a.SliceFrom(ZERO)
-	fail(t, nil, err, "IndexOutOfBounds")
-	v, err = a.SliceTo(ZERO)
-	fail(t, nil, err, "IndexOutOfBounds")
-	v, err = a.SliceTo(ONE)
-	fail(t, nil, err, "IndexOutOfBounds")
-	v, err = a.Slice(ZERO, ONE)
-	fail(t, nil, err, "IndexOutOfBounds")
 
 	a = MakeStr("xyz")
 	v, err = a.SliceFrom(ONE)
@@ -445,36 +437,6 @@ func TestBasic(t *testing.T) {
 	entries[ZERO] = TRUE
 	entries[MakeFloat(0.123)] = TRUE
 	entries[FALSE] = TRUE
-	//entries[MakeStr("abc")] = TRUE
-	//fmt.Println(entries)
-}
-
-func TestRunes(t *testing.T) {
-
-	runes := str{}
-	const nihongo = "日本語"
-	for _, r := range nihongo {
-		runes = append(runes, r)
-	}
-	assert(t, string(runes) == nihongo)
-
-	assert(t, runesEq(str{}, str{}))
-	assert(t, runesEq(str{'a'}, str{'a'}))
-	assert(t, runesEq(str{'a', 'b'}, str{'a', 'b'}))
-
-	assert(t, !runesEq(str{}, str{'a'}))
-	assert(t, !runesEq(str{'a'}, str{}))
-	assert(t, !runesEq(str{'a'}, str{'b'}))
-	assert(t, !runesEq(str{'c', 'b'}, str{'a', 'b'}))
-
-	assert(t, runesCmp(str{}, str{}) == 0)
-	assert(t, runesCmp(str{'a'}, str{'a'}) == 0)
-	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'b'}) == 0)
-
-	assert(t, runesCmp(str{'a', 'b'}, str{'a', 'z'}) == -1)
-	assert(t, runesCmp(str{'c', 'b'}, str{'a', 'b'}) == 1)
-	assert(t, runesCmp(str{}, str{'a', 'b'}) == -2)
-	assert(t, runesCmp(str{'a', 'b', 'c', 'd', 'e'}, str{'a', 'b'}) == 3)
 }
 
 func TestBasicHashCode(t *testing.T) {
@@ -503,7 +465,7 @@ func TestBasicHashCode(t *testing.T) {
 	ok(t, h, err, MakeInt(0))
 
 	h, err = MakeStr("abcdef").HashCode()
-	ok(t, h, err, MakeInt(436938535))
+	ok(t, h, err, MakeInt(1928994870288439732))
 }
 
 func structFuncField(t *testing.T, stc Struct, name Str) NativeFunc {
@@ -540,7 +502,7 @@ func TestStrIterator(t *testing.T) {
 	for itr.IterNext().BoolVal() {
 		v, err = itr.IterGet()
 		assert(t, err == nil)
-		s = Strcat(s, v)
+		s = strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("abc"))
 	v, err = itr.IterGet()
@@ -550,7 +512,7 @@ func TestStrIterator(t *testing.T) {
 	s = MakeStr("")
 	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
 		v := structInvokeFunc(t, itr, MakeStr("getValue"))
-		s = Strcat(s, v)
+		s = strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("abc"))
 }

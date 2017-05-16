@@ -79,7 +79,7 @@ func (r *rng) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(r, t), nil
+		return strcat(r, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -87,7 +87,7 @@ func (r *rng) Plus(v Value) (Value, Error) {
 }
 
 func (r *rng) Get(index Value) (Value, Error) {
-	idx, err := ParseIndex(index, int(r.count))
+	idx, err := validateIndex(index, int(r.count))
 	if err != nil {
 		return nil, err
 	}
@@ -100,12 +100,12 @@ func (r *rng) Len() Int {
 
 func (r *rng) Slice(from Value, to Value) (Value, Error) {
 
-	f, err := ParseIndex(from, int(r.count))
+	f, err := validateIndex(from, int(r.count))
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := ParseIndex(to, int(r.count+1))
+	t, err := validateIndex(to, int(r.count+1))
 	if err != nil {
 		return nil, err
 	}

@@ -87,7 +87,7 @@ func (tp tuple) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(tp, t), nil
+		return strcat(tp, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
@@ -95,7 +95,7 @@ func (tp tuple) Plus(v Value) (Value, Error) {
 }
 
 func (tp tuple) Get(index Value) (Value, Error) {
-	idx, err := ParseIndex(index, len(tp))
+	idx, err := validateIndex(index, len(tp))
 	if err != nil {
 		return nil, err
 	}

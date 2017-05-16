@@ -516,7 +516,7 @@ func TestDictIterator(t *testing.T) {
 
 		tp, ok := v.(Tuple)
 		assert(t, ok)
-		s = Strcat(s, tp)
+		s = strcat(s, tp)
 	}
 	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
 	v, err = itr.IterGet()
@@ -529,7 +529,7 @@ func TestDictIterator(t *testing.T) {
 
 		tp, ok := v.(Tuple)
 		assert(t, ok)
-		s = Strcat(s, tp)
+		s = strcat(s, tp)
 	}
 	ok(t, s, nil, MakeStr("(b, 2)(a, 1)(c, 3)"))
 }
@@ -547,7 +547,7 @@ func TestSetIterator(t *testing.T) {
 		v, err = itr.IterGet()
 		assert(t, err == nil)
 
-		s = Strcat(s, v)
+		s = strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("bac"))
 	v, err = itr.IterGet()
@@ -558,7 +558,7 @@ func TestSetIterator(t *testing.T) {
 	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
 		v := structInvokeFunc(t, itr, MakeStr("getValue"))
 
-		s = Strcat(s, v)
+		s = strcat(s, v)
 	}
 	ok(t, s, nil, MakeStr("bac"))
 }

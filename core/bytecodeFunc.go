@@ -73,7 +73,7 @@ func (f *bytecodeFunc) Plus(v Value) (Value, Error) {
 	switch t := v.(type) {
 
 	case Str:
-		return Strcat(f, t), nil
+		return strcat(f, t), nil
 
 	default:
 		return nil, TypeMismatchError("Expected Number Type")
