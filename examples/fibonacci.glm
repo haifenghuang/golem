@@ -1,16 +1,17 @@
 
-let fibonacci = fn(n) {
+let fibonacciGenerator = fn() {
     let x = 1;
     let y = 1;
-    for i in range(1, n) {
-        let z = x + y;
+    return fn() {
+        let z = x;
         x = y;
-        y = z;
-    }
-    return y;
+        y = x + z;
+        return z;
+    };
 };
 
 println("Fibonacci series:");
+let nextFib = fibonacciGenerator();
 for i in range(0, 10) {
-    println([i, "==", fibonacci(i)].join(" "));
+    println([i, "==", nextFib()].join(" "));
 }
