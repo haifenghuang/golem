@@ -32,9 +32,6 @@ func (d *dict) compositeMarker() {}
 func (d *dict) TypeOf() Type { return TDICT }
 
 func (d *dict) ToStr() Str {
-	if d.hashMap.Len().IntVal() == 0 {
-		return MakeStr("dict {}")
-	}
 
 	var buf bytes.Buffer
 	buf.WriteString("dict {")

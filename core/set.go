@@ -38,9 +38,6 @@ func (s *set) compositeMarker() {}
 func (s *set) TypeOf() Type { return TDICT }
 
 func (s *set) ToStr() Str {
-	if s.hashMap.Len().IntVal() == 0 {
-		return MakeStr("set {}")
-	}
 
 	var buf bytes.Buffer
 	buf.WriteString("set {")

@@ -24,7 +24,7 @@ func TestStruct(t *testing.T) {
 	okType(t, stc, TSTRUCT)
 
 	s := stc.ToStr()
-	ok(t, s, nil, MakeStr("struct {}"))
+	ok(t, s, nil, MakeStr("struct { }"))
 
 	z := stc.Eq(NewStruct([]*StructEntry{}))
 	ok(t, z, nil, TRUE)
@@ -32,7 +32,7 @@ func TestStruct(t *testing.T) {
 	ok(t, z, nil, FALSE)
 
 	val, err := stc.Plus(MakeStr("a"))
-	ok(t, val, err, MakeStr("struct {}a"))
+	ok(t, val, err, MakeStr("struct { }a"))
 
 	val, err = stc.GetField(MakeStr("a"))
 	fail(t, val, err, "NoSuchField: Field 'a' not found")
@@ -115,7 +115,7 @@ func TestList(t *testing.T) {
 	var err Error
 
 	v = ls.ToStr()
-	ok(t, v, nil, MakeStr("[]"))
+	ok(t, v, nil, MakeStr("[ ]"))
 
 	v = ls.Eq(NewList([]Value{}))
 	ok(t, v, nil, TRUE)
@@ -225,7 +225,7 @@ func TestDict(t *testing.T) {
 	var err Error
 
 	v = d.ToStr()
-	ok(t, v, err, MakeStr("dict {}"))
+	ok(t, v, err, MakeStr("dict { }"))
 
 	v = d.Eq(NewDict([]*HEntry{}))
 	ok(t, v, nil, TRUE)
@@ -284,7 +284,7 @@ func TestSet(t *testing.T) {
 	var err Error
 
 	v = s.ToStr()
-	ok(t, v, err, MakeStr("set {}"))
+	ok(t, v, err, MakeStr("set { }"))
 
 	v = s.Eq(NewSet([]Value{}))
 	ok(t, v, nil, TRUE)

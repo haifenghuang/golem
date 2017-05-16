@@ -36,10 +36,6 @@ func (ls *list) TypeOf() Type { return TLIST }
 
 func (ls *list) ToStr() Str {
 
-	if len(ls.array) == 0 {
-		return MakeStr("[]")
-	}
-
 	var buf bytes.Buffer
 	buf.WriteString("[")
 	for idx, v := range ls.array {

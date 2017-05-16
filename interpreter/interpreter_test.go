@@ -96,7 +96,7 @@ func fail(t *testing.T, source string, expectErr g.Error, expectTrace []string) 
 		t.Error(err, " != ", expectErr)
 	}
 
-	trace := intp.stackTrace()
+	trace := intp.StackTrace()
 	if !reflect.DeepEqual(trace, expectTrace) {
 		t.Error(err, " != ", expectTrace)
 	}
@@ -138,7 +138,7 @@ func interpret(mod *g.Module) {
 	_, err := intp.Init()
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		fmt.Printf("%v\n", intp.stackTrace())
+		fmt.Printf("%v\n", intp.StackTrace())
 		panic("interpreter failed")
 	}
 }

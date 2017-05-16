@@ -52,9 +52,6 @@ func (stc *_struct) compositeMarker() {}
 func (stc *_struct) TypeOf() Type { return TSTRUCT }
 
 func (stc *_struct) ToStr() Str {
-	if len(stc.fields) == 0 {
-		return MakeStr("struct {}")
-	}
 
 	var buf bytes.Buffer
 	buf.WriteString("struct {")
