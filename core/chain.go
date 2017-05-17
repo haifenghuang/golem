@@ -73,10 +73,15 @@ package core
 //	return MakeStr(buf.String())
 //}
 //
+//func (ch *chain) HashCode() (Int, Error) {
+//	// TODO $hash()
+//	return nil, TypeMismatchError("Expected Hashable Type")
+//}
+//
 //func (ch *chain) GetField(key Str) (Value, Error) {
 //	for _, s := range ch.structs {
 //		v, err := s.GetField(key)
-//		if v == nil {
+//		if err != nil {
 //			if err.Kind() != "NoSuchField" {
 //				return nil, err
 //			}

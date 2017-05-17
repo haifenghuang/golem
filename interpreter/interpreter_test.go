@@ -235,6 +235,13 @@ func TestExpressions(t *testing.T) {
 	fail_expr(t, "struct{a: 1}[0];", "TypeMismatch: Expected 'Str'")
 
 	fail_expr(t, "struct{a: 1, a: 2};", "DuplicateField: Field 'a' is a duplicate")
+
+	ok_expr(t, "struct{} == struct{};", g.TRUE)
+	ok_expr(t, "struct{a:1} == struct{a:1};", g.TRUE)
+	ok_expr(t, "struct{a:1,b:2} == struct{a:1,b:2};", g.TRUE)
+	ok_expr(t, "struct{a:1} != struct{a:1,b:2};", g.TRUE)
+	ok_expr(t, "struct{a:1,b:2} != struct{b:2};", g.TRUE)
+	ok_expr(t, "struct{a:1,b:2} != struct{a:3,b:2};", g.TRUE)
 }
 
 func TestAssignment(t *testing.T) {
