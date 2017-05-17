@@ -713,10 +713,31 @@ func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
 
 func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 
+	chain := []ast.Expr{}
+
+	// chain -- must be at least one expression
+	if p.cur.Kind == ast.LPAREN {
+		p.consume()
+		chain = append(chain, p.expression())
+	chainLoop:
+		for {
+			switch p.cur.Kind {
+			case ast.RPAREN:
+				p.consume()
+				break chainLoop
+			case ast.COMMA:
+				p.consume()
+				chain = append(chain, p.expression())
+			default:
+				panic(p.unexpected())
+			}
+		}
+	}
+
+	// key-value pairs
 	keys := []*ast.Token{}
 	values := []ast.Expr{}
 	var rbrace *ast.Token
-
 	lbrace := p.expect(ast.LBRACE)
 
 	switch p.cur.Kind {
@@ -753,7 +774,8 @@ func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 		panic(p.unexpected())
 	}
 
-	return &ast.StructExpr{structToken, lbrace, keys, values, rbrace, -1}
+	// done
+	return &ast.StructExpr{structToken, chain, lbrace, keys, values, rbrace, -1}
 }
 
 func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {

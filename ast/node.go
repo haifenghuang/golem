@@ -223,6 +223,7 @@ type (
 
 	StructExpr struct {
 		StructToken *Token
+		Chain       []Expr
 		LBrace      *Token
 		Keys        []*Token
 		Values      []Expr
@@ -702,7 +703,20 @@ func (tp *TupleExpr) String() string {
 
 func (stc *StructExpr) String() string {
 	var buf bytes.Buffer
-	buf.WriteString("struct { ")
+	buf.WriteString("struct")
+
+	if len(stc.Chain) > 0 {
+		buf.WriteString(" (")
+		for i, c := range stc.Chain {
+			if i > 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(c.String())
+		}
+		buf.WriteString(")")
+	}
+
+	buf.WriteString(" { ")
 	for idx, k := range stc.Keys {
 		if idx > 0 {
 			buf.WriteString(", ")

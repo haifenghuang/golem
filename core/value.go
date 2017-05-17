@@ -143,6 +143,8 @@ type (
 		IndexOf(Value) Int
 		IsEmpty() Bool
 		Join(Str) Str
+
+		Values() []Value
 	}
 
 	Range interface {

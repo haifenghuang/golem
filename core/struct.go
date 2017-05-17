@@ -31,9 +31,9 @@ type StructEntry struct {
 // structMap
 
 type structMap interface {
+	has(Value) (Bool, Error)
 	get(Str) (Value, Error)
 	put(Str, Value) Error
-	has(Value) (Bool, Error)
 	keys() []string
 }
 
@@ -192,6 +192,16 @@ func BlankStruct(keys []string) (Struct, Error) {
 	return &_struct{ss}, nil
 }
 
+func (ss *simpleStruct) has(key Value) (Bool, Error) {
+	s, ok := key.(Str)
+	if !ok {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
+
+	_, has := ss.fields[s.String()]
+	return MakeBool(has), nil
+}
+
 func (ss *simpleStruct) get(key Str) (Value, Error) {
 	v, ok := ss.fields[key.String()]
 	if ok {
@@ -208,15 +218,6 @@ func (ss *simpleStruct) put(key Str, val Value) Error {
 		return nil
 	} else {
 		return NoSuchFieldError(key.String())
-	}
-}
-
-func (ss *simpleStruct) has(key Value) (Bool, Error) {
-	if s, ok := key.(Str); ok {
-		_, has := ss.fields[s.String()]
-		return MakeBool(has), nil
-	} else {
-		return nil, TypeMismatchError("Expected 'Str'")
 	}
 }
 

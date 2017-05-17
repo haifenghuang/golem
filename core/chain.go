@@ -13,93 +13,71 @@
 
 package core
 
-//import (
-//	"bytes"
-//)
-//
-////---------------------------------------------------------------
-//// chain
-//
-//// TODO replace with a more efficient data structure
-//type chain struct {
-//	keySet  map[string]bool
-//	structs []Struct
-//}
-//
-////func NewChain(structs []Struct) Struct {
-////}
-//
-//func newChain(structs []Struct) *chain {
-//	if len(structs) < 2 {
-//		panic("invalid chain")
-//	}
-//
-//	ch := &chain{make(map[string]bool), structs}
-//
-//	for _, s := range structs {
-//		for _, k := range s.keys() {
-//			ch.keySet[k] = true
-//		}
-//	}
-//
-//	return ch
-//}
-//
-//func (ch *chain) compositeMarker() {}
-//
-//func (ch *chain) TypeOf() Type { return TSTRUCT }
-//
-//func (ch *chain) ToStr() Str {
-//
-//	var buf bytes.Buffer
-//	buf.WriteString("struct {")
-//	idx := 0
-//	for k := range ch.keySet {
-//		if idx > 0 {
-//			buf.WriteString(",")
-//		}
-//		idx++
-//		buf.WriteString(" ")
-//		buf.WriteString(k)
-//		buf.WriteString(": ")
-//
-//		v, err := ch.GetField(str(k))
-//		if err != nil {
-//			panic("invalid chain")
-//		}
-//		buf.WriteString(v.ToStr().String())
-//	}
-//	buf.WriteString(" }")
-//	return MakeStr(buf.String())
-//}
-//
-//func (ch *chain) HashCode() (Int, Error) {
-//	// TODO $hash()
-//	return nil, TypeMismatchError("Expected Hashable Type")
-//}
-//
-//func (ch *chain) GetField(key Str) (Value, Error) {
-//	for _, s := range ch.structs {
-//		v, err := s.GetField(key)
-//		if err != nil {
-//			if err.Kind() != "NoSuchField" {
-//				return nil, err
-//			}
-//		} else {
-//			return v, nil
-//		}
-//	}
-//
-//	return nil, NoSuchFieldError(key.String())
-//}
-//
-//func (ch *chain) keys() []string {
-//
-//	keys := make([]string, len(ch.keySet), len(ch.keySet))
-//	idx := 0
-//	for k := range ch.keySet {
-//		keys[idx] = k
-//		idx++
-//	}
-//	return keys
-//}
+import (
+//"fmt"
+)
+
+//---------------------------------------------------------------
+// chainStruct
+
+// TODO replace with a more efficient data structure
+type chainStruct struct {
+	fields map[string]Struct
+}
+
+func NewChain(structs []Struct) Struct {
+	if len(structs) < 2 {
+		panic("invalid struct")
+	}
+
+	ch := &chainStruct{make(map[string]Struct)}
+
+	// visit backwards so that earlier structs supersede later ones
+	for i := len(structs) - 1; i >= 0; i-- {
+		stc := structs[i]
+		for _, k := range stc.keys() {
+			ch.fields[k] = stc
+		}
+	}
+
+	return &_struct{ch}
+}
+
+func (ch *chainStruct) has(key Value) (Bool, Error) {
+	s, ok := key.(Str)
+	if !ok {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
+
+	_, has := ch.fields[s.String()]
+	return MakeBool(has), nil
+}
+
+func (ch *chainStruct) get(key Str) (Value, Error) {
+	stc, ok := ch.fields[key.String()]
+	if ok {
+		return stc.GetField(key)
+	} else {
+		return nil, NoSuchFieldError(key.String())
+	}
+}
+
+func (ch *chainStruct) put(key Str, val Value) Error {
+	stc, ok := ch.fields[key.String()]
+	if ok {
+		return stc.PutField(key, val)
+	} else {
+		return NoSuchFieldError(key.String())
+	}
+}
+
+func (ch *chainStruct) keys() []string {
+
+	keys := make([]string, len(ch.fields), len(ch.fields))
+	idx := 0
+	for k := range ch.fields {
+		keys[idx] = k
+		idx++
+	}
+	return keys
+}

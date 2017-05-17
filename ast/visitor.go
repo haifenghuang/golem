@@ -181,6 +181,9 @@ func (tp *TupleExpr) Traverse(v Visitor) {
 }
 
 func (stc *StructExpr) Traverse(v Visitor) {
+	for _, ch := range stc.Chain {
+		v.Visit(ch)
+	}
 	for _, val := range stc.Values {
 		v.Visit(val)
 	}

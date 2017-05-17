@@ -788,8 +788,20 @@ func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 	defIdx := len(c.defs)
 	c.defs = append(c.defs, g.StructDef(def))
 
-	// create new struct
-	c.pushIndex(stc.Begin(), g.NEW_STRUCT, defIdx)
+	if len(stc.Chain) == 0 {
+		// create new struct
+		c.pushIndex(stc.Begin(), g.NEW_STRUCT, defIdx)
+
+	} else {
+		// create new chain
+		for _, ch := range stc.Chain {
+			c.Visit(ch)
+			c.pushIndex(ch.Begin(), g.CHECK_CAST, int(g.TSTRUCT))
+		}
+		c.pushIndex(stc.Begin(), g.NEW_LIST, len(stc.Chain))
+
+		c.pushIndex(stc.Begin(), g.NEW_CHAIN, defIdx)
+	}
 
 	// if the struct is referenced by a 'this', then store local
 	if stc.LocalThisIndex != -1 {

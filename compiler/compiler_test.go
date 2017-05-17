@@ -15,9 +15,9 @@
 package compiler
 
 import (
-	//"fmt"
+	"fmt"
 	"golem/analyzer"
-	//"golem/ast"
+	"golem/ast"
 	g "golem/core"
 	"golem/parser"
 	"golem/scanner"
@@ -910,4 +910,18 @@ func TestPool(t *testing.T) {
 			g.MakeInt(4),
 			g.MakeStr("a"),
 			g.MakeFloat(1.0)}))
+}
+
+func TestChain(t *testing.T) {
+
+	source := `
+let a = struct { x: 1, y: 2};
+let b = struct (a) { y: 3, z: 4};
+`
+	anl := newAnalyzer(source)
+
+	fmt.Println("----------------------------")
+	fmt.Println(source)
+	fmt.Println("----------------------------")
+	fmt.Printf("%s\n", ast.Dump(anl.Module()))
 }

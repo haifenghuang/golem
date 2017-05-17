@@ -577,6 +577,37 @@ assert(!b.y);
 	interpret(mod)
 }
 
+func TestChain(t *testing.T) {
+
+	fail_expr(t, "struct (1) { y: 3, z: 4};", "TypeMismatch: Expected 'Struct'")
+
+	source := `
+let a = struct { x: 1, y: 2};
+let b = struct (a) { y: 3, z: 4};
+assert(b.x == 1);
+assert(b.y == 3);
+assert(b.z == 4);
+a.x = 5;
+a.y = 6;
+assert(b.x == 5);
+assert(b.y == 3);
+assert(b.z == 4);
+let c = struct (b) { w: 10};
+assert(c.w == 10);
+assert(c.x == 5);
+assert(c.y == 3);
+assert(c.z == 4);
+a.x = 7;
+b.z = 11;
+assert(c.w == 10);
+assert(c.x == 7);
+assert(c.y == 3);
+assert(c.z == 11);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}
+
 func TestErrStack(t *testing.T) {
 
 	source := `

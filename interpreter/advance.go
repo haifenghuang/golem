@@ -139,14 +139,44 @@ func (i *Interpreter) advance() g.Error {
 		f.ip += 3
 
 	case g.NEW_STRUCT:
-		def := i.mod.StructDefs[index(opc, f.ip)]
 
+		def := i.mod.StructDefs[index(opc, f.ip)]
 		stc, err := g.BlankStruct(def)
 		if err != nil {
 			return err
 		}
 
 		f.stack = append(f.stack, stc)
+		f.ip += 3
+
+	case g.NEW_CHAIN:
+
+		def := i.mod.StructDefs[index(opc, f.ip)]
+		stc, err := g.BlankStruct(def)
+		if err != nil {
+			return err
+		}
+
+		ls, ok := f.stack[n].(g.List)
+		if !ok {
+			panic("invalid chain definition")
+		}
+
+		slen := int(ls.Len().IntVal()) + 1
+		structs := make([]g.Struct, slen, slen)
+		structs[0] = stc
+
+		for i, v := range ls.Values() {
+			// the compiler has already inserted a CHECK_CAST for us
+			ch, ok := v.(g.Struct)
+			if !ok {
+				panic("invalid chain definition")
+			}
+			structs[i+1] = ch
+		}
+
+		f.stack = f.stack[:n]
+		f.stack = append(f.stack, g.NewChain(structs))
 		f.ip += 3
 
 	case g.NEW_LIST:
@@ -193,6 +223,18 @@ func (i *Interpreter) advance() g.Error {
 		if expectedLen != int(tpLen.IntVal()) {
 			return g.InvalidArgumentError(
 				fmt.Sprintf("Expected Tuple of length %d", expectedLen))
+		}
+
+		// do not alter stack
+		f.ip += 3
+
+	case g.CHECK_CAST:
+
+		// make sure the top of the stack is of the given type
+		vtype := g.Type(index(opc, f.ip))
+		v := f.stack[n]
+		if v.TypeOf() != vtype {
+			return g.TypeMismatchError(fmt.Sprintf("Expected '%s'", vtype.String()))
 		}
 
 		// do not alter stack

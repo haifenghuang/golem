@@ -70,6 +70,7 @@ const (
 	RETURN
 
 	NEW_STRUCT
+	NEW_CHAIN
 	NEW_DICT
 	NEW_LIST
 	NEW_SET
@@ -91,6 +92,7 @@ const (
 	ITER_NEXT
 	ITER_GET
 
+	CHECK_CAST
 	CHECK_TUPLE
 
 	POP
@@ -110,8 +112,8 @@ func OpCodeSize(opc byte) int {
 		LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
-		NEW_STRUCT, GET_FIELD, PUT_FIELD, INC_FIELD,
-		NEW_DICT, NEW_LIST, NEW_SET, NEW_TUPLE, CHECK_TUPLE:
+		NEW_STRUCT, NEW_CHAIN, GET_FIELD, PUT_FIELD, INC_FIELD,
+		NEW_DICT, NEW_LIST, NEW_SET, NEW_TUPLE, CHECK_CAST, CHECK_TUPLE:
 
 		return 3
 
@@ -217,6 +219,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 
 	case NEW_STRUCT:
 		return fmtIndex(opcodes, i, "NEW_STRUCT")
+	case NEW_CHAIN:
+		return fmtIndex(opcodes, i, "NEW_CHAIN")
 	case GET_FIELD:
 		return fmtIndex(opcodes, i, "GET_FIELD")
 	case PUT_FIELD:
@@ -253,6 +257,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 	case ITER_GET:
 		return fmt.Sprintf("%d: ITER_GET\n", i)
 
+	case CHECK_CAST:
+		return fmtIndex(opcodes, i, "CHECK_CAST")
 	case CHECK_TUPLE:
 		return fmtIndex(opcodes, i, "CHECK_TUPLE")
 

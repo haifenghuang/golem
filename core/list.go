@@ -182,6 +182,10 @@ func (ls *list) SliceTo(to Value) (Value, Error) {
 	return ls.Slice(ZERO, to)
 }
 
+func (ls *list) Values() []Value {
+	return ls.array
+}
+
 //---------------------------------------------------------------
 // Iterator
 
