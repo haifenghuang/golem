@@ -193,9 +193,12 @@ type listIterator struct {
 
 func (ls *list) NewIterator() Iterator {
 
-	stc := NewStruct([]*StructEntry{
+	stc, err := NewStruct([]*StructEntry{
 		{"nextValue", NULL},
 		{"getValue", NULL}})
+	if err != nil {
+		panic("invalid struct")
+	}
 
 	itr := &listIterator{stc, ls, -1}
 

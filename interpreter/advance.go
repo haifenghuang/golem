@@ -138,9 +138,15 @@ func (i *Interpreter) advance() g.Error {
 		fn.PushCapture(f.fn.GetCapture(idx))
 		f.ip += 3
 
-	case g.NEW_OBJ:
+	case g.NEW_STRUCT:
 		def := i.mod.StructDefs[index(opc, f.ip)]
-		f.stack = append(f.stack, g.BlankStruct(def))
+
+		stc, err := g.BlankStruct(def)
+		if err != nil {
+			return err
+		}
+
+		f.stack = append(f.stack, stc)
 		f.ip += 3
 
 	case g.NEW_LIST:

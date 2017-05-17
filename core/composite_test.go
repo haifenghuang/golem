@@ -16,19 +16,34 @@ package core
 
 import (
 	//"fmt"
+	"reflect"
 	"testing"
 )
 
+//func TestChain(t *testing.T) {
+//	s0 := newStruct([]*StructEntry{{"a", ONE}, {"b", MakeInt(2)}})
+//	s1 := newStruct([]*StructEntry{{"b", MakeInt(3)}, {"c", MakeInt(4)}})
+//}
+
+func newStruct(entries []*StructEntry) Struct {
+	stc, err := NewStruct(entries)
+	if err != nil {
+		panic("invalid struct")
+	}
+	return stc
+}
+
 func TestStruct(t *testing.T) {
-	stc := NewStruct([]*StructEntry{})
+	stc := newStruct([]*StructEntry{})
 	okType(t, stc, TSTRUCT)
+	assert(t, reflect.DeepEqual(stc.keys(), []string{}))
 
 	s := stc.ToStr()
 	ok(t, s, nil, MakeStr("struct { }"))
 
-	z := stc.Eq(NewStruct([]*StructEntry{}))
+	z := stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, TRUE)
-	z = stc.Eq(NewStruct([]*StructEntry{{"a", ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", ONE}}))
 	ok(t, z, nil, FALSE)
 
 	val, err := stc.Plus(MakeStr("a"))
@@ -45,15 +60,15 @@ func TestStruct(t *testing.T) {
 
 	//////////////////
 
-	stc = NewStruct([]*StructEntry{{"a", ONE}})
+	stc = newStruct([]*StructEntry{{"a", ONE}})
 	okType(t, stc, TSTRUCT)
 
 	s = stc.ToStr()
 	ok(t, s, nil, MakeStr("struct { a: 1 }"))
 
-	z = stc.Eq(NewStruct([]*StructEntry{}))
+	z = stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, FALSE)
-	z = stc.Eq(NewStruct([]*StructEntry{{"a", ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", ONE}}))
 	ok(t, z, nil, TRUE)
 
 	val, err = stc.Plus(MakeStr("a"))
@@ -102,9 +117,20 @@ func TestStruct(t *testing.T) {
 	val, err = stc.Has(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
-	stc = BlankStruct([]string{"a"})
+	stc, err = BlankStruct([]string{"a"})
+	if err != nil {
+		panic("oops")
+	}
 	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, NULL)
+
+	assert(t, reflect.DeepEqual(stc.keys(), []string{"a"}))
+
+	stc, err = BlankStruct([]string{"a", "a"})
+	fail(t, stc, err, "DuplicateField: Field 'a' is a duplicate")
+
+	stc, err = NewStruct([]*StructEntry{{"a", ONE}, {"a", ZERO}})
+	fail(t, stc, err, "DuplicateField: Field 'a' is a duplicate")
 }
 
 func TestList(t *testing.T) {
@@ -213,7 +239,7 @@ func TestCompositeHashCode(t *testing.T) {
 	h, err = NewList([]Value{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 
-	h, err = NewStruct([]*StructEntry{}).HashCode()
+	h, err = newStruct([]*StructEntry{}).HashCode()
 	fail(t, h, err, "TypeMismatch: Expected Hashable Type")
 }
 

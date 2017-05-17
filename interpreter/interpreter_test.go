@@ -117,6 +117,14 @@ func failErr(t *testing.T, source string, expect g.Error) {
 	}
 }
 
+func newStruct(entries []*g.StructEntry) g.Struct {
+	stc, err := g.NewStruct(entries)
+	if err != nil {
+		panic("invalid struct")
+	}
+	return stc
+}
+
 func newCompiler(source string) compiler.Compiler {
 	scanner := scanner.NewScanner(source)
 	parser := parser.NewParser(scanner)
@@ -225,6 +233,8 @@ func TestExpressions(t *testing.T) {
 	ok_expr(t, "struct{a: 1} has 'b';", g.FALSE)
 
 	fail_expr(t, "struct{a: 1}[0];", "TypeMismatch: Expected 'Str'")
+
+	fail_expr(t, "struct{a: 1, a: 2};", "DuplicateField: Field 'a' is a duplicate")
 }
 
 func TestAssignment(t *testing.T) {
@@ -484,11 +494,11 @@ let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{}))
-	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"a", g.ZERO}}))
-	ok_ref(t, mod.Locals[2], g.NewStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
-	ok_ref(t, mod.Locals[3], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
-		{"c", g.NewStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
+	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{}))
+	ok_ref(t, mod.Locals[1], newStruct([]*g.StructEntry{{"a", g.ZERO}}))
+	ok_ref(t, mod.Locals[2], newStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
+	ok_ref(t, mod.Locals[3], newStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
+		{"c", newStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
 
 	source = `
 let x = struct { a: 5 };
@@ -502,7 +512,7 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
+	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(5))
 
 	source = `
@@ -543,7 +553,7 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
+	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
 	ok_ref(t, mod.Locals[1], g.MakeInt(3))
 	ok_ref(t, mod.Locals[2], g.MakeInt(4))
 
@@ -613,8 +623,8 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
-	ok_ref(t, mod.Locals[1], g.NewStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
+	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
+	ok_ref(t, mod.Locals[1], newStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
 	ok_ref(t, mod.Locals[2], g.MakeInt(10))
 	ok_ref(t, mod.Locals[3], g.MakeInt(20))
 }

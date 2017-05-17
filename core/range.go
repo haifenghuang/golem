@@ -144,9 +144,12 @@ type rangeIterator struct {
 
 func (r *rng) NewIterator() Iterator {
 
-	stc := NewStruct([]*StructEntry{
+	stc, err := NewStruct([]*StructEntry{
 		{"nextValue", NULL},
 		{"getValue", NULL}})
+	if err != nil {
+		panic("invalid struct")
+	}
 
 	itr := &rangeIterator{stc, r, -1}
 

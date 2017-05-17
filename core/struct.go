@@ -15,6 +15,7 @@ package core
 
 import (
 	"bytes"
+	//"fmt"
 	"reflect"
 )
 
@@ -26,25 +27,32 @@ type StructEntry struct {
 //---------------------------------------------------------------
 // struct
 
+// TODO replace with a more efficient data structure
 type _struct struct {
-	// TODO replace this with a more efficient data structure
 	fields map[string]Value
 }
 
-func NewStruct(entries []*StructEntry) Struct {
+func NewStruct(entries []*StructEntry) (Struct, Error) {
 	stc := &_struct{make(map[string]Value)}
 	for _, e := range entries {
+		if _, has := stc.fields[e.Key]; has {
+			return nil, DuplicateFieldError(e.Key)
+		}
+
 		stc.fields[e.Key] = e.Value
 	}
-	return stc
+	return stc, nil
 }
 
-func BlankStruct(keys []string) Struct {
+func BlankStruct(keys []string) (Struct, Error) {
 	stc := &_struct{make(map[string]Value)}
 	for _, k := range keys {
+		if _, has := stc.fields[k]; has {
+			return nil, DuplicateFieldError(k)
+		}
 		stc.fields[k] = NULL
 	}
-	return stc
+	return stc, nil
 }
 
 func (stc *_struct) compositeMarker() {}
@@ -60,7 +68,7 @@ func (stc *_struct) ToStr() Str {
 		if idx > 0 {
 			buf.WriteString(",")
 		}
-		idx = idx + 1
+		idx++
 		buf.WriteString(" ")
 		buf.WriteString(k)
 		buf.WriteString(": ")
@@ -144,4 +152,15 @@ func (stc *_struct) Has(key Value) (Bool, Error) {
 	} else {
 		return nil, TypeMismatchError("Expected 'Str'")
 	}
+}
+
+func (stc *_struct) keys() []string {
+
+	keys := make([]string, len(stc.fields), len(stc.fields))
+	idx := 0
+	for k := range stc.fields {
+		keys[idx] = k
+		idx++
+	}
+	return keys
 }

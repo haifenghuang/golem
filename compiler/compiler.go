@@ -789,7 +789,7 @@ func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 	c.defs = append(c.defs, g.StructDef(def))
 
 	// create new struct
-	c.pushIndex(stc.Begin(), g.NEW_OBJ, defIdx)
+	c.pushIndex(stc.Begin(), g.NEW_STRUCT, defIdx)
 
 	// if the struct is referenced by a 'this', then store local
 	if stc.LocalThisIndex != -1 {

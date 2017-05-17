@@ -146,9 +146,12 @@ type dictIterator struct {
 
 func (d *dict) NewIterator() Iterator {
 
-	stc := NewStruct([]*StructEntry{
+	stc, err := NewStruct([]*StructEntry{
 		{"nextValue", NULL},
 		{"getValue", NULL}})
+	if err != nil {
+		panic("invalid struct")
+	}
 
 	itr := &dictIterator{stc, d, d.hashMap.Iterator(), false}
 

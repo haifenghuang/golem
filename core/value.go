@@ -193,6 +193,8 @@ type (
 
 		PutField(Str, Value) Error
 		Has(Value) (Bool, Error)
+
+		keys() []string
 	}
 
 	Iterator interface {

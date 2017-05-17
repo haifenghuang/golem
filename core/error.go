@@ -75,6 +75,12 @@ func NoSuchFieldError(field string) Error {
 		fmt.Sprintf("Field '%s' not found", field)}
 }
 
+func DuplicateFieldError(field string) Error {
+	return &serror{
+		"DuplicateField",
+		fmt.Sprintf("Field '%s' is a duplicate", field)}
+}
+
 func InvalidArgumentError(msg string) Error {
 	return &serror{"InvalidArgument", msg}
 }

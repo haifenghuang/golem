@@ -136,9 +136,12 @@ type setIterator struct {
 
 func (s *set) NewIterator() Iterator {
 
-	stc := NewStruct([]*StructEntry{
+	stc, err := NewStruct([]*StructEntry{
 		{"nextValue", NULL},
 		{"getValue", NULL}})
+	if err != nil {
+		panic("invalid struct")
+	}
 
 	itr := &setIterator{stc, s, s.hashMap.Iterator(), false}
 

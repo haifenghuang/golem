@@ -153,9 +153,12 @@ type strIterator struct {
 
 func (s str) NewIterator() Iterator {
 
-	stc := NewStruct([]*StructEntry{
+	stc, err := NewStruct([]*StructEntry{
 		{"nextValue", NULL},
 		{"getValue", NULL}})
+	if err != nil {
+		panic("invalid struct")
+	}
 
 	itr := &strIterator{stc, []rune(string(s)), -1}
 
