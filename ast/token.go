@@ -126,6 +126,11 @@ const (
 	DICT
 	SET
 
+	TRY
+	CATCH
+	FINALLY
+	THROW
+
 	FN_PRINT
 	FN_PRINTLN
 	FN_STR
@@ -266,6 +271,15 @@ func (t TokenKind) String() string {
 		return "DICT"
 	case SET:
 		return "SET"
+
+	case TRY:
+		return "TRY"
+	case FINALLY:
+		return "FINALLY"
+	case CATCH:
+		return "CATCH"
+	case THROW:
+		return "THROW"
 
 	case FN_PRINT:
 		return "FN_PRINT"

@@ -139,6 +139,22 @@ type (
 		Semicolon *Token
 	}
 
+	Throw struct {
+		Token     *Token
+		Val       Expr
+		Semicolon *Token
+	}
+
+	Try struct {
+		TryToken     *Token
+		TryBlock     *Block
+		CatchToken   *Token
+		CatchIdent   *IdentExpr
+		CatchBlock   *Block
+		FinallyToken *Token
+		FinallyBlock *Block
+	}
+
 	//---------------------
 	// expression
 
@@ -302,6 +318,8 @@ func (*Default) stmtMarker()  {}
 func (*Break) stmtMarker()    {}
 func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
+func (*Throw) stmtMarker()    {}
+func (*Try) stmtMarker()      {}
 
 func (*While) loopMarker() {}
 func (*For) loopMarker()   {}
@@ -378,6 +396,18 @@ func (n *Continue) End() Pos   { return n.Semicolon.Position }
 
 func (n *Return) Begin() Pos { return n.Token.Position }
 func (n *Return) End() Pos   { return n.Semicolon.Position }
+
+func (n *Throw) Begin() Pos { return n.Token.Position }
+func (n *Throw) End() Pos   { return n.Semicolon.Position }
+
+func (n *Try) Begin() Pos { return n.TryToken.Position }
+func (n *Try) End() Pos {
+	if n.FinallyToken == nil {
+		return n.CatchBlock.End()
+	} else {
+		return n.FinallyBlock.End()
+	}
+}
 
 func (n *Assignment) Begin() Pos { return n.Assignee.Begin() }
 func (n *Assignment) End() Pos   { return n.Val.End() }
@@ -588,6 +618,32 @@ func (rt *Return) String() string {
 	} else {
 		return fmt.Sprintf("return %v;", rt.Val)
 	}
+}
+
+func (t *Throw) String() string {
+	return fmt.Sprintf("throw %v;", t.Val)
+}
+
+func (t *Try) String() string {
+
+	var buf bytes.Buffer
+
+	buf.WriteString("try ")
+	buf.WriteString(t.TryBlock.String())
+
+	if t.CatchToken != nil {
+		buf.WriteString(" catch ")
+		buf.WriteString(t.CatchIdent.String())
+		buf.WriteString(" ")
+		buf.WriteString(t.CatchBlock.String())
+	}
+
+	if t.FinallyToken != nil {
+		buf.WriteString(" finally ")
+		buf.WriteString(t.FinallyBlock.String())
+	}
+
+	return buf.String()
 }
 
 func (trn *TernaryExpr) String() string {

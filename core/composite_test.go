@@ -25,7 +25,7 @@ func TestChain(t *testing.T) {
 	s1 := newStruct([]*StructEntry{{"b", MakeInt(3)}, {"c", MakeInt(4)}})
 
 	c := NewChain([]Struct{s0, s1})
-	println(c.ToStr().String())
+	//println(c.ToStr().String())
 	assert(t, len(c.keys()) == 3)
 	//ok(t, c.ToStr(), nil, MakeStr("struct { b: 2, c: 4, a: 1 }"))
 

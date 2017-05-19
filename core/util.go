@@ -63,3 +63,19 @@ func strcpy(s string) string {
 	copy(c, s)
 	return string(c)
 }
+
+func strHash(s string) int {
+
+	// https://en.wikipedia.org/wiki/Jenkins_hash_function
+	var hash int = 0
+	bytes := []byte(s)
+	for _, b := range bytes {
+		hash += int(b)
+		hash += hash << 10
+		hash ^= hash >> 6
+	}
+	hash += hash << 3
+	hash ^= hash >> 11
+	hash += hash << 15
+	return hash
+}

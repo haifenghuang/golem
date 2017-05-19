@@ -119,6 +119,12 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.RETURN:
 		return p.returnStmt()
 
+	case ast.THROW:
+		return p.throwStmt()
+
+	case ast.TRY:
+		return p.tryStmt()
+
 	default:
 		return nil
 	}
@@ -360,6 +366,51 @@ func (p *Parser) returnStmt() *ast.Return {
 		val := p.expression()
 		return &ast.Return{token, val, p.expect(ast.SEMICOLON)}
 	}
+}
+
+func (p *Parser) throwStmt() *ast.Throw {
+
+	return &ast.Throw{
+		p.expect(ast.THROW),
+		p.expression(),
+		p.expect(ast.SEMICOLON)}
+}
+
+func (p *Parser) tryStmt() *ast.Try {
+
+	tryToken := p.expect(ast.TRY)
+	tryBlock := p.block()
+
+	// catch
+	var catchToken *ast.Token = nil
+	var catchIdent *ast.IdentExpr = nil
+	var catchBlock *ast.Block = nil
+
+	if p.cur.Kind == ast.CATCH {
+		catchToken = p.expect(ast.CATCH)
+		catchIdent = p.identExpr()
+		catchBlock = p.block()
+	}
+
+	// finally
+	var finallyToken *ast.Token = nil
+	var finallyBlock *ast.Block = nil
+
+	if p.cur.Kind == ast.FINALLY {
+		finallyToken = p.expect(ast.FINALLY)
+		finallyBlock = p.block()
+	}
+
+	// make sure we got at least one of try or catch
+	if catchToken == nil && finallyToken == nil {
+		panic(&parserError{INVALID_TRY, tryToken})
+	}
+
+	// done
+	return &ast.Try{
+		tryToken, tryBlock,
+		catchToken, catchIdent, catchBlock,
+		finallyToken, finallyBlock}
 }
 
 // parse a sequence of nodes that are wrapped in curly braces
@@ -1144,6 +1195,7 @@ const (
 	INVALID_POSTFIX
 	INVALID_FOR
 	INVALID_SWITCH
+	INVALID_TRY
 )
 
 type parserError struct {
@@ -1172,6 +1224,9 @@ func (e *parserError) Error() string {
 
 	case INVALID_SWITCH:
 		return fmt.Sprintf("Invalid Switch Expression at %v", e.token.Position)
+
+	case INVALID_TRY:
+		return fmt.Sprintf("Invalid TRY Expression at %v", e.token.Position)
 
 	default:
 		panic("unreachable")

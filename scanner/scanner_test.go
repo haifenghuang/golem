@@ -288,6 +288,13 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.DEFAULT, "default", 1, 13)
 	ok(t, s, ast.EOF, "", 1, 20)
 
+	s = NewScanner("try catch finally throw")
+	ok(t, s, ast.TRY, "try", 1, 1)
+	ok(t, s, ast.CATCH, "catch", 1, 5)
+	ok(t, s, ast.FINALLY, "finally", 1, 11)
+	ok(t, s, ast.THROW, "throw", 1, 19)
+	ok(t, s, ast.EOF, "", 1, 24)
+
 	s = NewScanner("struct this has dict set")
 	ok(t, s, ast.STRUCT, "struct", 1, 1)
 	ok(t, s, ast.THIS, "this", 1, 8)

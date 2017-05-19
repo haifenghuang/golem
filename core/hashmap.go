@@ -64,8 +64,8 @@ func (hm *HashMap) Get(key Value) (value Value, err Error) {
 		}
 	}()
 
-	b := hm.buckets[hm.hashBucket(key)]
-	n := indexOf(b, key)
+	b := hm.buckets[hm.lookupBucket(key)]
+	n := hm.indexOf(b, key)
 	if n == -1 {
 		return NULL, nil
 	} else {
@@ -87,8 +87,8 @@ func (hm *HashMap) ContainsKey(key Value) (flag Bool, err Error) {
 		}
 	}()
 
-	b := hm.buckets[hm.hashBucket(key)]
-	n := indexOf(b, key)
+	b := hm.buckets[hm.lookupBucket(key)]
+	n := hm.indexOf(b, key)
 	if n == -1 {
 		return FALSE, nil
 	} else {
@@ -109,12 +109,12 @@ func (hm *HashMap) Put(key Value, value Value) (err Error) {
 		}
 	}()
 
-	h := hm.hashBucket(key)
-	n := indexOf(hm.buckets[h], key)
+	h := hm.lookupBucket(key)
+	n := hm.indexOf(hm.buckets[h], key)
 	if n == -1 {
 		if hm.tooFull() {
 			hm.rehash()
-			h = hm.hashBucket(key)
+			h = hm.lookupBucket(key)
 		}
 		hm.buckets[h] = append(hm.buckets[h], &HEntry{key, value})
 		hm.size++
@@ -132,7 +132,7 @@ func (hm *HashMap) Len() Int {
 
 //--------------------------------------------------------------
 
-func indexOf(b bucket, key Value) int {
+func (hm *HashMap) indexOf(b bucket, key Value) int {
 	for i, e := range b {
 
 		if e.Key.Eq(key).BoolVal() {
@@ -154,13 +154,13 @@ func (hm *HashMap) rehash() {
 	hm.buckets = make([]bucket, capacity, capacity)
 	for _, b := range oldBuckets {
 		for _, e := range b {
-			h := hm.hashBucket(e.Key)
+			h := hm.lookupBucket(e.Key)
 			hm.buckets[h] = append(hm.buckets[h], e)
 		}
 	}
 }
 
-func (hm *HashMap) hashBucket(key Value) int {
+func (hm *HashMap) lookupBucket(key Value) int {
 
 	// panic on an un-hashable value
 	hc, err := key.HashCode()

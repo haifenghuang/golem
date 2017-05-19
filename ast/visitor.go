@@ -114,6 +114,21 @@ func (rt *Return) Traverse(v Visitor) {
 	}
 }
 
+func (t *Throw) Traverse(v Visitor) {
+	v.Visit(t.Val)
+}
+
+func (t *Try) Traverse(v Visitor) {
+	v.Visit(t.TryBlock)
+	if t.CatchToken != nil {
+		v.Visit(t.CatchIdent)
+		v.Visit(t.CatchBlock)
+	}
+	if t.FinallyToken != nil {
+		v.Visit(t.FinallyBlock)
+	}
+}
+
 func (blk *Block) Traverse(v Visitor) {
 	for _, n := range blk.Nodes {
 		v.Visit(n)
@@ -272,6 +287,10 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString("Continue\n")
 	case *Return:
 		p.buf.WriteString("Return\n")
+	case *Throw:
+		p.buf.WriteString("Throw\n")
+	case *Try:
+		p.buf.WriteString("Try\n")
 
 	case *BinaryExpr:
 		p.buf.WriteString(fmt.Sprintf("BinaryExpr(%q)\n", t.Op.Text))

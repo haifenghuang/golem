@@ -369,6 +369,30 @@ func TestFn(t *testing.T) {
 	ok(t, p, "fn() { (z = fn(x) { (a = 2); return b; (c = 3); }); }")
 }
 
+func TestTry(t *testing.T) {
+
+	p := newParser("throw a;")
+	ok(t, p, "fn() { throw a; }")
+
+	p = newParser("throw;")
+	fail(t, p, "Unexpected Token ';' at (1, 6)")
+
+	p = newParser("try { a; } catch e { b; }")
+	ok(t, p, "fn() { try { a; } catch e { b; } }")
+
+	p = newParser("try { a; } catch e { b; } finally { c; }")
+	ok(t, p, "fn() { try { a; } catch e { b; } finally { c; } }")
+
+	p = newParser("try { a; } finally { c; }")
+	ok(t, p, "fn() { try { a; } finally { c; } }")
+
+	p = newParser("try;")
+	fail(t, p, "Unexpected Token ';' at (1, 4)")
+
+	p = newParser("try {}")
+	fail(t, p, "Invalid TRY Expression at (1, 1)")
+}
+
 func TestInvoke(t *testing.T) {
 	p := newParser("a()")
 	ok_expr(t, p, "a()")

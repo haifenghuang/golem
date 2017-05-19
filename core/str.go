@@ -37,19 +37,8 @@ func (s str) TypeOf() Type { return TSTR }
 func (s str) ToStr() Str { return s }
 
 func (s str) HashCode() (Int, Error) {
-
-	// https://en.wikipedia.org/wiki/Jenkins_hash_function
-	var hash int64 = 0
-	bytes := []byte(s)
-	for _, b := range bytes {
-		hash += int64(b)
-		hash += hash << 10
-		hash ^= hash >> 6
-	}
-	hash += hash << 3
-	hash ^= hash >> 11
-	hash += hash << 15
-	return MakeInt(hash), nil
+	h := strHash(string(s))
+	return MakeInt(int64(h)), nil
 }
 
 func (s str) Eq(v Value) Bool {
