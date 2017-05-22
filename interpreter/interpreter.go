@@ -36,7 +36,7 @@ func NewInterpreter(mod *g.Module) *Interpreter {
 	return &Interpreter{mod, []*frame{}}
 }
 
-func (i *Interpreter) Init() (g.Value, g.Error) {
+func (i *Interpreter) Init() (g.Value, *errorTrace) {
 
 	// use the zeroth template
 	tpl := i.mod.Templates[0]
@@ -54,35 +54,60 @@ func (i *Interpreter) Init() (g.Value, g.Error) {
 	return i.run()
 }
 
-func (i *Interpreter) run() (result g.Value, err g.Error) {
+func (i *Interpreter) run() (result g.Value, errTrace *errorTrace) {
 
+	var err g.Error
 	for result == nil {
-		result, err = i.advance()
+		result, err = i.advance(0)
 		if err != nil {
 
-			//// run all the finally clauses
-			//for j := len(i.frames) - 1; j >= 0; j-- {
-			//	f := i.frames[j]
-			//	tpl := f.fn.Template()
-			//	for k := len(tpl.ExceptionHandlers) - 1; k >= 0; k-- {
-			//		eh := tpl.ExceptionHandlers[k]
+			instPtr := i.frames[len(i.frames)-1].ip
+			errTrace = &errorTrace{err, i.stackTrace()}
 
-			//		// run a finally clause
-			//		if eh.finally != -1 && (f.ip >= eh.begin && f.ip < eh.end) {
-			//			i.runFinally(eh)
+			// look for catch and finally clauses
+			for j := len(i.frames) - 1; j >= 0; j-- {
+				f := i.frames[j]
+				tpl := f.fn.Template()
 
-			//		}
-			//	}
-			//}
+				// check each excpeptionHandler in backwards order so that
+				// nested try blocks works properly
+				for k := len(tpl.ExceptionHandlers) - 1; k >= 0; k-- {
+					eh := tpl.ExceptionHandlers[k]
 
-			return nil, err
+					// found an active finally clause
+					if eh.Finally != -1 && (instPtr >= eh.Begin && instPtr < eh.End) {
+						// The error that we end up returning could be an error
+						// thrown from a finally, rather than the original error.
+						_, ferr := i.runFinally(f, j, eh)
+						if ferr != nil {
+							errTrace = &errorTrace{ferr, i.stackTrace()}
+						}
+					}
+				}
+			}
+
+			// TODO: catch recovery
+			return nil, errTrace
 		}
 	}
 
 	return result, nil
 }
 
-func (i *Interpreter) StackTrace() []string {
+func (i *Interpreter) runFinally(
+	f *frame, frameIndex int, eh g.ExceptionHandler) (result g.Value, err g.Error) {
+
+	f.ip = eh.Finally
+	for result == nil {
+		result, err = i.advance(frameIndex)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
+}
+
+func (i *Interpreter) stackTrace() []string {
 
 	n := len(i.frames)
 	stack := []string{}
@@ -143,4 +168,12 @@ func (f *frame) dump() {
 		fmt.Printf("        %d: %s\n", j, v.ToStr())
 	}
 	fmt.Printf("    ip: %d\n", f.ip)
+}
+
+//---------------------------------------------------------------
+// A combination of an error, and a stack trace
+
+type errorTrace struct {
+	err        g.Error
+	stackTrace []string
 }

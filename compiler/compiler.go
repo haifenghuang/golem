@@ -578,8 +578,15 @@ func (c *compiler) visitTry(t *ast.Try) {
 
 	finally := -1
 	if t.FinallyBlock != nil {
+
+		// save the beginning of the finally
 		finally = len(c.opc)
+
+		// compile the finally
 		c.Visit(t.FinallyBlock)
+
+		// add a RETURN to mark the end of the finally block
+		c.push(t.FinallyBlock.End(), g.RETURN)
 	}
 
 	//////////////////////////

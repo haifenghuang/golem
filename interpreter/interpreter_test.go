@@ -29,9 +29,9 @@ func ok_expr(t *testing.T, source string, expect g.Value) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
-	if err != nil {
-		panic(err.Error())
+	result, errTrace := intp.Init()
+	if errTrace != nil {
+		panic(errTrace)
 	}
 
 	b := result.Eq(expect)
@@ -52,9 +52,9 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
-	if err != nil {
-		panic(err)
+	result, errTrace := intp.Init()
+	if errTrace != nil {
+		panic(errTrace)
 	}
 
 	b := result.Eq(expectResult)
@@ -72,34 +72,31 @@ func fail_expr(t *testing.T, source string, expect string) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
+	result, errTrace := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if err.Error() != expect {
-		t.Error(err.Error(), " != ", expect)
+	if errTrace.err.Error() != expect {
+		t.Error(errTrace.err.Error(), " != ", expect)
 	}
 }
 
-func fail(t *testing.T, source string, expectErr g.Error, expectTrace []string) {
+func fail(t *testing.T, source string, expectErr g.Error, expectErrTrace []string) *g.Module {
 
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
+	result, errTrace := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if !reflect.DeepEqual(err, expectErr) {
-		t.Error(err, " != ", expectErr)
+	if !reflect.DeepEqual(errTrace.stackTrace, expectErrTrace) {
+		t.Error(errTrace.stackTrace, " != ", expectErrTrace)
 	}
 
-	trace := intp.StackTrace()
-	if !reflect.DeepEqual(trace, expectTrace) {
-		t.Error(err, " != ", expectTrace)
-	}
+	return mod
 }
 
 func failErr(t *testing.T, source string, expect g.Error) {
@@ -107,13 +104,13 @@ func failErr(t *testing.T, source string, expect g.Error) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
-	result, err := intp.Init()
+	result, errTrace := intp.Init()
 	if result != nil {
 		panic(result)
 	}
 
-	if err.Error() != expect.Error() {
-		t.Error(err, " != ", expect)
+	if errTrace.err.Error() != expect.Error() {
+		t.Error(errTrace.err, " != ", expect)
 	}
 }
 
@@ -143,10 +140,10 @@ func newCompiler(source string) compiler.Compiler {
 
 func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
-	_, err := intp.Init()
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		fmt.Printf("%v\n", intp.StackTrace())
+	_, errTrace := intp.Init()
+	if errTrace != nil {
+		fmt.Printf("%v\n", errTrace.err)
+		fmt.Printf("%v\n", errTrace.stackTrace)
 		panic("interpreter failed")
 	}
 }
@@ -1156,4 +1153,95 @@ func TestGetField(t *testing.T) {
 	failErr(t, "struct {a:1}.bogus;", err)
 
 	failErr(t, "(fn() {}).bogus;", err)
+}
+
+func TestFinally(t *testing.T) {
+
+	source := `
+let a = 1;
+try {
+    3 / 0;
+} finally {
+    a = 2;
+}
+try {
+    3 / 0;
+} finally {
+    a = 3;
+}
+`
+	mod := fail(t, source,
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 4"})
+	ok_ref(t, mod.Locals[0], g.MakeInt(2))
+
+	source = `
+let a = 1;
+try {
+    try {
+        3 / 0;
+    } finally {
+        a++;
+    }
+} finally {
+    a++;
+}
+`
+	mod = fail(t, source,
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 5"})
+	ok_ref(t, mod.Locals[0], g.MakeInt(3))
+
+	source = `
+let a = 1;
+let b = fn() { a++; };
+try {
+    try {
+        3 / 0;
+    } finally {
+        a++;
+        b();
+    }
+} finally {
+    a++;
+}
+	`
+	mod = fail(t, source,
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 6"})
+	ok_ref(t, mod.Locals[0], g.MakeInt(4))
+
+	source = `
+let a = 1;
+let b = fn() { 
+    try {
+        try {
+            3 / 0;
+        } finally {
+            a++;
+        }
+    } finally {
+        a++;
+    }
+};
+try {
+    b();
+} finally {
+    a++;
+}
+	`
+	//mod = newCompiler(source).Compile()
+	//fmt.Println("----------------------------")
+	//fmt.Println(source)
+	//fmt.Println(mod)
+
+	mod = fail(t, source,
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 6",
+			"    at line 15"})
+	ok_ref(t, mod.Locals[0], g.MakeInt(3))
 }

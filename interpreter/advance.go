@@ -20,7 +20,7 @@ import (
 )
 
 // Advance the interpreter forwards by one opcode.
-func (i *Interpreter) advance() (g.Value, g.Error) {
+func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 	pool := i.mod.Pool
 	f := i.frames[len(i.frames)-1]
@@ -48,9 +48,8 @@ func (i *Interpreter) advance() (g.Value, g.Error) {
 				return nil, err
 			}
 
-			// pop from stack, and advance instruction pointer
+			// pop from stack
 			f.stack = f.stack[:n-idx]
-			f.ip += 3
 
 			// push a new frame
 			locals := newLocals(fn.Template().NumLocals, params)
@@ -90,16 +89,20 @@ func (i *Interpreter) advance() (g.Value, g.Error) {
 		// get result from top of stack
 		result := f.stack[n]
 
-		// pop the old frame
-		i.frames = i.frames[:len(i.frames)-1]
-
-		if len(i.frames) == 0 {
-			// no more frames means we are done
+		if len(i.frames)-1 == lastFrame {
+			// If we are on the last frame, then we are done. Note that lastFrame
+			// can be non-zero, if we are advancing a 'catch' or 'finally' clause.
 			return result, nil
 		} else {
+			// pop the old frame
+			i.frames = i.frames[:len(i.frames)-1]
+
 			// push the result onto the new top frame
 			f = i.frames[len(i.frames)-1]
 			f.stack = append(f.stack, result)
+
+			// advance the instruction pointer now that we are done invoking
+			f.ip += 3
 		}
 
 	case g.NEW_FUNC:
