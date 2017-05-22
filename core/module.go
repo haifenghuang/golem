@@ -30,10 +30,10 @@ type StructDef []string
 // Ref
 
 type Module struct {
-	Pool      []Basic
-	Locals    []*Ref
-	StructDefs   []StructDef
-	Templates []*Template
+	Pool       []Basic
+	Locals     []*Ref
+	StructDefs []StructDef
+	Templates  []*Template
 }
 
 func (m *Module) String() string {
@@ -74,10 +74,16 @@ func (m *Module) String() string {
 			i += OpCodeSize(t.OpCodes[i])
 		}
 
-		buf.WriteString("        OpcLines:\n")
-		for _, opl := range t.OpcLines {
+		buf.WriteString("        LineNumberTable:\n")
+		for _, ln := range t.LineNumberTable {
 			buf.WriteString("            ")
-			buf.WriteString(fmt.Sprintf("%v\n", opl))
+			buf.WriteString(fmt.Sprintf("%v\n", ln))
+		}
+
+		buf.WriteString("        ExceptionHandlers:\n")
+		for _, eh := range t.ExceptionHandlers {
+			buf.WriteString("            ")
+			buf.WriteString(fmt.Sprintf("%v\n", eh))
 		}
 	}
 

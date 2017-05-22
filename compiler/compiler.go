@@ -29,10 +29,11 @@ type Compiler interface {
 }
 
 type compiler struct {
-	anl  analyzer.Analyzer
-	pool *g.HashMap
-	opc  []byte
-	opln []g.OpcLine
+	anl      analyzer.Analyzer
+	pool     *g.HashMap
+	opc      []byte
+	lnum     []g.LineNumberEntry
+	handlers []g.ExceptionHandler
 
 	funcs     []*ast.FnExpr
 	templates []*g.Template
@@ -45,7 +46,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
 	defs := []g.StructDef{}
-	return &compiler{anl, g.EmptyHashMap(), nil, nil, funcs, templates, defs, 0}
+	return &compiler{anl, g.EmptyHashMap(), nil, nil, nil, funcs, templates, defs, 0}
 }
 
 func (c *compiler) Compile() *g.Module {
@@ -63,10 +64,11 @@ func (c *compiler) Compile() *g.Module {
 func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {
 
 	arity := len(fe.FormalParams)
-	tpl := &g.Template{arity, fe.NumCaptures, fe.NumLocals, nil, nil}
+	tpl := &g.Template{arity, fe.NumCaptures, fe.NumLocals, nil, nil, nil}
 
 	c.opc = []byte{}
-	c.opln = []g.OpcLine{}
+	c.lnum = []g.LineNumberEntry{}
+	c.handlers = []g.ExceptionHandler{}
 
 	// TODO LOAD_NULL and RETURN are workarounds for the fact that
 	// we have not yet written a Control Flow Graph
@@ -75,7 +77,8 @@ func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {
 	c.push(ast.Pos{}, g.RETURN)
 
 	tpl.OpCodes = c.opc
-	tpl.OpcLines = c.opln
+	tpl.LineNumberTable = c.lnum
+	tpl.ExceptionHandlers = c.handlers
 
 	return tpl
 }
@@ -115,6 +118,9 @@ func (c *compiler) Visit(node ast.Node) {
 
 	case *ast.Return:
 		c.visitReturn(t)
+
+	case *ast.Try:
+		c.visitTry(t)
 
 	case *ast.TernaryExpr:
 		c.visitTernaryExpr(t)
@@ -532,6 +538,60 @@ func (c *compiler) visitReturn(rt *ast.Return) {
 	c.push(rt.Begin(), g.RETURN)
 }
 
+func (c *compiler) visitTry(t *ast.Try) {
+
+	begin := len(c.opc)
+	c.Visit(t.TryBlock)
+	end := len(c.opc)
+
+	//////////////////////////
+	// catch
+
+	catch := -1
+	if t.CatchBlock != nil {
+
+		// push a jump, so we'll skip the catch block during normal execution
+		end := c.push(t.TryBlock.End(), g.JUMP, 0xFF, 0xFF)
+
+		// save the beginning of the catch
+		catch = len(c.opc)
+
+		// load the exception that the interpreter has put on the stack for us
+		v := t.CatchIdent.Variable
+		if v.IsCapture {
+			panic("invalid catch block")
+		}
+		c.pushIndex(t.CatchIdent.Begin(), g.LOAD_LOCAL, v.Index)
+
+		// compile the catch
+		c.Visit(t.CatchBlock)
+
+		// add a RETURN to mark the end of the catch block
+		c.push(t.CatchBlock.End(), g.RETURN)
+
+		// fix the jump
+		c.setJump(end, c.opcLen())
+	}
+
+	//////////////////////////
+	// finally
+
+	finally := -1
+	if t.FinallyBlock != nil {
+		finally = len(c.opc)
+		c.Visit(t.FinallyBlock)
+	}
+
+	//////////////////////////
+	// done
+
+	// sanity check
+	if catch == -1 && finally == -1 {
+		panic("invalid try block")
+	}
+	c.handlers = append(c.handlers, g.ExceptionHandler{begin, end, catch, finally})
+}
+
 func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {
 
 	switch b.Op.Kind {
@@ -919,9 +979,9 @@ func (c *compiler) push(pos ast.Pos, bytes ...byte) int {
 		c.opc = append(c.opc, b)
 	}
 
-	ln := len(c.opln)
-	if (ln == 0) || (pos.Line != c.opln[ln-1].LineNum) {
-		c.opln = append(c.opln, g.OpcLine{n, pos.Line})
+	ln := len(c.lnum)
+	if (ln == 0) || (pos.Line != c.lnum[ln-1].LineNum) {
+		c.lnum = append(c.lnum, g.LineNumberEntry{n, pos.Line})
 	}
 
 	return n

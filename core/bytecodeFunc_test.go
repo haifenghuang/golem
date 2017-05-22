@@ -36,12 +36,13 @@ func TestBytecodeFunc(t *testing.T) {
 func TestLineNumber(t *testing.T) {
 
 	tp := &Template{0, 0, 0, nil,
-		[]OpcLine{
-			OpcLine{0, 0},
-			OpcLine{1, 2},
-			OpcLine{11, 3},
-			OpcLine{20, 4},
-			OpcLine{29, 0}}}
+		[]LineNumberEntry{
+			{0, 0},
+			{1, 2},
+			{11, 3},
+			{20, 4},
+			{29, 0}},
+		nil}
 
 	assert(t, tp.LineNumber(0) == 0)
 	assert(t, tp.LineNumber(1) == 2)

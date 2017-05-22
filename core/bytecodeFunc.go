@@ -99,29 +99,38 @@ func (f *bytecodeFunc) PushCapture(ref *Ref) {
 // instance.  Templates are created at compile time, and
 // are immutable at run time.
 type Template struct {
-	Arity       int
-	NumCaptures int
-	NumLocals   int
-	OpCodes     []byte
-	OpcLines    []OpcLine
+	Arity             int
+	NumCaptures       int
+	NumLocals         int
+	OpCodes           []byte
+	LineNumberTable   []LineNumberEntry
+	ExceptionHandlers []ExceptionHandler
 }
 
-// OpcLine tracks which sequence of opcodes are on a ven line
-type OpcLine struct {
+// LineNumberEntry tracks which sequence of opcodes are on a given line
+type LineNumberEntry struct {
 	Index   int
 	LineNum int
+}
+
+// ExceptionHandler contains the instruction pointers for catch and finally
+type ExceptionHandler struct {
+	Begin   int
+	End     int
+	Catch   int
+	Finally int
 }
 
 // Return the line number for the opcode at the ven instruction pointer
 func (t *Template) LineNumber(instPtr int) int {
 
-	oln := t.OpcLines
-	n := len(oln) - 1
+	table := t.LineNumberTable
+	n := len(table) - 1
 
 	for i := 0; i < n; i++ {
-		if (instPtr >= oln[i].Index) && (instPtr < oln[i+1].Index) {
-			return oln[i].LineNum
+		if (instPtr >= table[i].Index) && (instPtr < table[i+1].Index) {
+			return table[i].LineNum
 		}
 	}
-	return oln[n].LineNum
+	return table[n].LineNum
 }

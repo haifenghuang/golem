@@ -24,7 +24,6 @@ import (
 
 type Interpreter struct {
 	mod    *g.Module
-	done   bool
 	frames []*frame
 }
 
@@ -34,7 +33,7 @@ func NewInterpreter(mod *g.Module) *Interpreter {
 		panic("TODO")
 	}
 
-	return &Interpreter{mod, false, []*frame{}}
+	return &Interpreter{mod, []*frame{}}
 }
 
 func (i *Interpreter) Init() (g.Value, g.Error) {
@@ -55,17 +54,32 @@ func (i *Interpreter) Init() (g.Value, g.Error) {
 	return i.run()
 }
 
-func (i *Interpreter) run() (g.Value, g.Error) {
+func (i *Interpreter) run() (result g.Value, err g.Error) {
 
-	for !i.done {
-		err := i.advance()
+	for result == nil {
+		result, err = i.advance()
 		if err != nil {
+
+			//// run all the finally clauses
+			//for j := len(i.frames) - 1; j >= 0; j-- {
+			//	f := i.frames[j]
+			//	tpl := f.fn.Template()
+			//	for k := len(tpl.ExceptionHandlers) - 1; k >= 0; k-- {
+			//		eh := tpl.ExceptionHandlers[k]
+
+			//		// run a finally clause
+			//		if eh.finally != -1 && (f.ip >= eh.begin && f.ip < eh.end) {
+			//			i.runFinally(eh)
+
+			//		}
+			//	}
+			//}
+
 			return nil, err
 		}
 	}
 
-	f := i.frames[len(i.frames)-1]
-	return f.stack[len(f.stack)-1], nil
+	return result, nil
 }
 
 func (i *Interpreter) StackTrace() []string {

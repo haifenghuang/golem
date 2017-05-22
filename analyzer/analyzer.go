@@ -76,6 +76,9 @@ func (a *analyzer) Visit(node ast.Node) {
 	case *ast.Assignment:
 		a.visitAssignment(t)
 
+	case *ast.Try:
+		a.visitTry(t)
+
 	case *ast.PostfixExpr:
 		a.visitPostfixExpr(t)
 
@@ -121,6 +124,18 @@ func (a *analyzer) visitDecls(decls []*ast.Decl, isConst bool) {
 			a.Visit(d.Val)
 		}
 		a.defineIdent(d.Ident, isConst)
+	}
+}
+
+func (a *analyzer) visitTry(t *ast.Try) {
+
+	a.Visit(t.TryBlock)
+	if t.CatchToken != nil {
+		a.defineIdent(t.CatchIdent, true)
+		a.Visit(t.CatchBlock)
+	}
+	if t.FinallyToken != nil {
+		a.Visit(t.FinallyBlock)
 	}
 }
 

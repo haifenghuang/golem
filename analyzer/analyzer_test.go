@@ -631,3 +631,28 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 .   .   .   .   BasicExpr(INT,"0")
 `)
 }
+
+func TestTry(t *testing.T) {
+
+	source := "let a = 1; try { } catch e { } finally { }"
+	anl := newAnalyzer(source)
+	errors := anl.Analyze()
+
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   Let
+.   .   .   IdentExpr(a,(0,false,false))
+.   .   .   BasicExpr(INT,"1")
+.   .   Try
+.   .   .   Block
+.   .   .   IdentExpr(e,(1,true,false))
+.   .   .   Block
+.   .   .   Block
+`)
+
+	source = "let a = 1; try { } catch a { } finally { }"
+	anl = newAnalyzer(source)
+	errors = anl.Analyze()
+	fail(t, errors, "[Symbol 'a' is already defined]")
+}
