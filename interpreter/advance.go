@@ -23,7 +23,8 @@ import (
 func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 	pool := i.mod.Pool
-	f := i.frames[len(i.frames)-1]
+	frameIndex := len(i.frames) - 1
+	f := i.frames[frameIndex]
 	n := len(f.stack) - 1
 	opc := f.fn.Template().OpCodes
 
@@ -89,13 +90,13 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		// get result from top of stack
 		result := f.stack[n]
 
-		if len(i.frames)-1 == lastFrame {
+		if frameIndex == lastFrame {
 			// If we are on the last frame, then we are done. Note that lastFrame
 			// can be non-zero, if we are advancing a 'catch' or 'finally' clause.
 			return result, nil
 		} else {
 			// pop the old frame
-			i.frames = i.frames[:len(i.frames)-1]
+			i.frames = i.frames[:frameIndex]
 
 			// push the result onto the new top frame
 			f = i.frames[len(i.frames)-1]
@@ -104,6 +105,9 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 			// advance the instruction pointer now that we are done invoking
 			f.ip += 3
 		}
+
+	case g.DONE:
+		panic("DONE cannot be executed directly")
 
 	case g.NEW_FUNC:
 

@@ -566,8 +566,11 @@ func (c *compiler) visitTry(t *ast.Try) {
 		// compile the catch
 		c.Visit(t.CatchBlock)
 
-		// add a RETURN to mark the end of the catch block
-		c.push(t.CatchBlock.End(), g.RETURN)
+		// pop the exception
+		c.push(t.CatchBlock.End(), g.POP)
+
+		// add a DONE to mark the end of the catch block
+		c.push(t.CatchBlock.End(), g.DONE)
 
 		// fix the jump
 		c.setJump(end, c.opcLen())
@@ -585,8 +588,8 @@ func (c *compiler) visitTry(t *ast.Try) {
 		// compile the finally
 		c.Visit(t.FinallyBlock)
 
-		// add a RETURN to mark the end of the finally block
-		c.push(t.FinallyBlock.End(), g.RETURN)
+		// add a DONE to mark the end of the finally block
+		c.push(t.FinallyBlock.End(), g.DONE)
 	}
 
 	//////////////////////////

@@ -60,51 +60,82 @@ func (i *Interpreter) run() (result g.Value, errTrace *ErrorTrace) {
 	for result == nil {
 		result, err = i.advance(0)
 		if err != nil {
-
-			instPtr := i.frames[len(i.frames)-1].ip
-			errTrace = &ErrorTrace{err, i.stackTrace()}
-
-			// look for catch and finally clauses
-			for j := len(i.frames) - 1; j >= 0; j-- {
-				f := i.frames[j]
-				tpl := f.fn.Template()
-
-				// check each excpeptionHandler in backwards order so that
-				// nested try blocks works properly
-				for k := len(tpl.ExceptionHandlers) - 1; k >= 0; k-- {
-					eh := tpl.ExceptionHandlers[k]
-
-					// found an active finally clause
-					if eh.Finally != -1 && (instPtr >= eh.Begin && instPtr < eh.End) {
-						// The error that we end up returning could be an error
-						// thrown from a finally, rather than the original error.
-						_, ferr := i.runFinally(f, j, eh)
-						if ferr != nil {
-							errTrace = &ErrorTrace{ferr, i.stackTrace()}
-						}
-					}
-				}
+			result, errTrace = i.walkStack(err)
+			if errTrace != nil {
+				return nil, errTrace
 			}
-
-			// TODO: catch recovery
-			return nil, errTrace
 		}
 	}
 
 	return result, nil
 }
 
-func (i *Interpreter) runFinally(
-	f *frame, frameIndex int, eh g.ExceptionHandler) (result g.Value, err g.Error) {
+func (i *Interpreter) walkStack(err g.Error) (g.Value, *ErrorTrace) {
 
-	f.ip = eh.Finally
-	for result == nil {
-		result, err = i.advance(frameIndex)
-		if err != nil {
-			return nil, err
+	errTrace := makeErrorTrace(err, i.stackTrace())
+
+	// look for catch and finally clauses
+	for len(i.frames) > 0 {
+		frameIndex := len(i.frames) - 1
+		f := i.frames[frameIndex]
+		instPtr := f.ip
+
+		// check excpeption handlers in backwards order so that
+		// nested try blocks works properly
+		tpl := f.fn.Template()
+		for j := len(tpl.ExceptionHandlers) - 1; j >= 0; j-- {
+			eh := tpl.ExceptionHandlers[j]
+
+			// found an active handler
+			if instPtr >= eh.Begin && instPtr < eh.End {
+
+				if eh.Catch != -1 {
+					panic("TODO")
+
+				} else {
+					if eh.Finally == -1 {
+						panic("invalid try")
+					}
+
+					f.ip = eh.Finally
+					fresult, ferr := i.runTryClause(f, frameIndex)
+					switch {
+
+					case fresult != nil:
+						// if the finally clause returns a result, then we stop
+						// unwinding the stack
+						if ferr != nil {
+							panic("invalid try")
+						}
+						return fresult, nil
+
+					case ferr != nil:
+						// save the error and return it in place of the original error
+						errTrace = makeErrorTrace(ferr, i.stackTrace())
+					}
+				}
+			}
+		}
+
+		// pop the frame
+		i.frames = i.frames[:frameIndex]
+	}
+
+	return nil, errTrace
+}
+
+func (i *Interpreter) runTryClause(f *frame, frameIndex int) (g.Value, g.Error) {
+
+	opc := f.fn.Template().OpCodes
+	for opc[f.ip] != g.DONE {
+		result, err := i.advance(frameIndex)
+		if result != nil || err != nil {
+			return result, err
 		}
 	}
-	return result, nil
+	f.ip++
+
+	return nil, nil
 }
 
 func (i *Interpreter) stackTrace() []string {
@@ -173,7 +204,29 @@ func (f *frame) dump() {
 //---------------------------------------------------------------
 // A combination of an error, and a stack trace
 
+func makeErrorTrace(err g.Error, stackTrace []string) *ErrorTrace {
+
+	// make list-of-str
+	vals := make([]g.Value, len(stackTrace), len(stackTrace))
+	for i, s := range stackTrace {
+		vals[i] = g.MakeStr(s)
+	}
+	list := g.NewList(vals)
+
+	// TODO make the struct immutable
+	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", list}})
+	if e != nil {
+		panic("invalid struct")
+	}
+
+	// TODO make the chain immutable
+	chain := g.NewChain([]g.Struct{err.Struct(), stc})
+
+	return &ErrorTrace{err, stackTrace, chain}
+}
+
 type ErrorTrace struct {
 	Error      g.Error
 	StackTrace []string
+	Struct     g.Struct
 }

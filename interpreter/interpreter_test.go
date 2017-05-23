@@ -92,6 +92,10 @@ func fail(t *testing.T, source string, expectErr g.Error, expectErrTrace []strin
 		panic(result)
 	}
 
+	if !reflect.DeepEqual(errTrace.Error, expectErr) {
+		t.Error(errTrace.Error, " != ", expectErr)
+	}
+
 	if !reflect.DeepEqual(errTrace.StackTrace, expectErrTrace) {
 		t.Error(errTrace.StackTrace, " != ", expectErrTrace)
 	}
@@ -1207,7 +1211,7 @@ try {
 } finally {
     a++;
 }
-	`
+`
 	mod = fail(t, source,
 		g.DivideByZeroError(),
 		[]string{
@@ -1232,7 +1236,7 @@ try {
 } finally {
     a++;
 }
-	`
+`
 	//mod = newCompiler(source).Compile()
 	//fmt.Println("----------------------------")
 	//fmt.Println(source)
@@ -1243,5 +1247,59 @@ try {
 		[]string{
 			"    at line 6",
 			"    at line 15"})
-	ok_ref(t, mod.Locals[0], g.MakeInt(3))
+	ok_ref(t, mod.Locals[0], g.MakeInt(4))
+
+	source = `
+let b = fn() { 
+    try {
+    } finally {
+        return 1;
+    }
+    return 2;
+};
+assert(b() == 1);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = 1;
+let b = fn() { 
+    try {
+        try {
+        } finally {
+            return 1;
+        }
+    } finally {
+        a = 2;
+    }
+};
+assert(b() == 1);
+assert(a == 1);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+try {
+    assert(1,2,3);
+} finally {
+}
+`
+	mod = fail(t, source,
+		g.ArityMismatchError("1", 3),
+		[]string{
+			"    at line 3"})
+
+	source = `
+try {
+    assert(1,2,3);
+} finally {
+    1/0;
+}
+`
+	mod = fail(t, source,
+		g.DivideByZeroError(),
+		[]string{
+			"    at line 5"})
 }
