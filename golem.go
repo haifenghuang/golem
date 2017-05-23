@@ -57,10 +57,9 @@ func main() {
 
 	// interpret
 	intp := interpreter.NewInterpreter(mod)
-	_, err = intp.Init()
-	if err != nil {
-		fmt.Printf("%v\n", intp.StackTrace())
-		fmt.Printf("%v\n", err)
-		panic(err)
+	_, errTrace := intp.Init()
+	if errTrace != nil {
+		fmt.Printf("%v\n", errTrace.Error)
+		fmt.Printf("%v\n", errTrace.StackTrace)
 	}
 }

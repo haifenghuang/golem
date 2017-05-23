@@ -19,76 +19,169 @@ import (
 	"strings"
 )
 
-type Error interface {
-	error
-	Kind() string
-	Msg() string
-}
+//---------------------------------------------------------------
+// ErrorKind
 
-type serror struct {
-	kind string
-	msg  string
-}
+type ErrorKind int
 
-func (e *serror) Error() string {
-	if e.msg == "" {
-		return e.kind
-	} else {
-		return strings.Join([]string{e.kind, ": ", e.msg}, "")
+const (
+	GENERIC ErrorKind = iota
+	NULL_VALUE
+	TYPE_MISMATCH
+	ARITY_MISMATCH
+	TUPLE_LENGTH
+	DIVIDE_BY_ZERO
+	INDEX_OUT_OF_BOUNDS
+	NO_SUCH_FIELD
+	DUPLICATE_FIELD
+	INVALID_ARGUMENT
+	NO_SUCH_ELEMENT
+	ASSERTION_FAILED
+)
+
+func (t ErrorKind) String() string {
+	switch t {
+
+	case GENERIC:
+		return "Generic"
+	case NULL_VALUE:
+		return "NullValue"
+	case TYPE_MISMATCH:
+		return "TypeMismatch"
+	case ARITY_MISMATCH:
+		return "ArityMismatch"
+	case TUPLE_LENGTH:
+		return "TupleLength"
+	case DIVIDE_BY_ZERO:
+		return "DivideByZero"
+	case INDEX_OUT_OF_BOUNDS:
+		return "IndexOutOfBounds"
+	case NO_SUCH_FIELD:
+		return "NoSuchField"
+	case DUPLICATE_FIELD:
+		return "DuplicateField"
+	case INVALID_ARGUMENT:
+		return "InvalidArgument"
+	case NO_SUCH_ELEMENT:
+		return "NoSuchElement"
+	case ASSERTION_FAILED:
+		return "AssertionFailed"
+
+	default:
+		panic("unreachable")
 	}
 }
 
-func (e *serror) Kind() string { return e.kind }
-func (e *serror) Msg() string  { return e.msg }
+//---------------------------------------------------------------
+// Error
+
+type Error interface {
+	error
+	Kind() ErrorKind
+	Struct() Struct
+}
+
+type serror struct {
+	kind ErrorKind
+	stc  Struct
+}
+
+func (e *serror) Error() string {
+	kind, kerr := e.stc.Get(MakeStr("kind"))
+	msg, merr := e.stc.Get(MakeStr("msg"))
+
+	if kerr == nil {
+		if merr == nil {
+			return strings.Join([]string{
+				kind.ToStr().String(), ": ", msg.ToStr().String()}, "")
+		} else {
+			return kind.ToStr().String()
+		}
+	} else {
+		return e.stc.ToStr().String()
+	}
+}
+
+func (e *serror) Kind() ErrorKind {
+	return e.kind
+}
+
+func (e *serror) Struct() Struct {
+	return e.stc
+}
+
+func makeError(kind ErrorKind, msg string) Error {
+	var stc Struct
+	var err Error
+	if msg == "" {
+		// TODO make the struct immutable
+		stc, err = NewStruct([]*StructEntry{
+			{"kind", MakeStr(kind.String())}})
+	} else {
+		// TODO make the struct immutable
+		stc, err = NewStruct([]*StructEntry{
+			{"kind", MakeStr(kind.String())},
+			{"msg", MakeStr(msg)}})
+	}
+	if err != nil {
+		panic("invalid struct")
+	}
+
+	return &serror{kind, stc}
+}
+
+//func GenericError() Error {
+//	return makeError(NULL_VALUE, "")
+//}
 
 func NullValueError() Error {
-	return &serror{"NullValue", ""}
+	return makeError(NULL_VALUE, "")
 }
 
 func TypeMismatchError(msg string) Error {
-	return &serror{"TypeMismatch", msg}
+	return makeError(TYPE_MISMATCH, msg)
 }
 
 func ArityMismatchError(expected string, actual int) Error {
-	return &serror{
-		"ArityMismatch",
-		fmt.Sprintf("Expected %s params, got %d", expected, actual)}
+	return makeError(
+		ARITY_MISMATCH,
+		fmt.Sprintf("Expected %s params, got %d", expected, actual))
 }
 
 func TupleLengthError(expected int, actual int) Error {
-	return &serror{
-		"TupleLength",
-		fmt.Sprintf("Expected Tuple of length %d, got %d", expected, actual)}
+	return makeError(
+		TUPLE_LENGTH,
+		fmt.Sprintf("Expected Tuple of length %d, got %d", expected, actual))
 }
 
 func DivideByZeroError() Error {
-	return &serror{"DivideByZero", ""}
+	return makeError(DIVIDE_BY_ZERO, "")
 }
 
 func IndexOutOfBoundsError() Error {
-	return &serror{"IndexOutOfBounds", ""}
+	return makeError(INDEX_OUT_OF_BOUNDS, "")
 }
 
 func NoSuchFieldError(field string) Error {
-	return &serror{
-		"NoSuchField",
-		fmt.Sprintf("Field '%s' not found", field)}
+	return makeError(
+		NO_SUCH_FIELD,
+		fmt.Sprintf("Field '%s' not found", field))
 }
 
 func DuplicateFieldError(field string) Error {
-	return &serror{
-		"DuplicateField",
-		fmt.Sprintf("Field '%s' is a duplicate", field)}
+	return makeError(
+		DUPLICATE_FIELD,
+		fmt.Sprintf("Field '%s' is a duplicate", field))
 }
 
 func InvalidArgumentError(msg string) Error {
-	return &serror{"InvalidArgument", msg}
+	return makeError(INVALID_ARGUMENT, msg)
 }
 
 func NoSuchElementError() Error {
-	return &serror{"NoSuchElement", ""}
+	return makeError(NO_SUCH_ELEMENT, "")
 }
 
 func AssertionFailedError() Error {
-	return &serror{"AssertionFailed", ""}
+	return makeError(ASSERTION_FAILED, "")
 }

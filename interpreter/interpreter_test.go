@@ -77,8 +77,8 @@ func fail_expr(t *testing.T, source string, expect string) {
 		panic(result)
 	}
 
-	if errTrace.err.Error() != expect {
-		t.Error(errTrace.err.Error(), " != ", expect)
+	if errTrace.Error.Error() != expect {
+		t.Error(errTrace.Error.Error(), " != ", expect)
 	}
 }
 
@@ -92,8 +92,8 @@ func fail(t *testing.T, source string, expectErr g.Error, expectErrTrace []strin
 		panic(result)
 	}
 
-	if !reflect.DeepEqual(errTrace.stackTrace, expectErrTrace) {
-		t.Error(errTrace.stackTrace, " != ", expectErrTrace)
+	if !reflect.DeepEqual(errTrace.StackTrace, expectErrTrace) {
+		t.Error(errTrace.StackTrace, " != ", expectErrTrace)
 	}
 
 	return mod
@@ -109,8 +109,8 @@ func failErr(t *testing.T, source string, expect g.Error) {
 		panic(result)
 	}
 
-	if errTrace.err.Error() != expect.Error() {
-		t.Error(errTrace.err, " != ", expect)
+	if errTrace.Error.Error() != expect.Error() {
+		t.Error(errTrace.Error, " != ", expect)
 	}
 }
 
@@ -142,8 +142,8 @@ func interpret(mod *g.Module) {
 	intp := NewInterpreter(mod)
 	_, errTrace := intp.Init()
 	if errTrace != nil {
-		fmt.Printf("%v\n", errTrace.err)
-		fmt.Printf("%v\n", errTrace.stackTrace)
+		fmt.Printf("%v\n", errTrace.Error)
+		fmt.Printf("%v\n", errTrace.StackTrace)
 		panic("interpreter failed")
 	}
 }

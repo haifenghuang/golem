@@ -31,7 +31,7 @@ type StructEntry struct {
 // structMap
 
 type structMap interface {
-	has(Value) (Bool, Error)
+	has(Str) Bool
 	get(Str) (Value, Error)
 	put(Str, Value) Error
 	keys() []string
@@ -98,7 +98,7 @@ func (stc *_struct) Eq(v Value) Bool {
 
 		b, err := that.GetField(str(k))
 		if err != nil {
-			if err.Kind() == "NoSuchField" {
+			if err.Kind() == NO_SUCH_FIELD {
 				return FALSE
 			} else {
 				panic("invalid chain")
@@ -154,7 +154,11 @@ func (stc *_struct) PutField(key Str, val Value) Error {
 }
 
 func (stc *_struct) Has(key Value) (Bool, Error) {
-	return stc.smap.has(key)
+	if s, ok := key.(Str); ok {
+		return stc.smap.has(s), nil
+	} else {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
 }
 
 func (stc *_struct) keys() []string {
@@ -192,14 +196,9 @@ func BlankStruct(keys []string) (Struct, Error) {
 	return &_struct{ss}, nil
 }
 
-func (ss *simpleStruct) has(key Value) (Bool, Error) {
-	s, ok := key.(Str)
-	if !ok {
-		return nil, TypeMismatchError("Expected 'Str'")
-	}
-
-	_, has := ss.fields[s.String()]
-	return MakeBool(has), nil
+func (ss *simpleStruct) has(key Str) Bool {
+	_, has := ss.fields[key.String()]
+	return MakeBool(has)
 }
 
 func (ss *simpleStruct) get(key Str) (Value, Error) {

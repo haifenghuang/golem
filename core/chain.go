@@ -43,14 +43,9 @@ func NewChain(structs []Struct) Struct {
 	return &_struct{ch}
 }
 
-func (ch *chainStruct) has(key Value) (Bool, Error) {
-	s, ok := key.(Str)
-	if !ok {
-		return nil, TypeMismatchError("Expected 'Str'")
-	}
-
-	_, has := ch.fields[s.String()]
-	return MakeBool(has), nil
+func (ch *chainStruct) has(key Str) Bool {
+	_, has := ch.fields[key.String()]
+	return MakeBool(has)
 }
 
 func (ch *chainStruct) get(key Str) (Value, Error) {

@@ -36,7 +36,7 @@ func NewInterpreter(mod *g.Module) *Interpreter {
 	return &Interpreter{mod, []*frame{}}
 }
 
-func (i *Interpreter) Init() (g.Value, *errorTrace) {
+func (i *Interpreter) Init() (g.Value, *ErrorTrace) {
 
 	// use the zeroth template
 	tpl := i.mod.Templates[0]
@@ -54,7 +54,7 @@ func (i *Interpreter) Init() (g.Value, *errorTrace) {
 	return i.run()
 }
 
-func (i *Interpreter) run() (result g.Value, errTrace *errorTrace) {
+func (i *Interpreter) run() (result g.Value, errTrace *ErrorTrace) {
 
 	var err g.Error
 	for result == nil {
@@ -62,7 +62,7 @@ func (i *Interpreter) run() (result g.Value, errTrace *errorTrace) {
 		if err != nil {
 
 			instPtr := i.frames[len(i.frames)-1].ip
-			errTrace = &errorTrace{err, i.stackTrace()}
+			errTrace = &ErrorTrace{err, i.stackTrace()}
 
 			// look for catch and finally clauses
 			for j := len(i.frames) - 1; j >= 0; j-- {
@@ -80,7 +80,7 @@ func (i *Interpreter) run() (result g.Value, errTrace *errorTrace) {
 						// thrown from a finally, rather than the original error.
 						_, ferr := i.runFinally(f, j, eh)
 						if ferr != nil {
-							errTrace = &errorTrace{ferr, i.stackTrace()}
+							errTrace = &ErrorTrace{ferr, i.stackTrace()}
 						}
 					}
 				}
@@ -173,7 +173,7 @@ func (f *frame) dump() {
 //---------------------------------------------------------------
 // A combination of an error, and a stack trace
 
-type errorTrace struct {
-	err        g.Error
-	stackTrace []string
+type ErrorTrace struct {
+	Error      g.Error
+	StackTrace []string
 }
