@@ -79,3 +79,9 @@ func strHash(s string) int {
 	hash += hash << 15
 	return hash
 }
+
+func Assert(flag bool, msg string) {
+	if !flag {
+		panic(msg)
+	}
+}

@@ -558,9 +558,7 @@ func (c *compiler) visitTry(t *ast.Try) {
 
 		// load the exception that the interpreter has put on the stack for us
 		v := t.CatchIdent.Variable
-		if v.IsCapture {
-			panic("invalid catch block")
-		}
+		g.Assert(!v.IsCapture, "invalid catch block")
 		c.pushIndex(t.CatchIdent.Begin(), g.LOAD_LOCAL, v.Index)
 
 		// compile the catch
@@ -596,9 +594,7 @@ func (c *compiler) visitTry(t *ast.Try) {
 	// done
 
 	// sanity check
-	if catch == -1 && finally == -1 {
-		panic("invalid try block")
-	}
+	g.Assert(!(catch == -1 && finally == -1), "invalid try block")
 	c.handlers = append(c.handlers, g.ExceptionHandler{begin, end, catch, finally})
 }
 
@@ -1024,31 +1020,21 @@ type instPtr struct {
 }
 
 func index(n int) (byte, byte) {
-	if n >= (2 << 16) {
-		panic("TODO wide index")
-	}
+	g.Assert(n < (2<<16), "TODO wide index")
 	return byte((n >> 8) & 0xFF), byte(n & 0xFF)
 }
 
 func parseInt(text string) int64 {
 	i, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		panic("unreachable")
-	}
-	if i < 0 {
-		panic("unreachable")
-	}
+	g.Assert(err == nil, "unreachable")
+	g.Assert(i >= 0, "unreachable")
 	return int64(i)
 }
 
 func parseFloat(text string) float64 {
 	f, err := strconv.ParseFloat(text, 64)
-	if err != nil {
-		panic("unreachable")
-	}
-	if f < 0 {
-		panic("unreachable")
-	}
+	g.Assert(err == nil, "unreachable")
+	g.Assert(f >= 0, "unreachable")
 	return float64(f)
 }
 
@@ -1058,26 +1044,19 @@ func parseFloat(text string) float64 {
 func poolIndex(pool *g.HashMap, key g.Basic) int {
 
 	b, err := pool.ContainsKey(key)
-	if err != nil {
-		panic("unreachable")
-	}
+	g.Assert(err == nil, "unreachable")
 
 	if b.BoolVal() {
 		v, err := pool.Get(key)
-		if err != nil {
-			panic("unreachable")
-		}
+		g.Assert(err == nil, "unreachable")
+
 		i, ok := v.(g.Int)
-		if !ok {
-			panic("unreachable")
-		}
+		g.Assert(ok, "unreachable")
 		return int(i.IntVal())
 	} else {
 		i := pool.Len()
 		err := pool.Put(key, i)
-		if err != nil {
-			panic("unreachable")
-		}
+		g.Assert(err == nil, "unreachable")
 		return int(i.IntVal())
 	}
 }
@@ -1091,14 +1070,10 @@ func (items PoolItems) Len() int {
 func (items PoolItems) Less(i, j int) bool {
 
 	x, ok := items[i].Value.(g.Int)
-	if !ok {
-		panic("unreachable")
-	}
+	g.Assert(ok, "unreachable")
 
 	y, ok := items[j].Value.(g.Int)
-	if !ok {
-		panic("unreachable")
-	}
+	g.Assert(ok, "unreachable")
 
 	return x.IntVal() < y.IntVal()
 }
@@ -1122,9 +1097,7 @@ func makePoolSlice(pool *g.HashMap) []g.Basic {
 	slice := make([]g.Basic, n, n)
 	for i, e := range entries {
 		b, ok := e.Key.(g.Basic)
-		if !ok {
-			panic("unreachable")
-		}
+		g.Assert(ok, "unreachable")
 		slice[i] = b
 	}
 

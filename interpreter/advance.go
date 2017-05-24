@@ -164,9 +164,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		}
 
 		ls, ok := f.stack[n].(g.List)
-		if !ok {
-			panic("invalid chain definition")
-		}
+		g.Assert(ok, "invalid chain definition")
 
 		slen := int(ls.Len().IntVal()) + 1
 		structs := make([]g.Struct, slen, slen)
@@ -175,9 +173,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		for i, v := range ls.Values() {
 			// the compiler has already inserted a CHECK_CAST for us
 			ch, ok := v.(g.Struct)
-			if !ok {
-				panic("invalid chain definition")
-			}
+			g.Assert(ok, "invalid chain definition")
 			structs[i+1] = ch
 		}
 
@@ -264,9 +260,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 		idx := index(opc, f.ip)
 		key, ok := pool[idx].(g.Str)
-		if !ok {
-			panic("Invalid GET_FIELD Key")
-		}
+		g.Assert(ok, "Invalid GET_FIELD Key")
 
 		result, err := f.stack[n].GetField(key)
 		if err != nil {
@@ -280,9 +274,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 		idx := index(opc, f.ip)
 		key, ok := pool[idx].(g.Str)
-		if !ok {
-			panic("Invalid PUT_FIELD Key")
-		}
+		g.Assert(ok, "Invalid PUT_FIELD Key")
 
 		// get struct from stack
 		stc, ok := f.stack[n-1].(g.Struct)
@@ -306,9 +298,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 		idx := index(opc, f.ip)
 		key, ok := pool[idx].(g.Str)
-		if !ok {
-			panic("Invalid GET_FIELD Key")
-		}
+		g.Assert(ok, "Invalid GET_FIELD Key")
 
 		// get struct from stack
 		stc, ok := f.stack[n-1].(g.Struct)
@@ -795,9 +785,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 	case g.ITER:
 
 		ibl, ok := f.stack[n].(g.Iterable)
-		if !ok {
-			panic("Expected Iterable")
-		}
+		g.Assert(ok, "Expected Iterable")
 
 		f.stack[n] = ibl.NewIterator()
 		f.ip++
@@ -805,9 +793,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 	case g.ITER_NEXT:
 
 		itr, ok := f.stack[n].(g.Iterator)
-		if !ok {
-			panic("Expected Iterator")
-		}
+		g.Assert(ok, "Expected Iterator")
 
 		f.stack[n] = itr.IterNext()
 		f.ip++
@@ -815,9 +801,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 	case g.ITER_GET:
 
 		itr, ok := f.stack[n].(g.Iterator)
-		if !ok {
-			panic("Expected Iterator")
-		}
+		g.Assert(ok, "Expected Iterator")
 
 		val, err := itr.IterGet()
 		if err != nil {

@@ -93,24 +93,15 @@ func (i *Interpreter) walkStack(err g.Error) (g.Value, *ErrorTrace) {
 					panic("TODO")
 
 				} else {
-					if eh.Finally == -1 {
-						panic("invalid try")
-					}
+					g.Assert(eh.Finally != -1, "invalid try")
 
 					f.ip = eh.Finally
 					fresult, ferr := i.runTryClause(f, frameIndex)
-					switch {
-
-					case fresult != nil:
-						// if the finally clause returns a result, then we stop
-						// unwinding the stack
-						if ferr != nil {
-							panic("invalid try")
-						}
+					if fresult != nil {
+						// stop unwinding the stack
 						return fresult, nil
-
-					case ferr != nil:
-						// save the error and return it in place of the original error
+					} else if ferr != nil {
+						// save the error
 						errTrace = makeErrorTrace(ferr, i.stackTrace())
 					}
 				}
@@ -215,9 +206,7 @@ func makeErrorTrace(err g.Error, stackTrace []string) *ErrorTrace {
 
 	// TODO make the struct immutable
 	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", list}})
-	if e != nil {
-		panic("invalid struct")
-	}
+	g.Assert(e == nil, "invalid struct")
 
 	// TODO make the chain immutable
 	chain := g.NewChain([]g.Struct{err.Struct(), stc})

@@ -61,9 +61,7 @@ func (stc *_struct) ToStr() Str {
 		buf.WriteString(": ")
 
 		v, err := stc.GetField(str(k))
-		if err != nil {
-			panic("invalid struct")
-		}
+		Assert(err == nil, "invalid struct")
 		buf.WriteString(v.ToStr().String())
 	}
 	buf.WriteString(" }")
@@ -92,17 +90,12 @@ func (stc *_struct) Eq(v Value) Bool {
 	// all keys have same value
 	for _, k := range keys {
 		a, err := stc.GetField(str(k))
-		if err != nil {
-			panic("invalid chain")
-		}
+		Assert(err == nil, "invalid chain")
 
 		b, err := that.GetField(str(k))
 		if err != nil {
-			if err.Kind() == NO_SUCH_FIELD {
-				return FALSE
-			} else {
-				panic("invalid chain")
-			}
+			Assert(err.Kind() == NO_SUCH_FIELD, "invalid chain")
+			return FALSE
 		}
 
 		if a.Eq(b) != TRUE {
