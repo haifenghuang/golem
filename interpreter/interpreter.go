@@ -60,7 +60,7 @@ func (i *Interpreter) run() (result g.Value, errTrace *ErrorTrace) {
 	for result == nil {
 		result, err = i.advance(0)
 		if err != nil {
-			result, errTrace = i.walkStack(err)
+			result, errTrace = i.walkStack(makeErrorTrace(err, i.stackTrace()))
 			if errTrace != nil {
 				return nil, errTrace
 			}
@@ -70,39 +70,47 @@ func (i *Interpreter) run() (result g.Value, errTrace *ErrorTrace) {
 	return result, nil
 }
 
-func (i *Interpreter) walkStack(err g.Error) (g.Value, *ErrorTrace) {
+func (i *Interpreter) walkStack(errTrace *ErrorTrace) (g.Value, *ErrorTrace) {
 
-	errTrace := makeErrorTrace(err, i.stackTrace())
-
-	// look for catch and finally clauses
+	// unwind the frames
 	for len(i.frames) > 0 {
 		frameIndex := len(i.frames) - 1
 		f := i.frames[frameIndex]
 		instPtr := f.ip
 
-		// check excpeption handlers in backwards order so that
-		// nested try blocks works properly
+		// visit exception handlers
 		tpl := f.fn.Template()
-		for j := len(tpl.ExceptionHandlers) - 1; j >= 0; j-- {
-			eh := tpl.ExceptionHandlers[j]
+		for _, eh := range tpl.ExceptionHandlers {
 
 			// found an active handler
 			if instPtr >= eh.Begin && instPtr < eh.End {
 
 				if eh.Catch != -1 {
-					panic("TODO")
+					if eh.Finally != -1 {
+						panic("TODO")
+					}
 
+					f.ip = eh.Catch
+					f.stack = append(f.stack, errTrace.Struct)
+					cres, cerr := i.runTryClause(f, frameIndex)
+
+					if cerr != nil {
+						// save the error
+						errTrace = makeErrorTrace(cerr, i.stackTrace())
+					} else {
+						// done!
+						return cres, nil
+					}
 				} else {
 					g.Assert(eh.Finally != -1, "invalid try")
-
 					f.ip = eh.Finally
-					fresult, ferr := i.runTryClause(f, frameIndex)
-					if fresult != nil {
-						// stop unwinding the stack
-						return fresult, nil
-					} else if ferr != nil {
+					fres, ferr := i.runTryClause(f, frameIndex)
+					if ferr != nil {
 						// save the error
 						errTrace = makeErrorTrace(ferr, i.stackTrace())
+					} else if fres != nil {
+						// stop unwinding the stack
+						return fres, nil
 					}
 				}
 			}
@@ -119,6 +127,7 @@ func (i *Interpreter) runTryClause(f *frame, frameIndex int) (g.Value, g.Error) 
 
 	opc := f.fn.Template().OpCodes
 	for opc[f.ip] != g.DONE {
+
 		result, err := i.advance(frameIndex)
 		if result != nil || err != nil {
 			return result, err

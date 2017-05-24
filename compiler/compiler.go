@@ -556,10 +556,10 @@ func (c *compiler) visitTry(t *ast.Try) {
 		// save the beginning of the catch
 		catch = len(c.opc)
 
-		// load the exception that the interpreter has put on the stack for us
+		// store the exception that the interpreter has put on the stack for us
 		v := t.CatchIdent.Variable
 		g.Assert(!v.IsCapture, "invalid catch block")
-		c.pushIndex(t.CatchIdent.Begin(), g.LOAD_LOCAL, v.Index)
+		c.pushIndex(t.CatchIdent.Begin(), g.STORE_LOCAL, v.Index)
 
 		// compile the catch
 		c.Visit(t.CatchBlock)

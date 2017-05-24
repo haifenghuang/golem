@@ -1270,6 +1270,7 @@ let b = fn() {
         } finally {
             return 1;
         }
+        a = 3;
     } finally {
         a = 2;
     }
@@ -1302,4 +1303,35 @@ try {
 		g.DivideByZeroError(),
 		[]string{
 			"    at line 5"})
+}
+
+func TestCatch(t *testing.T) {
+
+	source := `
+try {
+    3 / 0;
+} catch e {
+    assert(e.kind == "DivideByZero");
+    assert(!(e has "msg"));
+    assert(e.stackTrace == ['    at line 3']);
+}
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+try {
+    try {
+        3 / 0;
+    } catch e2 {
+        assert();
+    }
+} catch e {
+    assert(e.kind == "ArityMismatch");
+    assert(e.msg == "Expected 1 params, got 0");
+    assert(e.stackTrace == ['    at line 6']);
+}
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }

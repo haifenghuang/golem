@@ -15,9 +15,9 @@
 package compiler
 
 import (
-	//"fmt"
+	"fmt"
 	"golem/analyzer"
-	//"golem/ast"
+	"golem/ast"
 	g "golem/core"
 	"golem/parser"
 	"golem/scanner"
@@ -955,15 +955,28 @@ finally {
     a++;
 }
 assert(a == 2);
-                
 `
 	anl := newAnalyzer(source)
 	mod := NewCompiler(anl).Compile()
-
-	//fmt.Println("----------------------------")
-	//fmt.Println(source)
-	//fmt.Println("----------------------------")
-	//fmt.Printf("%s\n", ast.Dump(anl.Module()))
 	assert(t, mod.Templates[0].ExceptionHandlers[0] ==
 		g.ExceptionHandler{5, 14, -1, 14})
+
+	source = `
+try {
+    try {
+        3 / 0;
+    } catch e2 {
+        assert(1,2);
+    }
+} catch e {
+    println(e);
+}
+`
+	anl = newAnalyzer(source)
+	mod = NewCompiler(anl).Compile()
+	fmt.Println("----------------------------")
+	fmt.Println(source)
+	fmt.Println("----------------------------")
+	fmt.Printf("%s\n", ast.Dump(anl.Module()))
+	fmt.Println(mod)
 }
