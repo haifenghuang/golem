@@ -4,6 +4,8 @@ implement catch with finally
 fix scoping of catch variable
 throw
 
+fix implementation of intrinsics so it doesn't create a function all the time
+
 intrinsic functions on various types:
 
     list, str, range, dict  
@@ -25,9 +27,6 @@ intrinsic functions on various types:
         toChar() // str-with-one-char, utf8.ValidRune()
         toStr(radix = 10)
 
-    func:
-        minArity, maxArity, isVariadic
-
     iterable.stream() a la Java 8
 
 get rid of struct (a) {} syntax
@@ -44,7 +43,9 @@ freeze() builtin, or maybe
 prop
 
 typeOf()
-meta() struct: fields, ownFields
+meta() 
+    struct: fields
+    func: minArity, maxArity, isVariadic
 
 named functions
 lambda: |x| => x * x
@@ -57,17 +58,21 @@ regex
 
 --------------------------------------------
 
-control flow graph
+modules:
+    io, net, http, time, bytes, random
+    is bytes an intrinsic type instead?
+
+formal parameters (not for lambda):
+    optional formal parameters -- will require special parsing to disallow scoping
+    variadic functions
 
 improve chain data structure
 
-select
+select waitGroup
 
 try with resources
 
 write Control Flow Graph, use the POP opcode to keep stack size down
-
-waitGroup
 
 REPL
 :paste mode
@@ -75,10 +80,6 @@ REPL
 documentation
 ghpages
 editor support: vscode, atom, sublime, etc
-
-fancy formal parameters (not for lambda):
-    optional formal parameters -- will require special parsing to disallow scoping
-    variadic functions
 
 label: for, while
 
@@ -104,8 +105,6 @@ multi-line strings
 $eq, $hash, --> allow composite keys in hashMap
 $str
 $cmp, $iter
-
-io, net, http, time, bytes, random
 
 string unicode escape
 
