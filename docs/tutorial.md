@@ -21,7 +21,7 @@ println('Hello, world.');
 ```
 
 Golem has quite a few builtin functions.  `println` and its companion `print` print 
-one or more values to STDOUT.
+zero or more values to STDOUT.
 
 ```golem
 println('a', 1, null, false);
@@ -31,13 +31,16 @@ The simplest kind of value in Golem is called a 'basic' value.  These types
 include boolean, string, int and float.  There is also the builtin value 
 'null' which represents the absence of a value.
 
+Golem has the usual set of operators that you would expect: ==, !=, <, >, <=, >=,
++, -, \*, /, and so forth.  
+
 ```golem
 assert(1 + 2 == 3);
 assert(42 / 7 == 8 - 2);
 ```
-
-Note that we used another intrinsic function, `assert`, which will throw an exception
-if the value that is passed into it is not true.
+We will cover the operators in more detail later.  Note that we used another intrinsic 
+function, `assert`, which will throw an exception if the value that is passed into 
+it is not true.
 
 Int values in Golem are signed 64 bit integers.  Float values are 64-bit.  Ints 
 are coerced to floats during arithmetic and checks for equality:
@@ -90,6 +93,8 @@ expected.
 Values can be assigned to variables. Variables are declared via either the `let` 
 or `const` keyword.  It is an error to refer to a variable before it has been
 declared.
+
+## Operators and Expressions
 
 ## Control Structures
 
