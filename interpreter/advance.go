@@ -155,32 +155,6 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		f.stack = append(f.stack, stc)
 		f.ip += 3
 
-	case g.NEW_CHAIN:
-
-		def := i.mod.StructDefs[index(opc, f.ip)]
-		stc, err := g.BlankStruct(def)
-		if err != nil {
-			return nil, err
-		}
-
-		ls, ok := f.stack[n].(g.List)
-		g.Assert(ok, "invalid chain definition")
-
-		slen := int(ls.Len().IntVal()) + 1
-		structs := make([]g.Struct, slen, slen)
-		structs[0] = stc
-
-		for i, v := range ls.Values() {
-			// the compiler has already inserted a CHECK_CAST for us
-			ch, ok := v.(g.Struct)
-			g.Assert(ok, "invalid chain definition")
-			structs[i+1] = ch
-		}
-
-		f.stack = f.stack[:n]
-		f.stack = append(f.stack, g.NewChain(structs))
-		f.ip += 3
-
 	case g.NEW_LIST:
 
 		size := index(opc, f.ip)

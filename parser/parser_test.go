@@ -467,18 +467,6 @@ func TestStruct(t *testing.T) {
 
 	p = newParser("this = b")
 	fail(t, p, "Unexpected Token '=' at (1, 6)")
-
-	p = newParser("struct (x) { a: 1 }")
-	ok_expr(t, p, "struct (x) { a: 1 }")
-
-	p = newParser("struct (x, y) { a: 1 }")
-	ok_expr(t, p, "struct (x, y) { a: 1 }")
-
-	p = newParser("struct (x, y, struct {}) { a: 1 }")
-	ok_expr(t, p, "struct (x, y, struct {  }) { a: 1 }")
-
-	p = newParser("struct () { a: 1 }")
-	fail(t, p, "Unexpected Token ')' at (1, 9)")
 }
 
 func TestPrimarySuffix(t *testing.T) {

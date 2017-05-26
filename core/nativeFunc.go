@@ -107,6 +107,7 @@ const (
 	LEN
 	RANGE
 	ASSERT
+	MERGE
 )
 
 var Builtins = []NativeFunc{
@@ -115,7 +116,8 @@ var Builtins = []NativeFunc{
 	&nativeFunc{builtinStr},
 	&nativeFunc{builtinLen},
 	&nativeFunc{builtinRange},
-	&nativeFunc{builtinAssert}}
+	&nativeFunc{builtinAssert},
+	&nativeFunc{builtinMerge}}
 
 var builtinPrint = func(values []Value) (Value, Error) {
 	for _, v := range values {
@@ -195,4 +197,21 @@ var builtinAssert = func(values []Value) (Value, Error) {
 	} else {
 		return nil, AssertionFailedError()
 	}
+}
+
+var builtinMerge = func(values []Value) (Value, Error) {
+	if len(values) < 2 {
+		return nil, ArityMismatchError("at least 2", len(values))
+	}
+
+	structs := make([]Struct, len(values), len(values))
+	for i, v := range values {
+		if s, ok := v.(Struct); ok {
+			structs[i] = s
+		} else {
+			return nil, TypeMismatchError("Expected 'Struct'")
+		}
+	}
+
+	return NewChain(structs), nil
 }

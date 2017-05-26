@@ -578,13 +578,15 @@ assert(!b.y);
 	interpret(mod)
 }
 
-func TestChain(t *testing.T) {
+func TestMerge(t *testing.T) {
 
-	fail_expr(t, "struct (1) { y: 3, z: 4};", "TypeMismatch: Expected 'Struct'")
+	fail_expr(t, "merge();", "ArityMismatch: Expected at least 2 params, got 0")
+	fail_expr(t, "merge(true);", "ArityMismatch: Expected at least 2 params, got 1")
+	fail_expr(t, "merge(struct{}, false);", "TypeMismatch: Expected 'Struct'")
 
 	source := `
 let a = struct { x: 1, y: 2};
-let b = struct (a) { y: 3, z: 4};
+let b = merge(struct { y: 3, z: 4}, a);
 assert(b.x == 1);
 assert(b.y == 3);
 assert(b.z == 4);
@@ -593,7 +595,7 @@ a.y = 6;
 assert(b.x == 5);
 assert(b.y == 3);
 assert(b.z == 4);
-let c = struct (b) { w: 10};
+let c = merge(struct { w: 10}, b);
 assert(c.w == 10);
 assert(c.x == 5);
 assert(c.y == 3);

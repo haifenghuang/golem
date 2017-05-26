@@ -114,7 +114,7 @@ Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:2
 
 func TestPlainStructScope(test *testing.T) {
 
-	stc := &ast.StructExpr{nil, nil, nil, nil, nil, nil, -1}
+	stc := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
@@ -133,8 +133,8 @@ Func  defs:{} captures:{} parentCaptures:{} numLocals:0
 
 func TestThisStructScope(test *testing.T) {
 
-	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, nil, -1}
-	struct3 := &ast.StructExpr{nil, nil, nil, nil, nil, nil, -1}
+	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
+	struct3 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)
@@ -162,7 +162,7 @@ Func  defs:{a: (0,false,false)} captures:{} parentCaptures:{} numLocals:3
 
 func TestMethodScope(test *testing.T) {
 
-	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, nil, -1}
+	struct2 := &ast.StructExpr{nil, nil, nil, nil, nil, -1}
 
 	s0 := newFuncScope(nil)
 	s1 := newBlockScope(s0)

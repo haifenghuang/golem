@@ -764,27 +764,6 @@ func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
 
 func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 
-	chain := []ast.Expr{}
-
-	// chain -- must be at least one expression
-	if p.cur.Kind == ast.LPAREN {
-		p.consume()
-		chain = append(chain, p.expression())
-	chainLoop:
-		for {
-			switch p.cur.Kind {
-			case ast.RPAREN:
-				p.consume()
-				break chainLoop
-			case ast.COMMA:
-				p.consume()
-				chain = append(chain, p.expression())
-			default:
-				panic(p.unexpected())
-			}
-		}
-	}
-
 	// key-value pairs
 	keys := []*ast.Token{}
 	values := []ast.Expr{}
@@ -826,7 +805,7 @@ func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 	}
 
 	// done
-	return &ast.StructExpr{structToken, chain, lbrace, keys, values, rbrace, -1}
+	return &ast.StructExpr{structToken, lbrace, keys, values, rbrace, -1}
 }
 
 func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {
@@ -1147,7 +1126,8 @@ func isBuiltIn(t *ast.Token) bool {
 		ast.FN_STR,
 		ast.FN_LEN,
 		ast.FN_RANGE,
-		ast.FN_ASSERT:
+		ast.FN_ASSERT,
+		ast.FN_MERGE:
 		return true
 	default:
 		return false
