@@ -161,6 +161,12 @@ type (
 		FinallyBlock *Block
 	}
 
+	Spawn struct {
+		Token      *Token
+		Invocation *InvokeExpr
+		Semicolon  *Token
+	}
+
 	//---------------------
 	// expression
 
@@ -325,6 +331,7 @@ func (*Continue) stmtMarker() {}
 func (*Return) stmtMarker()   {}
 func (*Throw) stmtMarker()    {}
 func (*Try) stmtMarker()      {}
+func (*Spawn) stmtMarker()    {}
 
 func (*While) loopMarker() {}
 func (*For) loopMarker()   {}
@@ -422,6 +429,9 @@ func (n *Try) End() Pos {
 		return n.FinallyBlock.End()
 	}
 }
+
+func (n *Spawn) Begin() Pos { return n.Token.Position }
+func (n *Spawn) End() Pos   { return n.Semicolon.Position }
 
 func (n *Assignment) Begin() Pos { return n.Assignee.Begin() }
 func (n *Assignment) End() Pos   { return n.Val.End() }
@@ -670,6 +680,10 @@ func (t *Try) String() string {
 	}
 
 	return buf.String()
+}
+
+func (sp *Spawn) String() string {
+	return fmt.Sprintf("spawn %v;", sp.Invocation)
 }
 
 func (trn *TernaryExpr) String() string {

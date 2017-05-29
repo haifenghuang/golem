@@ -731,3 +731,15 @@ func TestLambda(t *testing.T) {
 	p = newParser("|x, y, z| => true")
 	ok_expr(t, p, "fn(x, y, z) { true; }")
 }
+
+func TestSpawn(t *testing.T) {
+
+	p := newParser("spawn foo();")
+	ok(t, p, "fn() { spawn foo(); }")
+
+	p = newParser("spawn false(a,b,c);")
+	ok(t, p, "fn() { spawn false(a, b, c); }")
+
+	p = newParser("spawn foo;")
+	fail(t, p, "Unexpected Token ';' at (1, 10)")
+}

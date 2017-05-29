@@ -38,9 +38,6 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		switch fn := f.stack[n-idx].(type) {
 		case g.BytecodeFunc:
 
-			/////////////////////////////////
-			// invoke a bytecode-defined func
-
 			// check arity
 			arity := len(params)
 			if arity != fn.Template().Arity {
@@ -58,10 +55,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 		case g.NativeFunc:
 
-			/////////////////////////////////
-			// invoke a natively-defined func
-
-			val, err := fn.Invoke(params) // Invoke() is responsible for arity check
+			val, err := fn.Invoke(params)
 			if err != nil {
 				return nil, err
 			}
@@ -108,6 +102,41 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 	case g.DONE:
 		panic("DONE cannot be executed directly")
+
+	case g.SPAWN:
+
+		idx := index(opc, f.ip)
+		params := f.stack[n-idx+1:]
+
+		switch fn := f.stack[n-idx].(type) {
+		case g.BytecodeFunc:
+			f.stack = f.stack[:n-idx]
+			f.ip += 3
+
+			intp := NewInterpreter(i.mod)
+			locals := newLocals(fn.Template().NumLocals, params)
+			go (func() {
+				_, errTrace := intp.run(fn, locals)
+				if errTrace != nil {
+					fmt.Printf("%v\n", errTrace.Error)
+					fmt.Printf("%v\n", errTrace.StackTrace)
+				}
+			})()
+
+		case g.NativeFunc:
+			f.stack = f.stack[:n-idx]
+			f.ip += 3
+
+			go (func() {
+				_, err := fn.Invoke(params)
+				if err != nil {
+					fmt.Printf("%v\n", err)
+				}
+			})()
+
+		default:
+			return nil, g.TypeMismatchError("Expected 'Func'")
+		}
 
 	case g.THROW:
 

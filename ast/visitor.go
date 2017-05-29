@@ -134,6 +134,10 @@ func (t *Try) Traverse(v Visitor) {
 	}
 }
 
+func (sp *Spawn) Traverse(v Visitor) {
+	v.Visit(sp.Invocation)
+}
+
 func (blk *Block) Traverse(v Visitor) {
 	for _, n := range blk.Nodes {
 		v.Visit(n)
@@ -295,6 +299,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString("Throw\n")
 	case *Try:
 		p.buf.WriteString("Try\n")
+	case *Spawn:
+		p.buf.WriteString("Spawn\n")
 
 	case *BinaryExpr:
 		p.buf.WriteString(fmt.Sprintf("BinaryExpr(%q)\n", t.Op.Text))

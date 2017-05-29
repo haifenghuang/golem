@@ -28,11 +28,6 @@ type Interpreter struct {
 }
 
 func NewInterpreter(mod *g.Module) *Interpreter {
-	tpl := mod.Templates[0]
-	if tpl.Arity != 0 || tpl.NumCaptures != 0 {
-		panic("TODO")
-	}
-
 	return &Interpreter{mod, []*frame{}}
 }
 
@@ -40,6 +35,10 @@ func (i *Interpreter) Init() (g.Value, *ErrorTrace) {
 
 	// use the zeroth template
 	tpl := i.mod.Templates[0]
+	//tpl := mod.Templates[0]
+	if tpl.Arity != 0 || tpl.NumCaptures != 0 {
+		panic("TODO")
+	}
 
 	// create empty locals
 	i.mod.Locals = newLocals(tpl.NumLocals, nil)
@@ -47,14 +46,14 @@ func (i *Interpreter) Init() (g.Value, *ErrorTrace) {
 	// make func
 	fn := g.NewBytecodeFunc(tpl)
 
-	// push a frame
-	i.frames = append(i.frames, &frame{fn, i.mod.Locals, []g.Value{}, 0})
-
 	// go
-	return i.run()
+	return i.run(fn, i.mod.Locals)
 }
 
-func (i *Interpreter) run() (result g.Value, errTrace *ErrorTrace) {
+func (i *Interpreter) run(
+	fn g.BytecodeFunc, locals []*g.Ref) (result g.Value, errTrace *ErrorTrace) {
+
+	i.frames = append(i.frames, &frame{fn, locals, []g.Value{}, 0})
 
 	var err g.Error
 	for result == nil {

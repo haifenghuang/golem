@@ -132,6 +132,8 @@ const (
 	FINALLY
 	THROW
 
+	SPAWN
+
 	FN_PRINT
 	FN_PRINTLN
 	FN_STR
@@ -284,6 +286,9 @@ func (t TokenKind) String() string {
 		return "CATCH"
 	case THROW:
 		return "THROW"
+
+	case SPAWN:
+		return "SPAWN"
 
 	case FN_PRINT:
 		return "FN_PRINT"

@@ -1455,3 +1455,28 @@ assert(c(1, 2) == 15);
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 }
+
+//func TestSpawn(t *testing.T) {
+//
+//	source := `
+//for i in range(0, 10) {
+//    spawn assert(i < 10);
+//}
+//`
+//	mod := newCompiler(source).Compile()
+//	interpret(mod)
+//
+//	source = `
+//let total = 0;
+//fn foo() {
+//    for i in range(0, 100000000) {
+//        total += i;
+//        println(i);
+//    }
+//        println("the total is: ", total);
+//}
+//spawn foo();
+//`
+//	mod = newCompiler(source).Compile()
+//	interpret(mod)
+//}

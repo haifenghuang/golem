@@ -296,6 +296,10 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.THROW, "throw", 1, 19)
 	ok(t, s, ast.EOF, "", 1, 24)
 
+	s = NewScanner("spawn")
+	ok(t, s, ast.SPAWN, "spawn", 1, 1)
+	ok(t, s, ast.EOF, "", 1, 6)
+
 	s = NewScanner("struct this has dict set")
 	ok(t, s, ast.STRUCT, "struct", 1, 1)
 	ok(t, s, ast.THIS, "this", 1, 8)

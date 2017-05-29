@@ -155,6 +155,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.InvokeExpr:
 		c.visitInvoke(t)
 
+	case *ast.Spawn:
+		c.visitSpawn(t)
+
 	case *ast.StructExpr:
 		c.visitStructExpr(t)
 
@@ -862,6 +865,16 @@ func (c *compiler) visitInvoke(inv *ast.InvokeExpr) {
 		c.Visit(n)
 	}
 	c.pushIndex(inv.Begin(), g.INVOKE, len(inv.Params))
+}
+
+func (c *compiler) visitSpawn(spawn *ast.Spawn) {
+
+	inv := spawn.Invocation
+	c.Visit(inv.Operand)
+	for _, n := range inv.Params {
+		c.Visit(n)
+	}
+	c.pushIndex(inv.Begin(), g.SPAWN, len(inv.Params))
 }
 
 func (c *compiler) visitStructExpr(stc *ast.StructExpr) {

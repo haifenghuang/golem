@@ -67,6 +67,7 @@ const (
 	FUNC_LOCAL
 
 	INVOKE
+	SPAWN
 	RETURN
 	DONE
 	THROW
@@ -112,7 +113,7 @@ func OpCodeSize(opc byte) int {
 	case LOAD_BUILTIN, LOAD_CONST,
 		LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
-		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE,
+		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE, SPAWN,
 		NEW_STRUCT, GET_FIELD, PUT_FIELD, INC_FIELD,
 		NEW_DICT, NEW_LIST, NEW_SET, NEW_TUPLE, CHECK_CAST, CHECK_TUPLE:
 
@@ -215,6 +216,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 
 	case INVOKE:
 		return fmtIndex(opcodes, i, "INVOKE")
+	case SPAWN:
+		return fmtIndex(opcodes, i, "SPAWN")
 	case RETURN:
 		return fmt.Sprintf("%d: RETURN\n", i)
 	case DONE:

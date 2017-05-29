@@ -126,6 +126,9 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.TRY:
 		return p.tryStmt()
 
+	case ast.SPAWN:
+		return p.spawnStmt()
+
 	case ast.FN:
 		if p.next.Kind == ast.IDENT {
 			return p.namedFn()
@@ -429,6 +432,20 @@ func (p *Parser) tryStmt() *ast.Try {
 		finallyToken, finallyBlock}
 }
 
+func (p *Parser) spawnStmt() *ast.Spawn {
+
+	token := p.expect(ast.SPAWN)
+
+	prm := p.primary()
+	if p.cur.Kind != ast.LPAREN {
+		panic(p.unexpected())
+	}
+	lparen, actual, rparen := p.actualParams()
+	invocation := &ast.InvokeExpr{prm, lparen, actual, rparen}
+
+	return &ast.Spawn{token, invocation, p.expect(ast.SEMICOLON)}
+}
+
 // parse a sequence of nodes that are wrapped in curly braces
 func (p *Parser) block() *ast.Block {
 
@@ -709,7 +726,7 @@ func (p *Parser) primary() ast.Expr {
 
 	case p.cur.Kind == ast.IDENT:
 		if p.next.Kind == ast.EQ_GT {
-			return p.lambdaOne(p.expect(ast.IDENT))
+			return p.lambdaOne()
 		} else {
 			return p.identExpr()
 		}
@@ -724,22 +741,22 @@ func (p *Parser) primary() ast.Expr {
 		return p.fnExpr(p.consume())
 
 	case p.cur.Kind == ast.PIPE:
-		return p.lambda(p.consume())
+		return p.lambda()
 
 	case p.cur.Kind == ast.DBL_PIPE:
-		return p.lambdaZero(p.consume())
+		return p.lambdaZero()
 
 	case p.cur.Kind == ast.STRUCT:
-		return p.structExpr(p.consume())
+		return p.structExpr()
 
 	case p.cur.Kind == ast.DICT:
-		return p.dictExpr(p.consume())
+		return p.dictExpr()
 
 	case p.cur.Kind == ast.SET:
-		return p.setExpr(p.consume())
+		return p.setExpr()
 
 	case p.cur.Kind == ast.LBRACKET:
-		return p.listExpr(p.consume())
+		return p.listExpr()
 
 	default:
 		return p.basicExpr()
@@ -788,7 +805,10 @@ func (p *Parser) fnExpr(token *ast.Token) *ast.FnExpr {
 	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
 }
 
-func (p *Parser) lambdaZero(token *ast.Token) *ast.FnExpr {
+func (p *Parser) lambdaZero() *ast.FnExpr {
+
+	token := p.expect(ast.DBL_PIPE)
+
 	p.expect(ast.EQ_GT)
 	params := []*ast.IdentExpr{}
 	expr := p.expression()
@@ -796,7 +816,8 @@ func (p *Parser) lambdaZero(token *ast.Token) *ast.FnExpr {
 	return &ast.FnExpr{token, params, block, 0, 0, nil}
 }
 
-func (p *Parser) lambdaOne(token *ast.Token) *ast.FnExpr {
+func (p *Parser) lambdaOne() *ast.FnExpr {
+	token := p.expect(ast.IDENT)
 	p.expect(ast.EQ_GT)
 	params := []*ast.IdentExpr{&ast.IdentExpr{token, nil}}
 	expr := p.expression()
@@ -804,7 +825,9 @@ func (p *Parser) lambdaOne(token *ast.Token) *ast.FnExpr {
 	return &ast.FnExpr{token, params, block, 0, 0, nil}
 }
 
-func (p *Parser) lambda(token *ast.Token) *ast.FnExpr {
+func (p *Parser) lambda() *ast.FnExpr {
+
+	token := p.expect(ast.PIPE)
 
 	params := []*ast.IdentExpr{}
 	switch p.cur.Kind {
@@ -842,7 +865,9 @@ func (p *Parser) lambda(token *ast.Token) *ast.FnExpr {
 	return &ast.FnExpr{token, params, block, 0, 0, nil}
 }
 
-func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
+func (p *Parser) structExpr() ast.Expr {
+
+	structToken := p.expect(ast.STRUCT)
 
 	// key-value pairs
 	keys := []*ast.Token{}
@@ -888,7 +913,9 @@ func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {
 	return &ast.StructExpr{structToken, lbrace, keys, values, rbrace, -1}
 }
 
-func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {
+func (p *Parser) dictExpr() ast.Expr {
+
+	dictToken := p.expect(ast.DICT)
 
 	entries := []*ast.DictEntryExpr{}
 	var rbrace *ast.Token
@@ -931,8 +958,9 @@ func (p *Parser) dictExpr(dictToken *ast.Token) ast.Expr {
 	return &ast.DictExpr{dictToken, lbrace, entries, rbrace}
 }
 
-func (p *Parser) setExpr(setToken *ast.Token) ast.Expr {
+func (p *Parser) setExpr() ast.Expr {
 
+	setToken := p.expect(ast.SET)
 	lbrace := p.expect(ast.LBRACE)
 
 	if p.cur.Kind == ast.RBRACE {
@@ -954,7 +982,9 @@ func (p *Parser) setExpr(setToken *ast.Token) ast.Expr {
 	}
 }
 
-func (p *Parser) listExpr(lbracket *ast.Token) ast.Expr {
+func (p *Parser) listExpr() ast.Expr {
+
+	lbracket := p.expect(ast.LBRACKET)
 
 	if p.cur.Kind == ast.RBRACKET {
 		return &ast.ListExpr{lbracket, []ast.Expr{}, p.consume()}

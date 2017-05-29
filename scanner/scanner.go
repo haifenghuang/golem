@@ -382,6 +382,8 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.FINALLY, text, pos}
 	case "throw":
 		return &ast.Token{ast.THROW, text, pos}
+	case "spawn":
+		return &ast.Token{ast.SPAWN, text, pos}
 	case "struct":
 		return &ast.Token{ast.STRUCT, text, pos}
 	case "dict":
