@@ -220,6 +220,9 @@ func (s *Scanner) Next() *ast.Token {
 			if r == '=' {
 				s.consume()
 				return &ast.Token{ast.DBL_EQ, "==", pos}
+			} else if r == '>' {
+				s.consume()
+				return &ast.Token{ast.EQ_GT, "=>", pos}
 			} else {
 				return &ast.Token{ast.EQ, "=", pos}
 			}

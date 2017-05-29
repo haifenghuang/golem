@@ -49,8 +49,21 @@ func (a *analyzer) scope() *scope {
 
 func (a *analyzer) Analyze() []error {
 
-	a.doVisitFunc(a.mod)
+	// visit module block
+	a.visitBlock(a.mod.Body)
 
+	// save NumLocals
+	fscope := a.curScope.funcScope
+	a.mod.NumLocals = fscope.numLocals
+
+	// sanity check for captures
+	if len(fscope.captures) > 0 {
+		panic("invalid module")
+	}
+	a.mod.NumCaptures = 0
+	a.mod.ParentCaptures = nil
+
+	// done
 	return a.errors
 }
 
@@ -197,40 +210,45 @@ func (a *analyzer) visitFor(fr *ast.For) {
 
 func (a *analyzer) visitFunc(fn *ast.FnExpr) {
 
+	// push scope
 	a.curScope = newFuncScope(a.curScope)
-	a.doVisitFunc(fn)
-	a.curScope = a.curScope.parent
-}
 
-func (a *analyzer) doVisitFunc(fn *ast.FnExpr) {
-
+	// visit child nodes
 	for _, f := range fn.FormalParams {
 		f.Variable = a.curScope.put(f.Symbol.Text, false)
 	}
 	a.visitBlock(fn.Body)
 
-	af := a.curScope.funcScope
+	// save function scope info
+	fscope := a.curScope.funcScope
+	fn.NumLocals = fscope.numLocals
+	fn.NumCaptures = len(fscope.captures)
+	fn.ParentCaptures = a.makeParentCaptures()
 
-	m := af.parentCaptures
+	// pop scope
+	a.curScope = a.curScope.parent
+}
+
+func (a *analyzer) makeParentCaptures() []*ast.Variable {
+
+	fscope := a.curScope.funcScope
+	pc := fscope.parentCaptures
 
 	// Sort the keys so that the list comes out the same every time.
-	keys := make([]string, len(m))
+	keys := make([]string, len(pc))
 	i := 0
-	for k, _ := range m {
+	for k, _ := range pc {
 		keys[i] = k
 		i++
 	}
 	sort.Strings(keys)
 
 	// make an array out of the values
-	pc := make([]*ast.Variable, 0, len(m))
+	result := make([]*ast.Variable, 0, len(pc))
 	for _, k := range keys {
-		pc = append(pc, m[k])
+		result = append(result, pc[k])
 	}
-
-	fn.NumLocals = af.numLocals
-	fn.NumCaptures = len(af.captures)
-	fn.ParentCaptures = pc
+	return result
 }
 
 func (a *analyzer) visitAssignment(asn *ast.Assignment) {

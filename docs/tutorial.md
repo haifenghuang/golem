@@ -143,6 +143,8 @@ let a = set {'x', 'y'};
 assert(a.contains('x'));
 ```
 
+**TODO** assignments for list and dict
+
 ## Control Structures
 
 if, while, for, switch
@@ -198,7 +200,40 @@ let f = foo(4);
 assert([f(1), f(2), f(3)] == [5, 7, 10]);
 ```
 
-**TODO** lambda syntax, named functions, optional param values, variadic functions
+Golem also supports 'lambda' syntax.  Lambdas provide a lightweight way
+to define a function on the fly. The body of a lambda function is a single 
+expression. A lambda that takes only one parameter can omit the surrounding pipes.
+**TODO** provide easier to read examples
+
+```golem
+let z = 5;
+let a = || => 3;
+let b = x => x * x;
+let c = |x, y| => (x + y)*z;
+assert(a() == 3);
+assert(b(2) == 4);
+assert(c(1, 2) == 15);
+```
+
+'Named functions' in Golem are functions that are declared at the beginning of
+a given scope, before any other declarations are processed by the compiler.  Using 
+named function syntax allows for forward references -- you 
+can refer to functions that have not been defined yet.
+
+Note that named functions do not have a semicolon at the end of the closing 
+curly brace.
+
+```golem
+fn a() {
+    return b();
+}
+fn b() {
+    return 42;
+}
+assert(a() == 42);
+```
+
+**TODO** optional param values, variadic functions
 
 ## Structs
 
@@ -206,8 +241,6 @@ Golem is not an object-oriented language.  It does not have classes, objects, or
 inheritance.  What it does have, though, are values which we call 'structs'.  A
 struct is similar in spirit to what one might called a 
 '[duck-typed](https://en.wikipedia.org/wiki/Duck_typing) object'.
-
-
 
 `this`
 

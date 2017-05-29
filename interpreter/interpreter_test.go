@@ -1440,3 +1440,18 @@ assert(a() == 42);
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 }
+
+func TestLambda(t *testing.T) {
+
+	source := `
+let z = 5;
+let a = || => 3;
+let b = x => x * x;
+let c = |x, y| => (x + y)*z;
+assert(a() == 3);
+assert(b(2) == 4);
+assert(c(1, 2) == 15);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}

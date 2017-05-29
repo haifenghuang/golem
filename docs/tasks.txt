@@ -1,10 +1,3 @@
-lambda: |x| => x * x
-formal parameters (not for lambda):
-    optional formal parameters -- will require special parsing to disallow scoping
-    variadic functions
-
-------
-
 tutorial
 
 intrinsic functions on various types:
@@ -52,6 +45,10 @@ regex
 
 --------------------------------------------
 
+formal parameters (not for lambda):
+    optional formal parameters -- will require special parsing to disallow scoping
+    variadic functions
+
 Fix implementation of intrinsics so it doesn't create a function all the time.
 This may not be possible.
 
@@ -61,7 +58,8 @@ modules:
 
 improve chain data structure
 
-select waitGroup
+select waitGroup 
+sync{}
 
 try with resources
 

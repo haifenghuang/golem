@@ -206,8 +206,7 @@ type (
 	}
 
 	FnExpr struct {
-		Token *Token
-
+		Token        *Token
 		FormalParams []*IdentExpr
 		Body         *Block
 
@@ -362,7 +361,13 @@ func (*IndexExpr) assignableMarker()   {}
 // Begin, End
 
 func (n *Block) Begin() Pos { return n.LBrace.Position }
-func (n *Block) End() Pos   { return n.RBrace.Position }
+func (n *Block) End() Pos {
+	if n.RBrace == nil {
+		return n.Nodes[len(n.Nodes)-1].End()
+	} else {
+		return n.RBrace.Position
+	}
+}
 
 func (n *Const) Begin() Pos { return n.Token.Position }
 func (n *Const) End() Pos   { return n.Semicolon.Position }
@@ -707,6 +712,7 @@ func (fn *FnExpr) String() string {
 	buf.WriteString(identsString(fn.FormalParams))
 	buf.WriteString(" ")
 	buf.WriteString(fn.Body.String())
+
 	return buf.String()
 }
 

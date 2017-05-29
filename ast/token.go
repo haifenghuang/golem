@@ -63,6 +63,7 @@ const (
 
 	EQ
 	DBL_EQ
+	EQ_GT
 	NOT
 	NOT_EQ
 	GT
@@ -178,6 +179,8 @@ func (t TokenKind) String() string {
 		return "EQ"
 	case DBL_EQ:
 		return "DBL_EQ"
+	case EQ_GT:
+		return "EQ_GT"
 	case SEMICOLON:
 		return "SEMICOLON"
 	case COLON:

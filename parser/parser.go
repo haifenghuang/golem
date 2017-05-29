@@ -58,7 +58,8 @@ func (p *Parser) ParseModule() (fn *ast.FnExpr, err error) {
 	p.expect(ast.EOF)
 
 	params := []*ast.IdentExpr{}
-	return &ast.FnExpr{nil, params, &ast.Block{nil, nodes, nil}, 0, 0, nil}, err
+	block := &ast.Block{nil, nodes, nil}
+	return &ast.FnExpr{nil, params, block, 0, 0, nil}, err
 }
 
 func (p *Parser) parseExpression() (expr ast.Expr, err error) {
@@ -707,7 +708,11 @@ func (p *Parser) primary() ast.Expr {
 		}
 
 	case p.cur.Kind == ast.IDENT:
-		return p.identExpr()
+		if p.next.Kind == ast.EQ_GT {
+			return p.lambdaOne(p.expect(ast.IDENT))
+		} else {
+			return p.identExpr()
+		}
 
 	case isBuiltIn(p.cur):
 		return &ast.BuiltinExpr{p.consume()}
@@ -717,6 +722,12 @@ func (p *Parser) primary() ast.Expr {
 
 	case p.cur.Kind == ast.FN:
 		return p.fnExpr(p.consume())
+
+	case p.cur.Kind == ast.PIPE:
+		return p.lambda(p.consume())
+
+	case p.cur.Kind == ast.DBL_PIPE:
+		return p.lambdaZero(p.consume())
 
 	case p.cur.Kind == ast.STRUCT:
 		return p.structExpr(p.consume())
@@ -744,8 +755,8 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 func (p *Parser) fnExpr(token *ast.Token) *ast.FnExpr {
 
 	p.expect(ast.LPAREN)
-	params := []*ast.IdentExpr{}
 
+	params := []*ast.IdentExpr{}
 	switch p.cur.Kind {
 
 	case ast.IDENT:
@@ -775,6 +786,60 @@ func (p *Parser) fnExpr(token *ast.Token) *ast.FnExpr {
 	}
 
 	return &ast.FnExpr{token, params, p.block(), 0, 0, nil}
+}
+
+func (p *Parser) lambdaZero(token *ast.Token) *ast.FnExpr {
+	p.expect(ast.EQ_GT)
+	params := []*ast.IdentExpr{}
+	expr := p.expression()
+	block := &ast.Block{nil, []ast.Node{expr}, nil}
+	return &ast.FnExpr{token, params, block, 0, 0, nil}
+}
+
+func (p *Parser) lambdaOne(token *ast.Token) *ast.FnExpr {
+	p.expect(ast.EQ_GT)
+	params := []*ast.IdentExpr{&ast.IdentExpr{token, nil}}
+	expr := p.expression()
+	block := &ast.Block{nil, []ast.Node{expr}, nil}
+	return &ast.FnExpr{token, params, block, 0, 0, nil}
+}
+
+func (p *Parser) lambda(token *ast.Token) *ast.FnExpr {
+
+	params := []*ast.IdentExpr{}
+	switch p.cur.Kind {
+
+	case ast.IDENT:
+		params = append(params, p.identExpr())
+	loop:
+		for {
+			switch p.cur.Kind {
+
+			case ast.COMMA:
+				p.consume()
+				params = append(params, p.identExpr())
+
+			case ast.PIPE:
+				p.consume()
+				break loop
+
+			default:
+				panic(p.unexpected())
+			}
+		}
+
+	case ast.PIPE:
+		p.consume()
+
+	default:
+		panic(p.unexpected())
+	}
+
+	p.expect(ast.EQ_GT)
+
+	expr := p.expression()
+	block := &ast.Block{nil, []ast.Node{expr}, nil}
+	return &ast.FnExpr{token, params, block, 0, 0, nil}
 }
 
 func (p *Parser) structExpr(structToken *ast.Token) ast.Expr {

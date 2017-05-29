@@ -47,6 +47,7 @@ func ok_expr(t *testing.T, p *Parser, expect string) {
 
 	expr, err := p.parseExpression()
 	if err != nil {
+		panic(err)
 		t.Error(err, " != nil")
 	}
 
@@ -708,4 +709,25 @@ func TestSwitch(t *testing.T) {
 
 	p = newParser("switch { case a: b; default: }")
 	fail(t, p, "Invalid Switch Expression at (1, 28)")
+}
+
+func TestLambda(t *testing.T) {
+
+	p := newParser("x => true")
+	ok_expr(t, p, "fn(x) { true; }")
+
+	p = newParser("|| => true")
+	ok_expr(t, p, "fn() { true; }")
+
+	p = newParser("| | => true")
+	ok_expr(t, p, "fn() { true; }")
+
+	p = newParser("|x| => true")
+	ok_expr(t, p, "fn(x) { true; }")
+
+	p = newParser("|x, y| => true")
+	ok_expr(t, p, "fn(x, y) { true; }")
+
+	p = newParser("|x, y, z| => true")
+	ok_expr(t, p, "fn(x, y, z) { true; }")
 }
