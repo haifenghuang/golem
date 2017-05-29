@@ -1,10 +1,7 @@
 tutorial
 
-implement catch with finally
 fix scoping of catch variable
 throw
-
-fix implementation of intrinsics so it doesn't create a function all the time
 
 intrinsic functions on various types:
 
@@ -15,8 +12,7 @@ intrinsic functions on various types:
         map 
         filter
 
-    dict: fromObj(), toObj(f = null)
-
+    dict: fromStruct(), toStruct(f = null)
 
     str:  
         toRune() // str-with-one-char
@@ -28,9 +24,6 @@ intrinsic functions on various types:
         toStr(radix = 10)
 
     iterable.stream() a la Java 8
-
-get rid of struct (a) {} syntax
-merge() builtin
 
 spawn a.k.a 'go' goroutine
 chan, send(), recv(), ch.close(), ch.isOpen()
@@ -57,6 +50,9 @@ io.file: read to lines, write to lines
 regex
 
 --------------------------------------------
+
+Fix implementation of intrinsics so it doesn't create a function all the time.
+This may not be possible.
 
 modules:
     io, net, http, time, bytes, random

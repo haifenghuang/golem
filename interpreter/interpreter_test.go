@@ -1337,3 +1337,58 @@ try {
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 }
+
+func TestCatchFinally(t *testing.T) {
+
+	source := `
+let a = 0;
+try {
+    3 / 0;
+} catch e {
+    a = 1;
+} finally {
+    a = 2;
+}
+assert(a == 2);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = 0;
+let f = fn() {
+    try {
+        3 / 0;
+    } catch e {
+        return 1;
+    } finally {
+        a = 2;
+    }
+};
+let b = f();
+assert(b == 1);
+assert(a == 2);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+
+	source = `
+let a = 0;
+let b = 0;
+try {
+    try {
+        3 / 0;
+    } catch e {
+        assert(1,2,3);
+    } finally {
+        a = 1;
+    }
+} catch e {
+    b = 2;
+}
+assert(a == 1);
+assert(b == 2);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
+}

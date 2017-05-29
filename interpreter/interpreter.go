@@ -86,18 +86,41 @@ func (i *Interpreter) walkStack(errTrace *ErrorTrace) (g.Value, *ErrorTrace) {
 			if instPtr >= eh.Begin && instPtr < eh.End {
 
 				if eh.Catch != -1 {
-					if eh.Finally != -1 {
-						panic("TODO")
-					}
-
 					f.ip = eh.Catch
 					f.stack = append(f.stack, errTrace.Struct)
 					cres, cerr := i.runTryClause(f, frameIndex)
-
 					if cerr != nil {
 						// save the error
 						errTrace = makeErrorTrace(cerr, i.stackTrace())
+
+						// run finally clause
+						if eh.Finally != -1 {
+							f.ip = eh.Finally
+							fres, ferr := i.runTryClause(f, frameIndex)
+							if ferr != nil {
+								// save the error
+								errTrace = makeErrorTrace(ferr, i.stackTrace())
+							} else if fres != nil {
+								// stop unwinding the stack
+								return fres, nil
+							}
+						}
+
 					} else {
+
+						// run finally clause
+						if eh.Finally != -1 {
+							f.ip = eh.Finally
+							fres, ferr := i.runTryClause(f, frameIndex)
+							if ferr != nil {
+								// save the error
+								errTrace = makeErrorTrace(ferr, i.stackTrace())
+							} else if fres != nil {
+								// stop unwinding the stack
+								return fres, nil
+							}
+						}
+
 						// done!
 						return cres, nil
 					}
