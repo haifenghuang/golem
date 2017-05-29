@@ -1336,6 +1336,25 @@ try {
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
+
+	source = `
+let a = 0;
+let b = 0;
+try {
+    3 / 0;
+} catch e {
+    a = 1;
+}
+try {
+    3 / 0;
+} catch e {
+    b = 2;
+}
+assert(a == 1);
+assert(b == 2);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }
 
 func TestCatchFinally(t *testing.T) {

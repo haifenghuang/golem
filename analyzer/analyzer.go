@@ -131,8 +131,10 @@ func (a *analyzer) visitTry(t *ast.Try) {
 
 	a.Visit(t.TryBlock)
 	if t.CatchToken != nil {
+		a.curScope = newBlockScope(a.curScope)
 		a.defineIdent(t.CatchIdent, true)
 		a.Visit(t.CatchBlock)
+		a.curScope = a.curScope.parent
 	}
 	if t.FinallyToken != nil {
 		a.Visit(t.FinallyBlock)
