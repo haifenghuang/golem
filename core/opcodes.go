@@ -69,6 +69,7 @@ const (
 	INVOKE
 	RETURN
 	DONE
+	THROW
 
 	NEW_STRUCT
 	NEW_DICT
@@ -218,6 +219,8 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmt.Sprintf("%d: RETURN\n", i)
 	case DONE:
 		return fmt.Sprintf("%d: DONE\n", i)
+	case THROW:
+		return fmt.Sprintf("%d: THROW\n", i)
 
 	case NEW_STRUCT:
 		return fmtIndex(opcodes, i, "NEW_STRUCT")

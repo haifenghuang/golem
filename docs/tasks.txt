@@ -1,8 +1,5 @@
 tutorial
 
-fix scoping of catch variable
-throw
-
 intrinsic functions on various types:
 
     list, str, range, dict  

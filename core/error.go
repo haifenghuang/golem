@@ -130,9 +130,9 @@ func makeError(kind ErrorKind, msg string) Error {
 	return &serror{kind, stc}
 }
 
-//func GenericError() Error {
-//	return makeError(NULL_VALUE, "")
-//}
+func GenericError(stc Struct) Error {
+	return &serror{GENERIC, stc}
+}
 
 func NullValueError() Error {
 	return makeError(NULL_VALUE, "")

@@ -109,6 +109,17 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 	case g.DONE:
 		panic("DONE cannot be executed directly")
 
+	case g.THROW:
+
+		// get struct from stack
+		stc, ok := f.stack[n].(g.Struct)
+		if !ok {
+			return nil, g.TypeMismatchError("Expected 'Struct'")
+		}
+
+		// throw a generic error
+		return nil, g.GenericError(stc)
+
 	case g.NEW_FUNC:
 
 		// push a function

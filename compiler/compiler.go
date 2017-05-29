@@ -122,6 +122,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.Try:
 		c.visitTry(t)
 
+	case *ast.Throw:
+		c.visitThrow(t)
+
 	case *ast.TernaryExpr:
 		c.visitTernaryExpr(t)
 
@@ -596,6 +599,11 @@ func (c *compiler) visitTry(t *ast.Try) {
 	// sanity check
 	g.Assert(!(catch == -1 && finally == -1), "invalid try block")
 	c.handlers = append(c.handlers, g.ExceptionHandler{begin, end, catch, finally})
+}
+
+func (c *compiler) visitThrow(t *ast.Throw) {
+	c.Visit(t.Val)
+	c.push(t.End(), g.THROW)
 }
 
 func (c *compiler) visitBinaryExpr(b *ast.BinaryExpr) {

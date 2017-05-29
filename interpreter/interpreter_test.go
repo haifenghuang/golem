@@ -1411,3 +1411,17 @@ assert(b == 2);
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 }
+
+func TestThrow(t *testing.T) {
+
+	source := `
+try {
+    throw struct { foo: 'zork' };
+} catch e {
+    assert(e.foo == 'zork');
+    assert(e.stackTrace == ['    at line 3']);
+}
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}
