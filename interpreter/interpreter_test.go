@@ -1425,3 +1425,18 @@ try {
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 }
+
+func TestNamedFunc(t *testing.T) {
+
+	source := `
+fn a() {
+    return b();
+}
+fn b() {
+    return 42;
+}
+assert(a() == 42);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}

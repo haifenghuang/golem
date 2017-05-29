@@ -367,6 +367,9 @@ func TestFn(t *testing.T) {
 
 	p = newParser("z = fn(x) { a = 2; return b; c = 3; };")
 	ok(t, p, "fn() { (z = fn(x) { (a = 2); return b; (c = 3); }); }")
+
+	p = newParser("fn a(x) {return x*x; } fn b() { }")
+	ok(t, p, "fn() { fn a(x) { return (x * x); } fn b() {  } }")
 }
 
 func TestTry(t *testing.T) {

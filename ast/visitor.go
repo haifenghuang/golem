@@ -45,6 +45,11 @@ func (let *Let) Traverse(v Visitor) {
 	}
 }
 
+func (nf *NamedFn) Traverse(v Visitor) {
+	v.Visit(nf.Ident)
+	v.Visit(nf.Func)
+}
+
 func (asn *Assignment) Traverse(v Visitor) {
 	v.Visit(asn.Assignee)
 	v.Visit(asn.Val)
@@ -269,6 +274,8 @@ func (p *dump) Visit(node Node) {
 		p.buf.WriteString("Const\n")
 	case *Let:
 		p.buf.WriteString("Let\n")
+	case *NamedFn:
+		p.buf.WriteString("NamedFn\n")
 	case *Assignment:
 		p.buf.WriteString("Assignment\n")
 

@@ -125,9 +125,24 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.TRY:
 		return p.tryStmt()
 
+	case ast.FN:
+		if p.next.Kind == ast.IDENT {
+			return p.namedFn()
+		} else {
+			return nil
+		}
+
 	default:
 		return nil
 	}
+}
+
+func (p *Parser) namedFn() *ast.NamedFn {
+	token := p.expect(ast.FN)
+	return &ast.NamedFn{
+		token,
+		&ast.IdentExpr{p.expect(ast.IDENT), nil},
+		p.fnExpr(token)}
 }
 
 func (p *Parser) constStmt() *ast.Const {
@@ -726,7 +741,7 @@ func (p *Parser) identExpr() *ast.IdentExpr {
 	return &ast.IdentExpr{tok, nil}
 }
 
-func (p *Parser) fnExpr(token *ast.Token) ast.Expr {
+func (p *Parser) fnExpr(token *ast.Token) *ast.FnExpr {
 
 	p.expect(ast.LPAREN)
 	params := []*ast.IdentExpr{}

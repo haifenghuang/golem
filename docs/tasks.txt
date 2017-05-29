@@ -1,3 +1,10 @@
+lambda: |x| => x * x
+formal parameters (not for lambda):
+    optional formal parameters -- will require special parsing to disallow scoping
+    variadic functions
+
+------
+
 tutorial
 
 intrinsic functions on various types:
@@ -37,9 +44,6 @@ meta()
     struct: fields
     func: minArity, maxArity, isVariadic
 
-named functions
-lambda: |x| => x * x
-
 ide support
 
 pub main
@@ -54,10 +58,6 @@ This may not be possible.
 modules:
     io, net, http, time, bytes, random
     is bytes an intrinsic type instead?
-
-formal parameters (not for lambda):
-    optional formal parameters -- will require special parsing to disallow scoping
-    variadic functions
 
 improve chain data structure
 

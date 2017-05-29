@@ -82,6 +82,12 @@ type (
 		Val   Expr
 	}
 
+	NamedFn struct {
+		Token *Token
+		Ident *IdentExpr
+		Func  *FnExpr
+	}
+
 	If struct {
 		Token *Token
 		Cond  Expr
@@ -308,6 +314,7 @@ type (
 func (*Block) stmtMarker()    {}
 func (*Const) stmtMarker()    {}
 func (*Let) stmtMarker()      {}
+func (*NamedFn) stmtMarker()  {}
 func (*If) stmtMarker()       {}
 func (*While) stmtMarker()    {}
 func (*For) stmtMarker()      {}
@@ -362,6 +369,9 @@ func (n *Const) End() Pos   { return n.Semicolon.Position }
 
 func (n *Let) Begin() Pos { return n.Token.Position }
 func (n *Let) End() Pos   { return n.Semicolon.Position }
+
+func (n *NamedFn) Begin() Pos { return n.Token.Position }
+func (n *NamedFn) End() Pos   { return n.Func.End() }
 
 func (n *If) Begin() Pos { return n.Token.Position }
 func (n *If) End() Pos {
@@ -512,6 +522,18 @@ func (let *Let) String() string {
 	buf.WriteString("let ")
 	buf.WriteString(stringDecls(let.Decls))
 	buf.WriteString(";")
+	return buf.String()
+}
+
+func (nf *NamedFn) String() string {
+	buf := new(bytes.Buffer)
+
+	buf.WriteString("fn ")
+	buf.WriteString(nf.Ident.String())
+	buf.WriteString(identsString(nf.Func.FormalParams))
+	buf.WriteString(" ")
+	buf.WriteString(nf.Func.Body.String())
+
 	return buf.String()
 }
 

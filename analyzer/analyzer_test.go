@@ -656,3 +656,42 @@ FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
 	errors = anl.Analyze()
 	fail(t, errors, "[Symbol 'a' is already defined]")
 }
+
+func TestNamedFunc(t *testing.T) {
+
+	source := `
+fn a() {
+    return b();
+}
+fn b() {
+    return 42;
+}
+`
+	anl := newAnalyzer(source)
+	errors := anl.Analyze()
+
+	//fmt.Println(source)
+	//fmt.Println(ast.Dump(anl.Module()))
+	//fmt.Println(errors)
+
+	ok(t, anl, errors, `
+FnExpr(numLocals:2 numCaptures:0 parentCaptures:[])
+.   Block
+.   .   NamedFn
+.   .   .   IdentExpr(a,(0,true,false))
+.   .   .   FnExpr(numLocals:0 numCaptures:1 parentCaptures:[(1,true,false)])
+.   .   .   .   Block
+.   .   .   .   .   Return
+.   .   .   .   .   .   InvokeExpr
+.   .   .   .   .   .   .   IdentExpr(b,(0,true,true))
+.   .   NamedFn
+.   .   .   IdentExpr(b,(1,true,false))
+.   .   .   FnExpr(numLocals:0 numCaptures:0 parentCaptures:[])
+.   .   .   .   Block
+.   .   .   .   .   Return
+.   .   .   .   .   .   BasicExpr(INT,"42")
+`)
+
+	errors = newAnalyzer("fn a() {} const a = 1;").Analyze()
+	fail(t, errors, "[Symbol 'a' is already defined]")
+}

@@ -95,6 +95,9 @@ func (c *compiler) Visit(node ast.Node) {
 	case *ast.Let:
 		c.visitDecls(t.Decls)
 
+	case *ast.NamedFn:
+		c.visitNamedFn(t)
+
 	case *ast.Assignment:
 		c.visitAssignment(t)
 
@@ -234,6 +237,15 @@ func (c *compiler) assignIdent(ident *ast.IdentExpr) {
 	} else {
 		c.pushIndex(ident.Begin(), g.STORE_LOCAL, v.Index)
 	}
+}
+
+func (c *compiler) visitNamedFn(nf *ast.NamedFn) {
+
+	c.Visit(nf.Func)
+
+	v := nf.Ident.Variable
+	g.Assert(!v.IsCapture, "invalid named function")
+	c.pushIndex(nf.Ident.Begin(), g.STORE_LOCAL, v.Index)
 }
 
 func (c *compiler) visitAssignment(asn *ast.Assignment) {

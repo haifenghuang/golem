@@ -154,7 +154,23 @@ func (a *analyzer) defineIdent(ident *ast.IdentExpr, isConst bool) {
 func (a *analyzer) visitBlock(blk *ast.Block) {
 
 	a.curScope = newBlockScope(a.curScope)
-	blk.Traverse(a)
+
+	// visit named funcs identifiers
+	for _, n := range blk.Nodes {
+		if nf, ok := n.(*ast.NamedFn); ok {
+			a.defineIdent(nf.Ident, true)
+		}
+	}
+
+	// visit everything, skipping named func identifiers
+	for _, n := range blk.Nodes {
+		if nf, ok := n.(*ast.NamedFn); ok {
+			a.Visit(nf.Func)
+		} else {
+			a.Visit(n)
+		}
+	}
+
 	a.curScope = a.curScope.parent
 }
 
