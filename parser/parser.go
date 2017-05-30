@@ -1237,7 +1237,8 @@ func isBuiltIn(t *ast.Token) bool {
 		ast.FN_LEN,
 		ast.FN_RANGE,
 		ast.FN_ASSERT,
-		ast.FN_MERGE:
+		ast.FN_MERGE,
+		ast.FN_CHAN:
 		return true
 	default:
 		return false

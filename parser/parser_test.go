@@ -662,6 +662,8 @@ func TestBuiltin(t *testing.T) {
 	p = newParser("len - null")
 	ok_expr(t, p, "(len - null)")
 
+	p = newParser("ch = chan()")
+	ok_expr(t, p, "(ch = chan())")
 }
 
 func TestTuple(t *testing.T) {

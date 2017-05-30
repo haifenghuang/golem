@@ -108,6 +108,7 @@ const (
 	RANGE
 	ASSERT
 	MERGE
+	CHAN
 )
 
 var Builtins = []NativeFunc{
@@ -117,7 +118,8 @@ var Builtins = []NativeFunc{
 	&nativeFunc{builtinLen},
 	&nativeFunc{builtinRange},
 	&nativeFunc{builtinAssert},
-	&nativeFunc{builtinMerge}}
+	&nativeFunc{builtinMerge},
+	&nativeFunc{builtinChan}}
 
 var builtinPrint = func(values []Value) (Value, Error) {
 	for _, v := range values {
@@ -214,4 +216,20 @@ var builtinMerge = func(values []Value) (Value, Error) {
 	}
 
 	return NewChain(structs), nil
+}
+
+var builtinChan = func(values []Value) (Value, Error) {
+	switch len(values) {
+	case 0:
+		return NewChan(), nil
+	case 1:
+		size, ok := values[1].(Int)
+		if !ok {
+			return nil, TypeMismatchError("Expected 'Int'")
+		}
+		return NewBufferedChan(int(size.IntVal())), nil
+
+	default:
+		return nil, ArityMismatchError("0 or 1", len(values))
+	}
 }

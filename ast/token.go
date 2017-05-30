@@ -141,6 +141,7 @@ const (
 	FN_RANGE
 	FN_ASSERT
 	FN_MERGE
+	FN_CHAN
 )
 
 func (t TokenKind) String() string {
@@ -304,6 +305,8 @@ func (t TokenKind) String() string {
 		return "FN_ASSERT"
 	case FN_MERGE:
 		return "FN_MERGE"
+	case FN_CHAN:
+		return "FN_CHAN"
 
 	default:
 		panic("unreachable")

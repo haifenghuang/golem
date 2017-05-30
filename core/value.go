@@ -216,6 +216,15 @@ type Func interface {
 }
 
 //---------------------------------------------------------------
+// Chan
+
+// Chan represents a channel
+type Chan interface {
+	Value
+	chanMarker()
+}
+
+//---------------------------------------------------------------
 // Type
 
 type Type int
@@ -233,6 +242,7 @@ const (
 	TDICT
 	TSET
 	TSTRUCT
+	TCHAN
 )
 
 func (t Type) String() string {
@@ -261,6 +271,8 @@ func (t Type) String() string {
 		return "Set"
 	case TSTRUCT:
 		return "Struct"
+	case TCHAN:
+		return "Chan"
 
 	default:
 		panic("unreachable")

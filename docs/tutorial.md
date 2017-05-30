@@ -261,7 +261,27 @@ some examples.
 
 ## Concurrency
 
-**TODO** spawn, send(), recv()
+**TODO** explain spawn, chan(), ch.send(), ch.recv()
+
+```golem
+fn sum(a, c) {
+    let total = 0;
+    for v in a {
+        total += v;
+    }
+    c.send(total);
+}
+
+let a = [7, 2, 8, -9, 4, 0];
+let n = len(a) / 2;
+let c = chan();
+
+spawn sum(a[:n], c);
+spawn sum(a[n:], c);
+let x = c.recv();
+let y = c.recv();
+assert([x, y] == [-5, 17]);
+```
 
 ## Standard Library
 

@@ -838,6 +838,8 @@ func (c *compiler) visitBuiltinExpr(blt *ast.BuiltinExpr) {
 		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.ASSERT)
 	case ast.FN_MERGE:
 		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.MERGE)
+	case ast.FN_CHAN:
+		c.pushIndex(blt.Fn.Position, g.LOAD_BUILTIN, g.CHAN)
 
 	default:
 		panic("unknown builtin function")

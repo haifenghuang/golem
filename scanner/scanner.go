@@ -408,6 +408,8 @@ func (s *Scanner) nextIdentOrKeyword() *ast.Token {
 		return &ast.Token{ast.FN_ASSERT, text, pos}
 	case "merge":
 		return &ast.Token{ast.FN_MERGE, text, pos}
+	case "chan":
+		return &ast.Token{ast.FN_CHAN, text, pos}
 
 	default:
 		return &ast.Token{ast.IDENT, text, pos}

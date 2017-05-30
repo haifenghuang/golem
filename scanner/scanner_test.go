@@ -316,6 +316,10 @@ func TestIdentOrKeyword(t *testing.T) {
 	ok(t, s, ast.FN_RANGE, "range", 1, 23)
 	ok(t, s, ast.FN_ASSERT, "assert", 1, 29)
 	ok(t, s, ast.EOF, "", 1, 35)
+
+	s = NewScanner("chan")
+	ok(t, s, ast.FN_CHAN, "chan", 1, 1)
+	ok(t, s, ast.EOF, "", 1, 5)
 }
 
 func TestComments(t *testing.T) {

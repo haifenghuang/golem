@@ -1456,27 +1456,27 @@ assert(c(1, 2) == 15);
 	interpret(mod)
 }
 
-//func TestSpawn(t *testing.T) {
-//
-//	source := `
-//for i in range(0, 10) {
-//    spawn assert(i < 10);
-//}
-//`
-//	mod := newCompiler(source).Compile()
-//	interpret(mod)
-//
-//	source = `
-//let total = 0;
-//fn foo() {
-//    for i in range(0, 100000000) {
-//        total += i;
-//        println(i);
-//    }
-//        println("the total is: ", total);
-//}
-//spawn foo();
-//`
-//	mod = newCompiler(source).Compile()
-//	interpret(mod)
-//}
+func TestSpawn(t *testing.T) {
+
+	source := `
+fn sum(a, c) {
+	let total = 0;
+	for v in a {
+		total += v;
+	}
+    c.send(total);
+}
+
+let a = [7, 2, 8, -9, 4, 0];
+let n = len(a) / 2;
+let c = chan();
+
+spawn sum(a[:n], c);
+spawn sum(a[n:], c);
+let x = c.recv();
+let y = c.recv();
+assert([x, y] == [-5, 17]);
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+}
