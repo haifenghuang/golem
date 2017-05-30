@@ -1479,4 +1479,13 @@ assert([x, y] == [-5, 17]);
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
+
+	source = `
+let ch = chan(2);
+ch.send(1);
+ch.send(2);
+assert([ch.recv(), ch.recv()] == [1, 2]);
+`
+	mod = newCompiler(source).Compile()
+	interpret(mod)
 }

@@ -223,7 +223,7 @@ var builtinChan = func(values []Value) (Value, Error) {
 	case 0:
 		return NewChan(), nil
 	case 1:
-		size, ok := values[1].(Int)
+		size, ok := values[0].(Int)
 		if !ok {
 			return nil, TypeMismatchError("Expected 'Int'")
 		}
