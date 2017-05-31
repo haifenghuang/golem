@@ -80,6 +80,10 @@ func newAnalyzer(source string) analyzer.Analyzer {
 	return anl
 }
 
+func symbols() map[string]*g.Symbol {
+	return make(map[string]*g.Symbol)
+}
+
 func TestExpression(t *testing.T) {
 
 	mod := NewCompiler(newAnalyzer("-2 + -1 + -0 + 0 + 1 + 2;")).Compile()
@@ -110,7 +114,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{16, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("(2 + 3) * -4 / 10;")).Compile()
 	ok(t, mod, &g.Module{
@@ -138,7 +142,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{16, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("null / true + \nfalse;")).Compile()
 	ok(t, mod, &g.Module{
@@ -162,7 +166,7 @@ func TestExpression(t *testing.T) {
 					{4, 2},
 					{5, 1},
 					{6, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("'a' * 1.23e4;")).Compile()
 	ok(t, mod, &g.Module{
@@ -184,7 +188,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{8, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("'a' == true;")).Compile()
 	ok(t, mod, &g.Module{
@@ -205,7 +209,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{6, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("true != false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -223,7 +227,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{4, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("true > false; true >= false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -242,7 +246,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{7, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("true < false; true <= false; true <=> false;")).Compile()
 	ok(t, mod, &g.Module{
@@ -262,7 +266,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{10, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 && 3;")).Compile()
 	ok(t, mod, &g.Module{
@@ -289,7 +293,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{21, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	mod = NewCompiler(newAnalyzer("let a = 2 || 3;")).Compile()
 	ok(t, mod, &g.Module{
@@ -316,7 +320,7 @@ func TestExpression(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{21, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestAssignment(t *testing.T) {
@@ -348,7 +352,7 @@ func TestAssignment(t *testing.T) {
 					{8, 2},
 					{11, 3},
 					{18, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestShift(t *testing.T) {
@@ -394,7 +398,7 @@ func TestIf(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{17, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	source = `let a = 1;
 		if (false) {
@@ -439,7 +443,7 @@ func TestIf(t *testing.T) {
 					{18, 5},
 					{24, 7},
 					{30, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestWhile(t *testing.T) {
@@ -470,7 +474,7 @@ func TestWhile(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{20, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	source = "let a = 'z'; while (0 < 1) \n{ break; continue; let b = 2; } let c = 3;"
 	mod = NewCompiler(newAnalyzer(source)).Compile()
@@ -505,7 +509,7 @@ func TestWhile(t *testing.T) {
 					{1, 1},
 					{13, 2},
 					{34, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestReturn(t *testing.T) {
@@ -529,7 +533,7 @@ func TestReturn(t *testing.T) {
 					{0, 0},
 					{1, 1},
 					{2, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	source = "let a = 1; return a \n- 2; a = 3;"
 	anl = newAnalyzer(source)
@@ -563,7 +567,7 @@ func TestReturn(t *testing.T) {
 					{12, 1},
 					{13, 2},
 					{20, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestFunc(t *testing.T) {
@@ -647,7 +651,7 @@ let b = fn(x) {
 					{0, 0},
 					{1, 5},
 					{8, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	source = `
 let a = fn() { };
@@ -738,7 +742,7 @@ c(2, 3);
 					{0, 0},
 					{1, 4},
 					{18, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestCapture(t *testing.T) {
@@ -798,7 +802,7 @@ const accumGen = fn(n) {
 					{1, 4},
 					{12, 5},
 					{16, 0}},
-				nil}}})
+				nil}}, symbols()})
 
 	source = `
 let z = 2;
@@ -869,7 +873,7 @@ const accumGen = fn(n) {
 					{1, 5},
 					{16, 6},
 					{20, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestPostfix(t *testing.T) {
@@ -923,7 +927,7 @@ let d = b--;
 					{13, 4},
 					{25, 5},
 					{37, 0}},
-				nil}}})
+				nil}}, symbols()})
 }
 
 func TestPool(t *testing.T) {

@@ -29,7 +29,6 @@ type Compiler interface {
 }
 
 type compiler struct {
-	anl      analyzer.Analyzer
 	pool     *g.HashMap
 	opc      []byte
 	lnum     []g.LineNumberEntry
@@ -46,11 +45,12 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
 	defs := []g.StructDef{}
-	return &compiler{anl, g.EmptyHashMap(), nil, nil, nil, funcs, templates, defs, 0}
+	return &compiler{g.EmptyHashMap(), nil, nil, nil, funcs, templates, defs, 0}
 }
 
 func (c *compiler) Compile() *g.Module {
 
+	// compile all the funcs
 	for c.idx < len(c.funcs) {
 		c.templates = append(
 			c.templates,
@@ -58,7 +58,39 @@ func (c *compiler) Compile() *g.Module {
 		c.idx += 1
 	}
 
-	return &g.Module{makePoolSlice(c.pool), nil, c.defs, c.templates}
+	// done
+	return &g.Module{
+		makePoolSlice(c.pool), nil, c.defs, c.templates, c.makeSymbols()}
+}
+
+func (c *compiler) makeSymbols() map[string]*g.Symbol {
+	symbols := make(map[string]*g.Symbol)
+	module := c.funcs[0]
+	nodes := module.Body.Nodes
+	for _, n := range nodes {
+		switch t := n.(type) {
+		case *ast.Let:
+			if t.IsPub {
+				for _, d := range t.Decls {
+					vbl := d.Ident.Variable
+					symbols[d.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+				}
+			}
+		case *ast.Const:
+			if t.IsPub {
+				for _, d := range t.Decls {
+					vbl := d.Ident.Variable
+					symbols[d.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+				}
+			}
+		case *ast.NamedFn:
+			if t.IsPub {
+				vbl := t.Ident.Variable
+				symbols[t.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+			}
+		}
+	}
+	return symbols
 }
 
 func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {

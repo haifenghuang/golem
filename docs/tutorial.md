@@ -6,9 +6,8 @@ Golem is a general purpose, interpreted language, with first-class functions and
 dynamic type system.  Golem aims to combine the clean semantics of Python, 
 the concurrency of Go, the flexibility of Javascript, and the embeddability of Lua.
 
-Since Golem is a dynamic language, one would expect that this tutorial would begin
-by asking you to start Golem's REPL.  However, Golem doesn't have a REPL yet :-).  So 
-instead, you'll following along with this tutorial by typing things into a 
+Golem doesn't have a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
+environment yet (**TODO**).  So, follow along with this tutorial by typing things into a 
 source code file ('tutorial.glm', for example), and then running `golem tutorial.glm`
 from the command line to look at the results.
 
@@ -18,9 +17,12 @@ To get started, run the following program:
 println('Hello, world.');
 ```
 
+The function `println` is built in to Golem.  There are several of these builtin functions
+in Golem.
+
 ## Basic Types
 
-Golem has a simple, straightforward type system.  The basic types 
+Golem has a simple, straightforward type system.  The basic primitive types 
 include boolean, string, int and float.  There is also 'null', which 
 represents the absence of a value.  Basic values are immutable.
 
@@ -32,7 +34,7 @@ assert(1 + 2 == 3);
 assert(42 / 7 == 8 - 2);
 ```
 
-We will cover the operators in more detail later.  Note that we used another intrinsic 
+We will cover the operators in more detail later.  Note that we used another builtin 
 function, `assert`, which will throw an exception if the value that is passed into 
 it is not true.
 
@@ -57,7 +59,7 @@ assert('abc\n' == "abc\n");
 ```
 
 During addition, if one of the values is a string, and the other is not, then
-`str` is automatically called on the other value, and the two strings are then 
+the other value is converted to a string, and the two strings are then 
 concatenated together:
 
 ```golem

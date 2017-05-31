@@ -69,12 +69,14 @@ type (
 		Token     *Token
 		Decls     []*Decl
 		Semicolon *Token
+		IsPub     bool
 	}
 
 	Let struct {
 		Token     *Token
 		Decls     []*Decl
 		Semicolon *Token
+		IsPub     bool
 	}
 
 	Decl struct {
@@ -86,6 +88,7 @@ type (
 		Token *Token
 		Ident *IdentExpr
 		Func  *FnExpr
+		IsPub bool
 	}
 
 	If struct {
@@ -526,6 +529,9 @@ func (blk *Block) String() string {
 
 func (cns *Const) String() string {
 	buf := new(bytes.Buffer)
+	if cns.IsPub {
+		buf.WriteString("pub ")
+	}
 	buf.WriteString("const ")
 	buf.WriteString(stringDecls(cns.Decls))
 	buf.WriteString(";")
@@ -534,6 +540,9 @@ func (cns *Const) String() string {
 
 func (let *Let) String() string {
 	buf := new(bytes.Buffer)
+	if let.IsPub {
+		buf.WriteString("pub ")
+	}
 	buf.WriteString("let ")
 	buf.WriteString(stringDecls(let.Decls))
 	buf.WriteString(";")
@@ -542,13 +551,14 @@ func (let *Let) String() string {
 
 func (nf *NamedFn) String() string {
 	buf := new(bytes.Buffer)
-
+	if nf.IsPub {
+		buf.WriteString("pub ")
+	}
 	buf.WriteString("fn ")
 	buf.WriteString(nf.Ident.String())
 	buf.WriteString(identsString(nf.Func.FormalParams))
 	buf.WriteString(" ")
 	buf.WriteString(nf.Func.Body.String())
-
 	return buf.String()
 }
 

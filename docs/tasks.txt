@@ -1,3 +1,13 @@
+
+pub main
+import
+io.file: read to lines, write to lines
+regex
+
+prop
+
+-------------------------------------
+
 tutorial
 
 intrinsic functions on various types:
@@ -22,15 +32,6 @@ intrinsic functions on various types:
 
     iterable.stream() a la Java 8
 
-spawn a.k.a 'go' goroutine
-chan, send(), recv(), ch.close(), ch.isOpen()
-
-immutability
-freeze() builtin, or maybe 
-    'frozen' keyword for list, set, dict, struct
-    with freeze() intrinsic for list, set, dict
-
-prop
 
 typeOf()
 meta() 
@@ -39,11 +40,12 @@ meta()
 
 ide support
 
-pub main
-io.file: read to lines, write to lines
-regex
-
 --------------------------------------------
+
+immutability
+freeze() builtin, or maybe 
+    'frozen' keyword for list, set, dict, struct
+    with freeze() intrinsic for list, set, dict
 
 formal parameters (not for lambda):
     optional formal parameters -- will require special parsing to disallow scoping
@@ -58,6 +60,7 @@ modules:
 
 improve chain data structure
 
+chan: range, close(), isOpen()
 select waitGroup 
 sync{}
 

@@ -745,3 +745,24 @@ func TestSpawn(t *testing.T) {
 	p = newParser("spawn foo;")
 	fail(t, p, "Unexpected Token ';' at (1, 10)")
 }
+
+func TestPub(t *testing.T) {
+
+	p := newParser("pub let a = 1;")
+	ok(t, p, "fn() { pub let a = 1; }")
+
+	p = newParser("pub const a = 1;")
+	ok(t, p, "fn() { pub const a = 1; }")
+
+	p = newParser("pub fn a() {}")
+	ok(t, p, "fn() { pub fn a() {  } }")
+
+	p = newParser("pub fn a() { pub let b = 1; }")
+	fail(t, p, "Unexpected Token 'pub' at (1, 14)")
+
+	p = newParser("pub a = 1;")
+	fail(t, p, "Unexpected Token 'a' at (1, 5)")
+
+	p = newParser("pub fn() {}")
+	fail(t, p, "Unexpected Token '(' at (1, 7)")
+}

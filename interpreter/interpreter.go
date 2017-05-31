@@ -41,13 +41,19 @@ func (i *Interpreter) Init() (g.Value, *ErrorTrace) {
 	}
 
 	// create empty locals
-	i.mod.Locals = newLocals(tpl.NumLocals, nil)
+	i.mod.Refs = newLocals(tpl.NumLocals, nil)
 
 	// make func
 	fn := g.NewBytecodeFunc(tpl)
 
 	// go
-	return i.run(fn, i.mod.Locals)
+	return i.run(fn, i.mod.Refs)
+}
+
+func (i *Interpreter) RunBytecode(
+	fn g.BytecodeFunc, params []g.Value) (result g.Value, errTrace *ErrorTrace) {
+
+	return i.run(fn, newLocals(fn.Template().NumLocals, params))
 }
 
 func (i *Interpreter) run(

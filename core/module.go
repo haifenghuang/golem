@@ -31,9 +31,11 @@ type StructDef []string
 
 type Module struct {
 	Pool       []Basic
-	Locals     []*Ref
+	Refs       []*Ref
 	StructDefs []StructDef
 	Templates  []*Template
+
+	Symbols map[string]*Symbol
 }
 
 func (m *Module) String() string {
@@ -48,8 +50,8 @@ func (m *Module) String() string {
 		buf.WriteString(fmt.Sprintf("%d: %v(%v)\n", i, typeOf, val))
 	}
 
-	buf.WriteString("    Locals:\n")
-	for i, ref := range m.Locals {
+	buf.WriteString("    Refs:\n")
+	for i, ref := range m.Refs {
 		buf.WriteString("        ")
 		buf.WriteString(fmt.Sprintf("%d: %v\n", i, ref))
 	}
@@ -91,7 +93,7 @@ func (m *Module) String() string {
 }
 
 //---------------------------------------------------------------
-// Ref
+// A Ref is a reference, i.e. a container for a value
 
 type Ref struct {
 	Val Value
@@ -103,4 +105,20 @@ func NewRef(val Value) *Ref {
 
 func (r *Ref) String() string {
 	return fmt.Sprintf("Ref(%v)", r.Val)
+}
+
+//---------------------------------------------------------------
+// A Symbol is a Ref that is visible outside the module
+
+type Symbol struct {
+	RefIndex int
+	IsConst  bool
+}
+
+func NewSymbol(refIndex int, isConst bool) *Symbol {
+	return &Symbol{refIndex, isConst}
+}
+
+func (s *Symbol) String() string {
+	return fmt.Sprintf("Symbol(%d,%v)", s.RefIndex, s.IsConst)
 }

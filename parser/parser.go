@@ -54,7 +54,7 @@ func (p *Parser) ParseModule() (fn *ast.FnExpr, err error) {
 	p.next = p.advance()
 
 	// parse the module
-	nodes := p.nodeSequence(ast.EOF)
+	nodes := p.nodeSequence(ast.EOF, true)
 	p.expect(ast.EOF)
 
 	params := []*ast.IdentExpr{}
@@ -87,17 +87,51 @@ func (p *Parser) parseExpression() (expr ast.Expr, err error) {
 	return expr, err
 }
 
-// parse a statement, or return nil if there is no statement
-// waiting to be parsed
-func (p *Parser) statement() ast.Stmt {
+// Parse a statement, or return nil if there is no statement
+// waiting to be parsed.
+func (p *Parser) statement(allowPub bool) ast.Stmt {
 
 	switch p.cur.Kind {
 
+	case ast.PUB:
+		if allowPub {
+			p.consume()
+			switch p.cur.Kind {
+
+			case ast.CONST:
+				return p.constStmt(true)
+
+			case ast.LET:
+				return p.letStmt(true)
+
+			case ast.FN:
+				if p.next.Kind == ast.IDENT {
+					return p.namedFn(true)
+				} else {
+					p.expect(ast.FN)
+					panic(p.unexpected())
+				}
+			default:
+				panic(p.unexpected())
+			}
+		} else {
+			panic(p.unexpected())
+		}
+
 	case ast.CONST:
-		return p.constStmt()
+		return p.constStmt(false)
 
 	case ast.LET:
-		return p.letStmt()
+		return p.letStmt(false)
+
+	case ast.FN:
+		if p.next.Kind == ast.IDENT {
+			return p.namedFn(false)
+		} else {
+			// returning nil here means that the FN token
+			// is assumed to be the beginning of an expression.
+			return nil
+		}
 
 	case ast.IF:
 		return p.ifStmt()
@@ -129,27 +163,21 @@ func (p *Parser) statement() ast.Stmt {
 	case ast.SPAWN:
 		return p.spawnStmt()
 
-	case ast.FN:
-		if p.next.Kind == ast.IDENT {
-			return p.namedFn()
-		} else {
-			return nil
-		}
-
 	default:
 		return nil
 	}
 }
 
-func (p *Parser) namedFn() *ast.NamedFn {
+func (p *Parser) namedFn(isPub bool) *ast.NamedFn {
 	token := p.expect(ast.FN)
 	return &ast.NamedFn{
 		token,
 		&ast.IdentExpr{p.expect(ast.IDENT), nil},
-		p.fnExpr(token)}
+		p.fnExpr(token),
+		isPub}
 }
 
-func (p *Parser) constStmt() *ast.Const {
+func (p *Parser) constStmt(isPub bool) *ast.Const {
 
 	token := p.expect(ast.CONST)
 
@@ -160,14 +188,14 @@ func (p *Parser) constStmt() *ast.Const {
 			p.consume()
 			decls = append(decls, p.decl())
 		case ast.SEMICOLON:
-			return &ast.Const{token, decls, p.consume()}
+			return &ast.Const{token, decls, p.consume(), isPub}
 		default:
 			panic(p.unexpected())
 		}
 	}
 }
 
-func (p *Parser) letStmt() *ast.Let {
+func (p *Parser) letStmt(isPub bool) *ast.Let {
 
 	token := p.expect(ast.LET)
 
@@ -178,7 +206,7 @@ func (p *Parser) letStmt() *ast.Let {
 			p.consume()
 			decls = append(decls, p.decl())
 		case ast.SEMICOLON:
-			return &ast.Let{token, decls, p.consume()}
+			return &ast.Let{token, decls, p.consume(), isPub}
 		default:
 			panic(p.unexpected())
 		}
@@ -355,7 +383,7 @@ func (p *Parser) defaultStmt() *ast.Default {
 	token := p.expect(ast.DEFAULT)
 	colon := p.expect(ast.COLON)
 
-	body := p.nodeSequence(ast.RBRACE)
+	body := p.nodeSequence(ast.RBRACE, false)
 	if len(body) == 0 {
 		panic(&parserError{INVALID_SWITCH, colon})
 	}
@@ -450,13 +478,13 @@ func (p *Parser) spawnStmt() *ast.Spawn {
 func (p *Parser) block() *ast.Block {
 
 	lbrace := p.expect(ast.LBRACE)
-	nodes := p.nodeSequence(ast.RBRACE)
+	nodes := p.nodeSequence(ast.RBRACE, false)
 	rbrace := p.expect(ast.RBRACE)
 	return &ast.Block{lbrace, nodes, rbrace}
 }
 
 // Parse a sequence of statements or expressions.
-func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
+func (p *Parser) nodeSequence(endKind ast.TokenKind, allowPub bool) []ast.Node {
 
 	nodes := []ast.Node{}
 
@@ -466,7 +494,7 @@ func (p *Parser) nodeSequence(endKind ast.TokenKind) []ast.Node {
 		}
 
 		// see if there is a statement on tap
-		var node ast.Node = p.statement()
+		var node ast.Node = p.statement(allowPub)
 
 		// if there isn't, read an expression instead
 		if node == nil {
@@ -492,7 +520,7 @@ func (p *Parser) nodeSequenceAny(endKinds ...ast.TokenKind) []ast.Node {
 		}
 
 		// see if there is a statement on tap
-		var node ast.Node = p.statement()
+		var node ast.Node = p.statement(false)
 
 		// if there isn't, read an expression instead
 		if node == nil {

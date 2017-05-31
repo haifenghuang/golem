@@ -25,6 +25,12 @@ import (
 	"testing"
 )
 
+func assert(t *testing.T, flag bool) {
+	if !flag {
+		t.Error("assertion failure")
+	}
+}
+
 func ok_expr(t *testing.T, source string, expect g.Value) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
@@ -48,7 +54,7 @@ func ok_ref(t *testing.T, ref *g.Ref, expect g.Value) {
 	}
 }
 
-func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g.Ref) {
+func ok_mod(t *testing.T, source string, expectResult g.Value, expectRefs []*g.Ref) {
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
 
@@ -62,8 +68,8 @@ func ok_mod(t *testing.T, source string, expectResult g.Value, expectLocals []*g
 		t.Error(result, " != ", expectResult)
 	}
 
-	if !reflect.DeepEqual(mod.Locals, expectLocals) {
-		t.Error(mod.Locals, " != ", expectLocals)
+	if !reflect.DeepEqual(mod.Refs, expectRefs) {
+		t.Error(mod.Refs, " != ", expectRefs)
 	}
 }
 
@@ -119,6 +125,7 @@ func failErr(t *testing.T, source string, expect g.Error) {
 }
 
 func newStruct(entries []*g.StructEntry) g.Struct {
+
 	stc, err := g.NewStruct(entries)
 	if err != nil {
 		panic("invalid struct")
@@ -380,7 +387,7 @@ let b = a(1);
 	mod := newCompiler(source).Compile()
 
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.ONE)
+	ok_ref(t, mod.Refs[1], g.ONE)
 
 	source = `
 let a = fn() { };
@@ -393,9 +400,9 @@ let f = c(b(2), 3);
 	mod = newCompiler(source).Compile()
 
 	interpret(mod)
-	ok_ref(t, mod.Locals[3], g.NULL)
-	ok_ref(t, mod.Locals[4], g.ONE)
-	ok_ref(t, mod.Locals[5], g.MakeInt(24))
+	ok_ref(t, mod.Refs[3], g.NULL)
+	ok_ref(t, mod.Refs[4], g.ONE)
+	ok_ref(t, mod.Refs[5], g.MakeInt(24))
 
 	source = `
 let fibonacci = fn(n) {
@@ -419,12 +426,12 @@ let f = fibonacci(6);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.ONE)
-	ok_ref(t, mod.Locals[2], g.ONE)
-	ok_ref(t, mod.Locals[3], g.MakeInt(2))
-	ok_ref(t, mod.Locals[4], g.MakeInt(3))
-	ok_ref(t, mod.Locals[5], g.MakeInt(5))
-	ok_ref(t, mod.Locals[6], g.MakeInt(8))
+	ok_ref(t, mod.Refs[1], g.ONE)
+	ok_ref(t, mod.Refs[2], g.ONE)
+	ok_ref(t, mod.Refs[3], g.MakeInt(2))
+	ok_ref(t, mod.Refs[4], g.MakeInt(3))
+	ok_ref(t, mod.Refs[5], g.MakeInt(5))
+	ok_ref(t, mod.Refs[6], g.MakeInt(8))
 
 	source = `
 let foo = fn(n) {
@@ -437,7 +444,7 @@ let a = foo(5);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[1], g.MakeInt(32))
+	ok_ref(t, mod.Refs[1], g.MakeInt(32))
 }
 
 func TestCapture(t *testing.T) {
@@ -460,8 +467,8 @@ let y = a(7);
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[2], g.MakeInt(5))
-	ok_ref(t, mod.Locals[3], g.MakeInt(12))
+	ok_ref(t, mod.Refs[2], g.MakeInt(5))
+	ok_ref(t, mod.Refs[3], g.MakeInt(12))
 
 	source = `
 let z = 2;
@@ -481,9 +488,9 @@ let y = a(1);
 
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.ZERO)
-	ok_ref(t, mod.Locals[3], g.MakeInt(7))
-	ok_ref(t, mod.Locals[4], g.MakeInt(8))
+	ok_ref(t, mod.Refs[0], g.ZERO)
+	ok_ref(t, mod.Refs[3], g.MakeInt(7))
+	ok_ref(t, mod.Refs[4], g.MakeInt(8))
 
 	//fmt.Println("----------------------------")
 	//fmt.Println(source)
@@ -502,10 +509,10 @@ let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{}))
-	ok_ref(t, mod.Locals[1], newStruct([]*g.StructEntry{{"a", g.ZERO}}))
-	ok_ref(t, mod.Locals[2], newStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
-	ok_ref(t, mod.Locals[3], newStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{}))
+	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"a", g.ZERO}}))
+	ok_ref(t, mod.Refs[2], newStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
+	ok_ref(t, mod.Refs[3], newStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
 		{"c", newStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
 
 	source = `
@@ -520,8 +527,8 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
-	ok_ref(t, mod.Locals[1], g.MakeInt(5))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
+	ok_ref(t, mod.Refs[1], g.MakeInt(5))
 
 	source = `
 let a = struct {
@@ -536,8 +543,8 @@ let c = a.minus();
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[2], g.MakeInt(13))
-	ok_ref(t, mod.Locals[3], g.MakeInt(3))
+	ok_ref(t, mod.Refs[2], g.MakeInt(13))
+	ok_ref(t, mod.Refs[3], g.MakeInt(3))
 
 	source = `
 let a = null;
@@ -546,7 +553,7 @@ a = struct { x: 8 }.x = 5;
 	mod = newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(5))
+	ok_ref(t, mod.Refs[0], g.MakeInt(5))
 
 	source = `
 let a = struct { x: 8 };
@@ -561,9 +568,9 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
-	ok_ref(t, mod.Locals[1], g.MakeInt(3))
-	ok_ref(t, mod.Locals[2], g.MakeInt(4))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
+	ok_ref(t, mod.Refs[1], g.MakeInt(3))
+	ok_ref(t, mod.Refs[2], g.MakeInt(4))
 
 	source = `
 let a = struct { x: 8 };
@@ -646,10 +653,10 @@ let d = b--;
 	mod := newCompiler(source).Compile()
 	interpret(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(11))
-	ok_ref(t, mod.Locals[1], g.MakeInt(19))
-	ok_ref(t, mod.Locals[2], g.MakeInt(10))
-	ok_ref(t, mod.Locals[3], g.MakeInt(20))
+	ok_ref(t, mod.Refs[0], g.MakeInt(11))
+	ok_ref(t, mod.Refs[1], g.MakeInt(19))
+	ok_ref(t, mod.Refs[2], g.MakeInt(10))
+	ok_ref(t, mod.Refs[3], g.MakeInt(20))
 
 	source = `
 let a = struct { x: 10 };
@@ -664,10 +671,10 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
-	ok_ref(t, mod.Locals[1], newStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
-	ok_ref(t, mod.Locals[2], g.MakeInt(10))
-	ok_ref(t, mod.Locals[3], g.MakeInt(20))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
+	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
+	ok_ref(t, mod.Refs[2], g.MakeInt(10))
+	ok_ref(t, mod.Refs[3], g.MakeInt(20))
 }
 
 func TestTernaryIf(t *testing.T) {
@@ -683,8 +690,8 @@ let b = false ? 5 : 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(3))
-	ok_ref(t, mod.Locals[1], g.MakeInt(6))
+	ok_ref(t, mod.Refs[0], g.MakeInt(3))
+	ok_ref(t, mod.Refs[1], g.MakeInt(6))
 }
 
 func TestList(t *testing.T) {
@@ -704,11 +711,11 @@ let e = c[1]++;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewList([]g.Value{}))
-	ok_ref(t, mod.Locals[1], g.NewList([]g.Value{g.MakeInt(33)}))
-	ok_ref(t, mod.Locals[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
-	ok_ref(t, mod.Locals[3], g.TRUE)
-	ok_ref(t, mod.Locals[4], g.MakeInt(22))
+	ok_ref(t, mod.Refs[0], g.NewList([]g.Value{}))
+	ok_ref(t, mod.Refs[1], g.NewList([]g.Value{g.MakeInt(33)}))
+	ok_ref(t, mod.Refs[2], g.NewList([]g.Value{g.FALSE, g.MakeInt(23)}))
+	ok_ref(t, mod.Refs[3], g.TRUE)
+	ok_ref(t, mod.Refs[4], g.MakeInt(22))
 
 	source = `
 let a = [];
@@ -806,9 +813,9 @@ let d = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[1], g.ONE)
-	ok_ref(t, mod.Locals[2], g.NULL)
-	ok_ref(t, mod.Locals[3], g.NEG_ONE)
+	ok_ref(t, mod.Refs[1], g.ONE)
+	ok_ref(t, mod.Refs[2], g.NULL)
+	ok_ref(t, mod.Refs[3], g.NEG_ONE)
 
 	source = `
 let a = dict {};
@@ -959,17 +966,17 @@ assert(print != println);
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.MakeInt(3))
-	ok_ref(t, mod.Locals[1], g.MakeStr("[ 4, 5, 6 ]"))
-	ok_ref(t, mod.Locals[2], newRange(0, 5, 1))
-	ok_ref(t, mod.Locals[3], newRange(0, 5, 2))
+	ok_ref(t, mod.Refs[0], g.MakeInt(3))
+	ok_ref(t, mod.Refs[1], g.MakeStr("[ 4, 5, 6 ]"))
+	ok_ref(t, mod.Refs[2], newRange(0, 5, 1))
+	ok_ref(t, mod.Refs[3], newRange(0, 5, 2))
 
 	source = `
 let a = assert(true);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
-	ok_ref(t, mod.Locals[0], g.TRUE)
+	ok_ref(t, mod.Refs[0], g.TRUE)
 
 	fail(t, "assert(1, 2);",
 		g.ArityMismatchError("1", 2),
@@ -1001,9 +1008,9 @@ let c = a[1];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
-	ok_ref(t, mod.Locals[1], g.MakeInt(4))
-	ok_ref(t, mod.Locals[2], g.MakeInt(5))
+	ok_ref(t, mod.Refs[0], g.NewTuple([]g.Value{g.MakeInt(4), g.MakeInt(5)}))
+	ok_ref(t, mod.Refs[1], g.MakeInt(4))
+	ok_ref(t, mod.Refs[2], g.MakeInt(5))
 }
 
 func TestDecl(t *testing.T) {
@@ -1019,10 +1026,10 @@ const c = 1, d;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Locals[0], g.NULL)
-	ok_ref(t, mod.Locals[1], g.ZERO)
-	ok_ref(t, mod.Locals[2], g.ONE)
-	ok_ref(t, mod.Locals[3], g.NULL)
+	ok_ref(t, mod.Refs[0], g.NULL)
+	ok_ref(t, mod.Refs[1], g.ZERO)
+	ok_ref(t, mod.Refs[2], g.ONE)
+	ok_ref(t, mod.Refs[3], g.NULL)
 }
 
 func TestFor(t *testing.T) {
@@ -1180,7 +1187,7 @@ try {
 		g.DivideByZeroError(),
 		[]string{
 			"    at line 4"})
-	ok_ref(t, mod.Locals[0], g.MakeInt(2))
+	ok_ref(t, mod.Refs[0], g.MakeInt(2))
 
 	source = `
 let a = 1;
@@ -1198,7 +1205,7 @@ try {
 		g.DivideByZeroError(),
 		[]string{
 			"    at line 5"})
-	ok_ref(t, mod.Locals[0], g.MakeInt(3))
+	ok_ref(t, mod.Refs[0], g.MakeInt(3))
 
 	source = `
 let a = 1;
@@ -1218,7 +1225,7 @@ try {
 		g.DivideByZeroError(),
 		[]string{
 			"    at line 6"})
-	ok_ref(t, mod.Locals[0], g.MakeInt(4))
+	ok_ref(t, mod.Refs[0], g.MakeInt(4))
 
 	source = `
 let a = 1;
@@ -1249,7 +1256,7 @@ try {
 		[]string{
 			"    at line 6",
 			"    at line 15"})
-	ok_ref(t, mod.Locals[0], g.MakeInt(4))
+	ok_ref(t, mod.Refs[0], g.MakeInt(4))
 
 	source = `
 let b = fn() { 
@@ -1488,4 +1495,31 @@ assert([ch.recv(), ch.recv()] == [1, 2]);
 `
 	mod = newCompiler(source).Compile()
 	interpret(mod)
+}
+
+func TestPub(t *testing.T) {
+
+	source := `
+pub let a = 1;        
+pub const b = 2;        
+pub fn main(args) {}        
+`
+	mod := newCompiler(source).Compile()
+	interpret(mod)
+
+	assert(t, len(mod.Symbols) == 3)
+
+	assert(t, mod.Symbols["a"].RefIndex == 1)
+	assert(t, mod.Symbols["b"].RefIndex == 2)
+	assert(t, mod.Symbols["main"].RefIndex == 0)
+
+	assert(t, !mod.Symbols["a"].IsConst)
+	assert(t, mod.Symbols["b"].IsConst)
+	assert(t, mod.Symbols["main"].IsConst)
+
+	mainIdx := mod.Symbols["main"].RefIndex
+	main := mod.Refs[mainIdx].Val
+	f, ok := main.(g.BytecodeFunc)
+	assert(t, ok)
+	assert(t, f.Template().Arity == 1)
 }

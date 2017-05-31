@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"golem/analyzer"
 	"golem/compiler"
-	//g "golem/core"
+	g "golem/core"
 	"golem/interpreter"
 	"golem/parser"
 	"golem/scanner"
@@ -27,6 +27,10 @@ import (
 )
 
 func main() {
+
+	if len(os.Args) < 2 {
+		panic("No source file was specified")
+	}
 
 	// read source
 	filename := os.Args[1]
@@ -62,4 +66,38 @@ func main() {
 		fmt.Printf("%v\n", errTrace.Error)
 		fmt.Printf("%v\n", errTrace.StackTrace)
 	}
+
+	// run main
+	mainSym, ok := mod.Symbols["main"]
+	if ok {
+		mainVal := mod.Refs[mainSym.RefIndex].Val
+		mainFn, ok := mainVal.(g.BytecodeFunc)
+		if !ok {
+			panic("'main' is not a function")
+		}
+
+		params := []g.Value{}
+		arity := mainFn.Template().Arity
+		if arity == 1 {
+			osArgs := os.Args[2:]
+			args := make([]g.Value, len(osArgs), len(osArgs))
+			for i, a := range osArgs {
+				args[i] = g.MakeStr(a)
+			}
+			params = append(params, g.NewList(args))
+		} else if arity > 1 {
+			panic("'main' has too many arguments")
+		}
+
+		intp = interpreter.NewInterpreter(mod)
+		_, errTrace := intp.RunBytecode(mainFn, params)
+		if errTrace != nil {
+			fmt.Printf("%v\n", errTrace.Error)
+			fmt.Printf("%v\n", errTrace.StackTrace)
+		}
+	}
 }
+
+//args := []g.Value{}
+//if mainFn.Template().Arity == 1 {
+//}

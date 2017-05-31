@@ -134,6 +134,10 @@ const (
 
 	SPAWN
 
+	PUB
+	MODULE
+	IMPORT
+
 	FN_PRINT
 	FN_PRINTLN
 	FN_STR
@@ -290,6 +294,13 @@ func (t TokenKind) String() string {
 
 	case SPAWN:
 		return "SPAWN"
+
+	case PUB:
+		return "PUB"
+	case MODULE:
+		return "MODULE"
+	case IMPORT:
+		return "IMPORT"
 
 	case FN_PRINT:
 		return "FN_PRINT"

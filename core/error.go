@@ -37,6 +37,8 @@ const (
 	INVALID_ARGUMENT
 	NO_SUCH_ELEMENT
 	ASSERTION_FAILED
+	CONST_SYMBOL
+	UNDEFINIED_SYMBOL
 )
 
 func (t ErrorKind) String() string {
@@ -66,6 +68,10 @@ func (t ErrorKind) String() string {
 		return "NoSuchElement"
 	case ASSERTION_FAILED:
 		return "AssertionFailed"
+	case CONST_SYMBOL:
+		return "ConstSymbol"
+	case UNDEFINIED_SYMBOL:
+		return "UndefinedSymbol"
 
 	default:
 		panic("unreachable")
@@ -184,4 +190,16 @@ func NoSuchElementError() Error {
 
 func AssertionFailedError() Error {
 	return makeError(ASSERTION_FAILED, "")
+}
+
+func ConstSymbolError(name string) Error {
+	return makeError(
+		CONST_SYMBOL,
+		fmt.Sprintf("Symbol '%s' is const", name))
+}
+
+func UndefinedSymbolError(name string) Error {
+	return makeError(
+		UNDEFINIED_SYMBOL,
+		fmt.Sprintf("Symbol '%s' is not defined", name))
 }
