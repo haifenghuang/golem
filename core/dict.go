@@ -147,20 +147,19 @@ type dictIterator struct {
 func (d *dict) NewIterator() Iterator {
 
 	stc, err := NewStruct([]*StructEntry{
-		{"nextValue", NULL},
-		{"getValue", NULL}})
+		{"nextValue", true, NULL},
+		{"getValue", true, NULL}})
 	if err != nil {
 		panic("invalid struct")
 	}
 
 	itr := &dictIterator{stc, d, d.hashMap.Iterator(), false}
 
-	// TODO make the struct immutable once we have set the functions
-	stc.PutField(MakeStr("nextValue"), &nativeFunc{
+	stc.InitField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	stc.PutField(MakeStr("getValue"), &nativeFunc{
+	stc.InitField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

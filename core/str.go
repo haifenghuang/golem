@@ -143,8 +143,8 @@ type strIterator struct {
 func (s str) NewIterator() Iterator {
 
 	stc, err := NewStruct([]*StructEntry{
-		{"nextValue", NULL},
-		{"getValue", NULL}})
+		{"nextValue", true, NULL},
+		{"getValue", true, NULL}})
 	if err != nil {
 		panic("invalid struct")
 	}
@@ -152,11 +152,11 @@ func (s str) NewIterator() Iterator {
 	itr := &strIterator{stc, []rune(string(s)), -1}
 
 	// TODO make the struct immutable once we have set the functions
-	stc.PutField(MakeStr("nextValue"), &nativeFunc{
+	stc.InitField(MakeStr("nextValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterNext(), nil
 		}})
-	stc.PutField(MakeStr("getValue"), &nativeFunc{
+	stc.InitField(MakeStr("getValue"), &nativeFunc{
 		func(values []Value) (Value, Error) {
 			return itr.IterGet()
 		}})

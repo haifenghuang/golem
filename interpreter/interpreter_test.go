@@ -510,10 +510,15 @@ let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 	interpret(mod)
 
 	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{}))
-	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"a", g.ZERO}}))
-	ok_ref(t, mod.Refs[2], newStruct([]*g.StructEntry{{"a", g.ONE}, {"b", g.MakeInt(2)}}))
-	ok_ref(t, mod.Refs[3], newStruct([]*g.StructEntry{{"a", g.MakeInt(3)}, {"b", g.MakeInt(4)},
-		{"c", newStruct([]*g.StructEntry{{"d", g.MakeInt(5)}})}}))
+	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{
+		{"a", false, g.ZERO}}))
+	ok_ref(t, mod.Refs[2], newStruct([]*g.StructEntry{
+		{"a", false, g.ONE},
+		{"b", false, g.MakeInt(2)}}))
+	ok_ref(t, mod.Refs[3], newStruct([]*g.StructEntry{
+		{"a", false, g.MakeInt(3)}, {"b", false, g.MakeInt(4)},
+		{"c", false, newStruct([]*g.StructEntry{
+			{"d", false, g.MakeInt(5)}})}}))
 
 	source = `
 let x = struct { a: 5 };
@@ -527,7 +532,7 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"a", g.MakeInt(6)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"a", false, g.MakeInt(6)}}))
 	ok_ref(t, mod.Refs[1], g.MakeInt(5))
 
 	source = `
@@ -568,7 +573,7 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(4)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", false, g.MakeInt(4)}}))
 	ok_ref(t, mod.Refs[1], g.MakeInt(3))
 	ok_ref(t, mod.Refs[2], g.MakeInt(4))
 
@@ -671,8 +676,8 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", g.MakeInt(11)}}))
-	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"y", g.MakeInt(19)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", false, g.MakeInt(11)}}))
+	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"y", false, g.MakeInt(19)}}))
 	ok_ref(t, mod.Refs[2], g.MakeInt(10))
 	ok_ref(t, mod.Refs[3], g.MakeInt(20))
 }
@@ -1494,6 +1499,19 @@ ch.send(2);
 assert([ch.recv(), ch.recv()] == [1, 2]);
 `
 	mod = newCompiler(source).Compile()
+	interpret(mod)
+}
+
+func TestIntrinsicAssign(t *testing.T) {
+	source := `
+try {
+    [].join = 456;
+} catch e {
+    assert(e.kind == 'TypeMismatch');
+    assert(e.msg == "Expected 'Struct'");
+}
+`
+	mod := newCompiler(source).Compile()
 	interpret(mod)
 }
 

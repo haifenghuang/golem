@@ -18,12 +18,11 @@ import (
 //"fmt"
 )
 
-// A Custom HashMap implementation.  This allows us
-// to use things like []rune as a key into a hash map.
+// The hash map implementation that is used by Dict.
 
 type (
 	HashMap struct {
-		buckets []bucket
+		buckets [][]*HEntry
 		size    int
 	}
 
@@ -31,8 +30,6 @@ type (
 		Key   Value
 		Value Value
 	}
-
-	bucket []*HEntry
 )
 
 func EmptyHashMap() *HashMap {
@@ -41,7 +38,7 @@ func EmptyHashMap() *HashMap {
 
 func NewHashMap(entries []*HEntry) *HashMap {
 	capacity := 5
-	buckets := make([]bucket, capacity, capacity)
+	buckets := make([][]*HEntry, capacity, capacity)
 	hm := &HashMap{buckets, 0}
 
 	for _, e := range entries {
@@ -132,7 +129,7 @@ func (hm *HashMap) Len() Int {
 
 //--------------------------------------------------------------
 
-func (hm *HashMap) indexOf(b bucket, key Value) int {
+func (hm *HashMap) indexOf(b []*HEntry, key Value) int {
 	for i, e := range b {
 
 		if e.Key.Eq(key).BoolVal() {
@@ -151,7 +148,7 @@ func (hm *HashMap) rehash() {
 	oldBuckets := hm.buckets
 
 	capacity := len(hm.buckets)<<1 + 1
-	hm.buckets = make([]bucket, capacity, capacity)
+	hm.buckets = make([][]*HEntry, capacity, capacity)
 	for _, b := range oldBuckets {
 		for _, e := range b {
 			h := hm.lookupBucket(e.Key)
@@ -190,13 +187,13 @@ type HIterator struct {
 
 func (h *HIterator) Next() bool {
 
-	// advance to next entry in current bucket
+	// advance to next entry in current []*HEntry
 	h.entryIdx++
 
 	// if we are not pointing at a valid entry
 	if (h.bucketIdx == -1) || (h.entryIdx >= len(h.curBucket())) {
 
-		// then advance to next non-empty bucket
+		// then advance to next non-empty []*HEntry
 		h.bucketIdx++
 		for (h.bucketIdx < len(h.hm.buckets)) && (len(h.curBucket()) == 0) {
 			h.bucketIdx++
@@ -205,7 +202,7 @@ func (h *HIterator) Next() bool {
 			return false
 		}
 
-		// and point at first entry of the new bucket
+		// and point at first entry of the new []*HEntry
 		h.entryIdx = 0
 	}
 
@@ -216,6 +213,6 @@ func (h *HIterator) Get() *HEntry {
 	return h.curBucket()[h.entryIdx]
 }
 
-func (h *HIterator) curBucket() bucket {
+func (h *HIterator) curBucket() []*HEntry {
 	return h.hm.buckets[h.bucketIdx]
 }

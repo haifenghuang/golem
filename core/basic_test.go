@@ -45,7 +45,6 @@ func fail(t *testing.T, val Value, err Error, expect string) {
 	}
 
 	if err == nil || err.Error() != expect {
-		panic("fail")
 		t.Error(err.Error(), " != ", expect)
 	}
 }

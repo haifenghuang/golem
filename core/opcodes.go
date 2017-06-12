@@ -79,7 +79,8 @@ const (
 	NEW_TUPLE
 
 	GET_FIELD
-	PUT_FIELD
+	INIT_FIELD
+	SET_FIELD
 	INC_FIELD
 
 	GET_INDEX
@@ -114,7 +115,7 @@ func OpCodeSize(opc byte) int {
 		LOAD_LOCAL, LOAD_CAPTURE, STORE_LOCAL, STORE_CAPTURE,
 		JUMP, JUMP_TRUE, JUMP_FALSE, BREAK, CONTINUE,
 		NEW_FUNC, FUNC_CAPTURE, FUNC_LOCAL, INVOKE, SPAWN,
-		NEW_STRUCT, GET_FIELD, PUT_FIELD, INC_FIELD,
+		NEW_STRUCT, GET_FIELD, INIT_FIELD, SET_FIELD, INC_FIELD,
 		NEW_DICT, NEW_LIST, NEW_SET, NEW_TUPLE, CHECK_CAST, CHECK_TUPLE:
 
 		return 3
@@ -229,8 +230,10 @@ func FmtOpcode(opcodes []byte, i int) string {
 		return fmtIndex(opcodes, i, "NEW_STRUCT")
 	case GET_FIELD:
 		return fmtIndex(opcodes, i, "GET_FIELD")
-	case PUT_FIELD:
-		return fmtIndex(opcodes, i, "PUT_FIELD")
+	case INIT_FIELD:
+		return fmtIndex(opcodes, i, "INIT_FIELD")
+	case SET_FIELD:
+		return fmtIndex(opcodes, i, "SET_FIELD")
 	case INC_FIELD:
 		return fmtIndex(opcodes, i, "INC_FIELD")
 	case NEW_DICT:

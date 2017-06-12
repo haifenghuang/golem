@@ -215,7 +215,7 @@ var builtinMerge = func(values []Value) (Value, Error) {
 		}
 	}
 
-	return NewChain(structs), nil
+	return MergeStructs(structs), nil
 }
 
 var builtinChan = func(values []Value) (Value, Error) {

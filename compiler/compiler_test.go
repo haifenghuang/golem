@@ -92,7 +92,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-2)),
 			g.MakeInt(int64(2))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -124,7 +124,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(-4)),
 			g.MakeInt(int64(10))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -148,7 +148,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -174,7 +174,7 @@ func TestExpression(t *testing.T) {
 			g.MakeStr("a"),
 			g.MakeFloat(float64(12300))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -195,7 +195,7 @@ func TestExpression(t *testing.T) {
 		[]g.Basic{
 			g.MakeStr("a")},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -215,7 +215,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -233,7 +233,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -252,7 +252,7 @@ func TestExpression(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -274,7 +274,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -301,7 +301,7 @@ func TestExpression(t *testing.T) {
 			g.MakeInt(int64(2)),
 			g.MakeInt(int64(3))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -331,7 +331,7 @@ func TestAssignment(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 2,
@@ -381,7 +381,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(42)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -416,7 +416,7 @@ func TestIf(t *testing.T) {
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 4,
@@ -454,7 +454,7 @@ func TestWhile(t *testing.T) {
 		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 2,
@@ -484,7 +484,7 @@ func TestWhile(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 3,
@@ -521,7 +521,7 @@ func TestReturn(t *testing.T) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 0,
@@ -544,7 +544,7 @@ func TestReturn(t *testing.T) {
 			g.MakeInt(2),
 			g.MakeInt(3)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 1,
@@ -595,7 +595,7 @@ let b = fn(x) {
 			g.MakeInt(42),
 			g.MakeInt(7)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 2,
 				[]byte{
@@ -676,7 +676,7 @@ c(2, 3);
 			g.MakeInt(3),
 			g.MakeInt(4)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 3,
 				[]byte{
@@ -761,7 +761,7 @@ const accumGen = fn(n) {
 	ok(t, mod, &g.Module{
 		[]g.Basic{},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 1,
 				[]byte{
@@ -825,7 +825,7 @@ const accumGen = fn(n) {
 		[]g.Basic{
 			g.MakeInt(2)},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{0, 0, 2,
 				[]byte{
@@ -897,7 +897,7 @@ let d = b--;
 			g.MakeInt(int64(10)),
 			g.MakeInt(int64(20))},
 		nil,
-		[]g.StructDef{},
+		[][]*g.StructEntryDef{},
 		[]*g.Template{
 			&g.Template{
 				0, 0, 4,

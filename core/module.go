@@ -20,19 +20,12 @@ import (
 )
 
 //---------------------------------------------------------------
-// An StructDef contains the information needed to instantiate an Struct
-// instance.  StructDefs are created at compile time, and
-// are immutable at run time.
-
-type StructDef []string
-
-//---------------------------------------------------------------
 // Ref
 
 type Module struct {
 	Pool       []Basic
 	Refs       []*Ref
-	StructDefs []StructDef
+	StructDefs [][]*StructEntryDef
 	Templates  []*Template
 
 	Symbols map[string]*Symbol

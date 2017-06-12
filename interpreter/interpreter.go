@@ -239,16 +239,14 @@ func makeErrorTrace(err g.Error, stackTrace []string) *ErrorTrace {
 	for i, s := range stackTrace {
 		vals[i] = g.MakeStr(s)
 	}
+	// TODO make the list immutable
 	list := g.NewList(vals)
 
-	// TODO make the struct immutable
-	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", list}})
+	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", true, list}})
 	g.Assert(e == nil, "invalid struct")
 
-	// TODO make the chain immutable
-	chain := g.NewChain([]g.Struct{err.Struct(), stc})
-
-	return &ErrorTrace{err, stackTrace, chain}
+	merge := g.MergeStructs([]g.Struct{err.Struct(), stc})
+	return &ErrorTrace{err, stackTrace, merge}
 }
 
 type ErrorTrace struct {

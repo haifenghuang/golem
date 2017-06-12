@@ -15,18 +15,17 @@
 package core
 
 import (
-	//"fmt"
 	"reflect"
 	"testing"
 )
 
 func TestChain(t *testing.T) {
-	s0 := newStruct([]*StructEntry{{"a", ONE}, {"b", MakeInt(2)}})
-	s1 := newStruct([]*StructEntry{{"b", MakeInt(3)}, {"c", MakeInt(4)}})
+	s0 := newStruct([]*StructEntry{{"a", true, ONE}, {"b", true, MakeInt(2)}})
+	s1 := newStruct([]*StructEntry{{"b", true, MakeInt(3)}, {"c", true, MakeInt(4)}})
 
-	c := NewChain([]Struct{s0, s1})
+	c := MergeStructs([]Struct{s0, s1})
 	//println(c.ToStr().String())
-	assert(t, len(c.keys()) == 3)
+	assert(t, len(c.Keys()) == 3)
 	//ok(t, c.ToStr(), nil, MakeStr("struct { b: 2, c: 4, a: 1 }"))
 
 	v, err := c.GetField(MakeStr("a"))
@@ -48,14 +47,14 @@ func newStruct(entries []*StructEntry) Struct {
 func TestStruct(t *testing.T) {
 	stc := newStruct([]*StructEntry{})
 	okType(t, stc, TSTRUCT)
-	assert(t, reflect.DeepEqual(stc.keys(), []string{}))
+	assert(t, reflect.DeepEqual(stc.Keys(), []string{}))
 
 	s := stc.ToStr()
 	ok(t, s, nil, MakeStr("struct { }"))
 
 	z := stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, TRUE)
-	z = stc.Eq(newStruct([]*StructEntry{{"a", ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", true, ONE}}))
 	ok(t, z, nil, FALSE)
 
 	val, err := stc.Plus(MakeStr("a"))
@@ -72,7 +71,7 @@ func TestStruct(t *testing.T) {
 
 	//////////////////
 
-	stc = newStruct([]*StructEntry{{"a", ONE}})
+	stc = newStruct([]*StructEntry{{"a", false, ONE}})
 	okType(t, stc, TSTRUCT)
 
 	s = stc.ToStr()
@@ -80,7 +79,7 @@ func TestStruct(t *testing.T) {
 
 	z = stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, FALSE)
-	z = stc.Eq(newStruct([]*StructEntry{{"a", ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", true, ONE}}))
 	ok(t, z, nil, TRUE)
 
 	val, err = stc.Plus(MakeStr("a"))
@@ -98,7 +97,7 @@ func TestStruct(t *testing.T) {
 	val, err = stc.Get(MakeStr("b"))
 	fail(t, val, err, "NoSuchField: Field 'b' not found")
 
-	err = stc.PutField(MakeStr("a"), MakeInt(123))
+	err = stc.SetField(MakeStr("a"), MakeInt(123))
 	if err != nil {
 		panic("unexpected error")
 	}
@@ -129,20 +128,30 @@ func TestStruct(t *testing.T) {
 	val, err = stc.Has(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
-	stc, err = BlankStruct([]string{"a"})
+	stc, err = NewStruct([]*StructEntry{{"a", true, NULL}})
 	if err != nil {
 		panic("oops")
 	}
 	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, NULL)
 
-	assert(t, reflect.DeepEqual(stc.keys(), []string{"a"}))
+	assert(t, reflect.DeepEqual(stc.Keys(), []string{"a"}))
 
-	stc, err = BlankStruct([]string{"a", "a"})
+	stc, err = NewStruct([]*StructEntry{{"a", true, ONE}, {"a", true, ZERO}})
 	fail(t, stc, err, "DuplicateField: Field 'a' is a duplicate")
 
-	stc, err = NewStruct([]*StructEntry{{"a", ONE}, {"a", ZERO}})
-	fail(t, stc, err, "DuplicateField: Field 'a' is a duplicate")
+	stc, err = BlankStruct([]*StructEntryDef{{"a", true}})
+	val, err = stc.GetField(MakeStr("a"))
+	ok(t, val, err, NULL)
+
+	err = stc.SetField(MakeStr("a"), MakeInt(123))
+	fail(t, nil, err, "ReadonlyField: Field 'a' is readonly")
+
+	err = stc.InitField(MakeStr("a"), MakeInt(123))
+	assert(t, err == nil)
+
+	val, err = stc.GetField(MakeStr("a"))
+	ok(t, val, err, MakeInt(123))
 }
 
 func TestList(t *testing.T) {
@@ -525,6 +534,11 @@ func TestListIterator(t *testing.T) {
 	fail(t, v, err, "NoSuchElement")
 
 	itr = ibl.NewIterator()
+	err = itr.SetField(MakeStr("nextValue"), NULL)
+	fail(t, nil, err, "ReadonlyField: Field 'nextValue' is readonly")
+	err = itr.SetField(MakeStr("getValue"), NULL)
+	fail(t, nil, err, "ReadonlyField: Field 'getValue' is readonly")
+
 	n = 1
 	for structInvokeBoolFunc(t, itr, MakeStr("nextValue")).BoolVal() {
 		v := structInvokeFunc(t, itr, MakeStr("getValue"))

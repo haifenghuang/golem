@@ -34,18 +34,19 @@ type compiler struct {
 	lnum     []g.LineNumberEntry
 	handlers []g.ExceptionHandler
 
-	funcs     []*ast.FnExpr
-	templates []*g.Template
-	defs      []g.StructDef
-	idx       int
+	funcs      []*ast.FnExpr
+	templates  []*g.Template
+	structDefs [][]*g.StructEntryDef
+	idx        int
 }
 
 func NewCompiler(anl analyzer.Analyzer) Compiler {
 
 	funcs := []*ast.FnExpr{anl.Module()}
 	templates := []*g.Template{}
-	defs := []g.StructDef{}
-	return &compiler{g.EmptyHashMap(), nil, nil, nil, funcs, templates, defs, 0}
+	structDefs := [][]*g.StructEntryDef{}
+
+	return &compiler{g.EmptyHashMap(), nil, nil, nil, funcs, templates, structDefs, 0}
 }
 
 func (c *compiler) Compile() *g.Module {
@@ -60,7 +61,7 @@ func (c *compiler) Compile() *g.Module {
 
 	// done
 	return &g.Module{
-		makePoolSlice(c.pool), nil, c.defs, c.templates, c.makeSymbols()}
+		makePoolSlice(c.pool), nil, c.structDefs, c.templates, c.makeSymbols()}
 }
 
 func (c *compiler) makeSymbols() map[string]*g.Symbol {
@@ -299,7 +300,7 @@ func (c *compiler) visitAssignment(asn *ast.Assignment) {
 		c.Visit(asn.Val)
 		c.pushIndex(
 			t.Key.Position,
-			g.PUT_FIELD,
+			g.SET_FIELD,
 			poolIndex(c.pool, g.MakeStr(t.Key.Text)))
 
 	case *ast.IndexExpr:
@@ -914,14 +915,12 @@ func (c *compiler) visitSpawn(spawn *ast.Spawn) {
 func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 
 	// create def and entries
-	def := []string{}
-	entries := []*g.StructEntry{}
+	def := []*g.StructEntryDef{}
 	for _, k := range stc.Keys {
-		def = append(def, k.Text)
-		entries = append(entries, &g.StructEntry{k.Text, g.NULL})
+		def = append(def, &g.StructEntryDef{k.Text, false})
 	}
-	defIdx := len(c.defs)
-	c.defs = append(c.defs, g.StructDef(def))
+	defIdx := len(c.structDefs)
+	c.structDefs = append(c.structDefs, def)
 
 	// create new struct
 	c.pushIndex(stc.Begin(), g.NEW_STRUCT, defIdx)
@@ -932,14 +931,14 @@ func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 		c.pushIndex(stc.Begin(), g.STORE_LOCAL, stc.LocalThisIndex)
 	}
 
-	// put each value
+	// init each value
 	for i, k := range stc.Keys {
 		v := stc.Values[i]
 		c.push(k.Position, g.DUP)
 		c.Visit(v)
 		c.pushIndex(
 			v.Begin(),
-			g.PUT_FIELD,
+			g.INIT_FIELD,
 			poolIndex(c.pool, g.MakeStr(k.Text)))
 		c.push(k.Position, g.POP)
 	}

@@ -193,10 +193,10 @@ type (
 		Composite
 		Indexable
 
-		PutField(Str, Value) Error
+		Keys() []string
 		Has(Value) (Bool, Error)
-
-		keys() []string
+		InitField(Str, Value) Error
+		SetField(Str, Value) Error
 	}
 
 	Iterator interface {

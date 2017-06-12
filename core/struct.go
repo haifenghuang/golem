@@ -16,32 +16,70 @@ package core
 import (
 	"bytes"
 	//"fmt"
-	//"reflect"
 )
 
-//---------------------------------------------------------------
-// StructEntry
-
 type StructEntry struct {
-	Key   string
-	Value Value
+	Key     string
+	IsConst bool
+	Value   Value
 }
 
-//---------------------------------------------------------------
-// structMap
-
-type structMap interface {
-	has(Str) Bool
-	get(Str) (Value, Error)
-	put(Str, Value) Error
-	keys() []string
+type StructEntryDef struct {
+	Key     string
+	IsConst bool
 }
 
-//---------------------------------------------------------------
-// struct
+//--------------------------------------------------------------
+
+func NewStruct(entries []*StructEntry) (Struct, Error) {
+
+	smap := newStructMap()
+	for _, e := range entries {
+		if _, has := smap.get(e.Key); has {
+			return nil, DuplicateFieldError(e.Key)
+		}
+		smap.put(e)
+	}
+
+	return &_struct{smap}, nil
+}
+
+func BlankStruct(def []*StructEntryDef) (Struct, Error) {
+
+	smap := newStructMap()
+	for _, d := range def {
+		if _, has := smap.get(d.Key); has {
+			return nil, DuplicateFieldError(d.Key)
+		}
+		smap.put(&StructEntry{d.Key, d.IsConst, NULL})
+	}
+
+	return &_struct{smap}, nil
+}
+
+func MergeStructs(structs []Struct) Struct {
+	if len(structs) < 2 {
+		panic("invalid struct merge")
+	}
+
+	smap := newStructMap()
+
+	// subtlety: keys that are defined in more
+	// than one of the structs are combined so that the value
+	// is taken only from the first such struct
+	for _, s := range structs {
+		for _, b := range (s.(*_struct)).smap.buckets {
+			for _, e := range b {
+				smap.put(e)
+			}
+		}
+	}
+
+	return &_struct{smap}
+}
 
 type _struct struct {
-	smap structMap
+	smap *structMap
 }
 
 func (stc *_struct) compositeMarker() {}
@@ -52,7 +90,7 @@ func (stc *_struct) ToStr() Str {
 
 	var buf bytes.Buffer
 	buf.WriteString("struct {")
-	for i, k := range stc.keys() {
+	for i, k := range stc.Keys() {
 		if i > 0 {
 			buf.WriteString(",")
 		}
@@ -82,8 +120,8 @@ func (stc *_struct) Eq(v Value) Bool {
 	}
 
 	// same number of keys
-	keys := stc.keys()
-	if len(keys) != len(that.keys()) {
+	keys := stc.Keys()
+	if len(keys) != len(that.Keys()) {
 		return FALSE
 	}
 
@@ -132,94 +170,55 @@ func (stc *_struct) Get(index Value) (Value, Error) {
 
 func (stc *_struct) Set(index Value, val Value) Error {
 	if s, ok := index.(Str); ok {
-		return stc.PutField(s, val)
+		return stc.SetField(s, val)
 	} else {
 		return TypeMismatchError("Expected 'Str'")
 	}
 }
 
 func (stc *_struct) GetField(key Str) (Value, Error) {
-	return stc.smap.get(key)
-}
-
-func (stc *_struct) PutField(key Str, val Value) Error {
-	return stc.smap.put(key, val)
-}
-
-func (stc *_struct) Has(key Value) (Bool, Error) {
-	if s, ok := key.(Str); ok {
-		return stc.smap.has(s), nil
-	} else {
-		return nil, TypeMismatchError("Expected 'Str'")
-	}
-}
-
-func (stc *_struct) keys() []string {
-	return stc.smap.keys()
-}
-
-//---------------------------------------------------------------
-// simple struct
-
-// TODO replace with a more efficient data structure
-type simpleStruct struct {
-	fields map[string]Value
-}
-
-func NewStruct(entries []*StructEntry) (Struct, Error) {
-	ss := &simpleStruct{make(map[string]Value)}
-	for _, e := range entries {
-		if _, has := ss.fields[e.Key]; has {
-			return nil, DuplicateFieldError(e.Key)
-		}
-
-		ss.fields[e.Key] = e.Value
-	}
-	return &_struct{ss}, nil
-}
-
-func BlankStruct(keys []string) (Struct, Error) {
-	ss := &simpleStruct{make(map[string]Value)}
-	for _, k := range keys {
-		if _, has := ss.fields[k]; has {
-			return nil, DuplicateFieldError(k)
-		}
-		ss.fields[k] = NULL
-	}
-	return &_struct{ss}, nil
-}
-
-func (ss *simpleStruct) has(key Str) Bool {
-	_, has := ss.fields[key.String()]
-	return MakeBool(has)
-}
-
-func (ss *simpleStruct) get(key Str) (Value, Error) {
-	v, ok := ss.fields[key.String()]
-	if ok {
-		return v, nil
+	e, has := stc.smap.get(key.String())
+	if has {
+		return e.Value, nil
 	} else {
 		return nil, NoSuchFieldError(key.String())
 	}
 }
 
-func (ss *simpleStruct) put(key Str, val Value) Error {
-	_, ok := ss.fields[key.String()]
-	if ok {
-		ss.fields[key.String()] = val
+func (stc *_struct) Keys() []string {
+	return stc.smap.keys()
+}
+
+func (stc *_struct) Has(key Value) (Bool, Error) {
+	if s, ok := key.(Str); ok {
+		_, has := stc.smap.get(s.String())
+		return MakeBool(has), nil
+	} else {
+		return nil, TypeMismatchError("Expected 'Str'")
+	}
+}
+
+func (stc *_struct) InitField(key Str, val Value) Error {
+	e, has := stc.smap.get(key.String())
+	if has {
+		// We ignore IsConst here, since we are initializing the value
+		e.Value = val
 		return nil
 	} else {
 		return NoSuchFieldError(key.String())
 	}
 }
 
-func (ss *simpleStruct) keys() []string {
-
-	keys := make([]string, len(ss.fields), len(ss.fields))
-	idx := 0
-	for k := range ss.fields {
-		keys[idx] = k
-		idx++
+func (stc *_struct) SetField(key Str, val Value) Error {
+	e, has := stc.smap.get(key.String())
+	if has {
+		if e.IsConst {
+			return ReadonlyFieldError(key.String())
+		} else {
+			e.Value = val
+			return nil
+		}
+	} else {
+		return NoSuchFieldError(key.String())
 	}
-	return keys
 }

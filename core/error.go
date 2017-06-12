@@ -33,6 +33,7 @@ const (
 	DIVIDE_BY_ZERO
 	INDEX_OUT_OF_BOUNDS
 	NO_SUCH_FIELD
+	READONLY_FIELD
 	DUPLICATE_FIELD
 	INVALID_ARGUMENT
 	NO_SUCH_ELEMENT
@@ -60,6 +61,8 @@ func (t ErrorKind) String() string {
 		return "IndexOutOfBounds"
 	case NO_SUCH_FIELD:
 		return "NoSuchField"
+	case READONLY_FIELD:
+		return "ReadonlyField"
 	case DUPLICATE_FIELD:
 		return "DuplicateField"
 	case INVALID_ARGUMENT:
@@ -120,14 +123,12 @@ func makeError(kind ErrorKind, msg string) Error {
 	var stc Struct
 	var err Error
 	if msg == "" {
-		// TODO make the struct immutable
 		stc, err = NewStruct([]*StructEntry{
-			{"kind", MakeStr(kind.String())}})
+			{"kind", true, MakeStr(kind.String())}})
 	} else {
-		// TODO make the struct immutable
 		stc, err = NewStruct([]*StructEntry{
-			{"kind", MakeStr(kind.String())},
-			{"msg", MakeStr(msg)}})
+			{"kind", true, MakeStr(kind.String())},
+			{"msg", true, MakeStr(msg)}})
 	}
 	if err != nil {
 		panic("invalid struct")
@@ -172,6 +173,12 @@ func NoSuchFieldError(field string) Error {
 	return makeError(
 		NO_SUCH_FIELD,
 		fmt.Sprintf("Field '%s' not found", field))
+}
+
+func ReadonlyFieldError(field string) Error {
+	return makeError(
+		READONLY_FIELD,
+		fmt.Sprintf("Field '%s' is readonly", field))
 }
 
 func DuplicateFieldError(field string) Error {

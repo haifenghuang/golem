@@ -274,7 +274,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 
 		idx := index(opc, f.ip)
 		key, ok := pool[idx].(g.Str)
-		g.Assert(ok, "Invalid GET_FIELD Key")
+		g.Assert(ok, "Invalid Field Key")
 
 		result, err := f.stack[n].GetField(key)
 		if err != nil {
@@ -284,11 +284,11 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		f.stack[n] = result
 		f.ip += 3
 
-	case g.PUT_FIELD:
+	case g.INIT_FIELD, g.SET_FIELD:
 
 		idx := index(opc, f.ip)
 		key, ok := pool[idx].(g.Str)
-		g.Assert(ok, "Invalid PUT_FIELD Key")
+		g.Assert(ok, "Invalid Field Key")
 
 		// get struct from stack
 		stc, ok := f.stack[n-1].(g.Struct)
@@ -299,9 +299,17 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 		// get value from stack
 		value := f.stack[n]
 
-		err := stc.PutField(key, value)
-		if err != nil {
-			return nil, err
+		// init or set
+		if opc[f.ip] == g.INIT_FIELD {
+			err := stc.InitField(key, value)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err := stc.SetField(key, value)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		f.stack[n-1] = value
@@ -333,7 +341,7 @@ func (i *Interpreter) advance(lastFrame int) (g.Value, g.Error) {
 			return nil, err
 		}
 
-		err = stc.PutField(key, after)
+		err = stc.SetField(key, after)
 		if err != nil {
 			return nil, err
 		}
