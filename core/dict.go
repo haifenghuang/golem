@@ -147,8 +147,8 @@ type dictIterator struct {
 func (d *dict) NewIterator() Iterator {
 
 	stc, err := NewStruct([]*StructEntry{
-		{"nextValue", true, NULL},
-		{"getValue", true, NULL}})
+		{"nextValue", true, false, NULL},
+		{"getValue", true, false, NULL}})
 	if err != nil {
 		panic("invalid struct")
 	}

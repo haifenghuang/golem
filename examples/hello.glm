@@ -1,3 +1,5 @@
 
-println("Hello, world.");
+pub fn main(args) {
+    println("Hello: " + args);
+}
 

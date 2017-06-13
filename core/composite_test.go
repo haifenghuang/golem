@@ -20,8 +20,12 @@ import (
 )
 
 func TestChain(t *testing.T) {
-	s0 := newStruct([]*StructEntry{{"a", true, ONE}, {"b", true, MakeInt(2)}})
-	s1 := newStruct([]*StructEntry{{"b", true, MakeInt(3)}, {"c", true, MakeInt(4)}})
+	s0 := newStruct([]*StructEntry{
+		{"a", true, false, ONE},
+		{"b", true, false, MakeInt(2)}})
+	s1 := newStruct([]*StructEntry{
+		{"b", true, false, MakeInt(3)},
+		{"c", true, false, MakeInt(4)}})
 
 	c := MergeStructs([]Struct{s0, s1})
 	//println(c.ToStr().String())
@@ -54,7 +58,7 @@ func TestStruct(t *testing.T) {
 
 	z := stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, TRUE)
-	z = stc.Eq(newStruct([]*StructEntry{{"a", true, ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", true, false, ONE}}))
 	ok(t, z, nil, FALSE)
 
 	val, err := stc.Plus(MakeStr("a"))
@@ -71,7 +75,7 @@ func TestStruct(t *testing.T) {
 
 	//////////////////
 
-	stc = newStruct([]*StructEntry{{"a", false, ONE}})
+	stc = newStruct([]*StructEntry{{"a", false, false, ONE}})
 	okType(t, stc, TSTRUCT)
 
 	s = stc.ToStr()
@@ -79,7 +83,7 @@ func TestStruct(t *testing.T) {
 
 	z = stc.Eq(newStruct([]*StructEntry{}))
 	ok(t, z, nil, FALSE)
-	z = stc.Eq(newStruct([]*StructEntry{{"a", true, ONE}}))
+	z = stc.Eq(newStruct([]*StructEntry{{"a", true, false, ONE}}))
 	ok(t, z, nil, TRUE)
 
 	val, err = stc.Plus(MakeStr("a"))
@@ -128,7 +132,7 @@ func TestStruct(t *testing.T) {
 	val, err = stc.Has(ZERO)
 	fail(t, val, err, "TypeMismatch: Expected 'Str'")
 
-	stc, err = NewStruct([]*StructEntry{{"a", true, NULL}})
+	stc, err = NewStruct([]*StructEntry{{"a", true, false, NULL}})
 	if err != nil {
 		panic("oops")
 	}
@@ -137,10 +141,12 @@ func TestStruct(t *testing.T) {
 
 	assert(t, reflect.DeepEqual(stc.Keys(), []string{"a"}))
 
-	stc, err = NewStruct([]*StructEntry{{"a", true, ONE}, {"a", true, ZERO}})
+	stc, err = NewStruct([]*StructEntry{
+		{"a", true, false, ONE},
+		{"a", true, false, ZERO}})
 	fail(t, stc, err, "DuplicateField: Field 'a' is a duplicate")
 
-	stc, err = BlankStruct([]*StructEntryDef{{"a", true}})
+	stc, err = BlankStruct([]*StructEntryDef{{"a", true, false}})
 	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, NULL)
 
@@ -152,6 +158,44 @@ func TestStruct(t *testing.T) {
 
 	val, err = stc.GetField(MakeStr("a"))
 	ok(t, val, err, MakeInt(123))
+}
+
+func TestNativeProp(t *testing.T) {
+
+	var propValue Value = ZERO
+
+	getter := &nativeFunc{
+		func(values []Value) (Value, Error) {
+			if len(values) != 0 {
+				return nil, ArityMismatchError("0", len(values))
+			}
+			return propValue, nil
+		}}
+
+	setter := &nativeFunc{
+		func(values []Value) (Value, Error) {
+			if len(values) != 1 {
+				return nil, ArityMismatchError("1", len(values))
+			}
+			propValue = values[0]
+			return NULL, nil
+		}}
+
+	prop := NewTuple([]Value{getter, setter})
+
+	stc, err := NewStruct([]*StructEntry{{"a", false, true, prop}})
+	Assert(err == nil, "invalid struct")
+
+	val, err := stc.GetField(MakeStr("a"))
+	ok(t, val, err, ZERO)
+	Assert(propValue == ZERO, "invalid struct")
+
+	err = stc.SetField(MakeStr("a"), ONE)
+	Assert(err == nil, "invalid struct")
+
+	val, err = stc.GetField(MakeStr("a"))
+	ok(t, val, err, ONE)
+	Assert(propValue == ONE, "invalid struct")
 }
 
 func TestList(t *testing.T) {

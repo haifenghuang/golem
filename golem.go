@@ -68,9 +68,9 @@ func main() {
 	}
 
 	// run main
-	mainSym, ok := mod.Symbols["main"]
-	if ok {
-		mainVal := mod.Refs[mainSym.RefIndex].Val
+	mainVal, mainErr := mod.Contents.GetField(g.MakeStr("main"))
+	fmt.Printf("%v, %v\n", mainVal, mainErr)
+	if mainErr == nil {
 		mainFn, ok := mainVal.(g.BytecodeFunc)
 		if !ok {
 			panic("'main' is not a function")
@@ -97,7 +97,3 @@ func main() {
 		}
 	}
 }
-
-//args := []g.Value{}
-//if mainFn.Template().Arity == 1 {
-//}

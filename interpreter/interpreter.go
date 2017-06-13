@@ -23,11 +23,11 @@ import (
 // The Golem Interpreter
 
 type Interpreter struct {
-	mod    *g.Module
+	mod    *g.BytecodeModule
 	frames []*frame
 }
 
-func NewInterpreter(mod *g.Module) *Interpreter {
+func NewInterpreter(mod *g.BytecodeModule) *Interpreter {
 	return &Interpreter{mod, []*frame{}}
 }
 
@@ -242,7 +242,7 @@ func makeErrorTrace(err g.Error, stackTrace []string) *ErrorTrace {
 	// TODO make the list immutable
 	list := g.NewList(vals)
 
-	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", true, list}})
+	stc, e := g.NewStruct([]*g.StructEntry{{"stackTrace", true, false, list}})
 	g.Assert(e == nil, "invalid struct")
 
 	merge := g.MergeStructs([]g.Struct{err.Struct(), stc})

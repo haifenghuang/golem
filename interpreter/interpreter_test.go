@@ -88,7 +88,7 @@ func fail_expr(t *testing.T, source string, expect string) {
 	}
 }
 
-func fail(t *testing.T, source string, expectErr g.Error, expectErrTrace []string) *g.Module {
+func fail(t *testing.T, source string, expectErr g.Error, expectErrTrace []string) *g.BytecodeModule {
 
 	mod := newCompiler(source).Compile()
 	intp := NewInterpreter(mod)
@@ -149,7 +149,7 @@ func newCompiler(source string) compiler.Compiler {
 	return compiler.NewCompiler(anl)
 }
 
-func interpret(mod *g.Module) {
+func interpret(mod *g.BytecodeModule) {
 	intp := NewInterpreter(mod)
 	_, errTrace := intp.Init()
 	if errTrace != nil {
@@ -511,14 +511,15 @@ let z = struct { a: 3, b: 4, c: struct { d: 5 } };
 
 	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{}))
 	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{
-		{"a", false, g.ZERO}}))
+		{"a", false, false, g.ZERO}}))
 	ok_ref(t, mod.Refs[2], newStruct([]*g.StructEntry{
-		{"a", false, g.ONE},
-		{"b", false, g.MakeInt(2)}}))
+		{"a", false, false, g.ONE},
+		{"b", false, false, g.MakeInt(2)}}))
 	ok_ref(t, mod.Refs[3], newStruct([]*g.StructEntry{
-		{"a", false, g.MakeInt(3)}, {"b", false, g.MakeInt(4)},
-		{"c", false, newStruct([]*g.StructEntry{
-			{"d", false, g.MakeInt(5)}})}}))
+		{"a", false, false, g.MakeInt(3)},
+		{"b", false, false, g.MakeInt(4)},
+		{"c", false, false, newStruct([]*g.StructEntry{
+			{"d", false, false, g.MakeInt(5)}})}}))
 
 	source = `
 let x = struct { a: 5 };
@@ -532,7 +533,8 @@ x.a = 6;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"a", false, g.MakeInt(6)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{
+		{"a", false, false, g.MakeInt(6)}}))
 	ok_ref(t, mod.Refs[1], g.MakeInt(5))
 
 	source = `
@@ -573,7 +575,8 @@ let c = a['x'];
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", false, g.MakeInt(4)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{
+		{"x", false, false, g.MakeInt(4)}}))
 	ok_ref(t, mod.Refs[1], g.MakeInt(3))
 	ok_ref(t, mod.Refs[2], g.MakeInt(4))
 
@@ -676,8 +679,10 @@ let d = b.y--;
 	//fmt.Println(source)
 	//fmt.Println(mod)
 
-	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{{"x", false, g.MakeInt(11)}}))
-	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{{"y", false, g.MakeInt(19)}}))
+	ok_ref(t, mod.Refs[0], newStruct([]*g.StructEntry{
+		{"x", false, false, g.MakeInt(11)}}))
+	ok_ref(t, mod.Refs[1], newStruct([]*g.StructEntry{
+		{"y", false, false, g.MakeInt(19)}}))
 	ok_ref(t, mod.Refs[2], g.MakeInt(10))
 	ok_ref(t, mod.Refs[3], g.MakeInt(20))
 }
@@ -1515,29 +1520,60 @@ try {
 	interpret(mod)
 }
 
+func okVal(t *testing.T, val g.Value, err g.Error, expect g.Value) {
+
+	if err != nil {
+		panic("ok")
+		t.Error(err, " != ", nil)
+	}
+
+	if !reflect.DeepEqual(val, expect) {
+		t.Error(val, " != ", expect)
+	}
+}
+
+func failVal(t *testing.T, val g.Value, err g.Error, expect string) {
+
+	if val != nil {
+		t.Error(val, " != ", nil)
+	}
+
+	if err == nil || err.Error() != expect {
+		t.Error(err.Error(), " != ", expect)
+	}
+}
+
 func TestPub(t *testing.T) {
 
 	source := `
-pub let a = 1;        
-pub const b = 2;        
-pub fn main(args) {}        
+pub let a = 0;
+pub const b = 1;
+pub fn main(args) {}
 `
 	mod := newCompiler(source).Compile()
 	interpret(mod)
+	assert(t, reflect.DeepEqual(mod.Contents.Keys(), []string{"b", "a", "main"}))
 
-	assert(t, len(mod.Symbols) == 3)
+	v, err := mod.Contents.GetField(g.MakeStr("a"))
+	okVal(t, v, err, g.ZERO)
 
-	assert(t, mod.Symbols["a"].RefIndex == 1)
-	assert(t, mod.Symbols["b"].RefIndex == 2)
-	assert(t, mod.Symbols["main"].RefIndex == 0)
+	v, err = mod.Contents.GetField(g.MakeStr("b"))
+	okVal(t, v, err, g.ONE)
 
-	assert(t, !mod.Symbols["a"].IsConst)
-	assert(t, mod.Symbols["b"].IsConst)
-	assert(t, mod.Symbols["main"].IsConst)
-
-	mainIdx := mod.Symbols["main"].RefIndex
-	main := mod.Refs[mainIdx].Val
-	f, ok := main.(g.BytecodeFunc)
+	v, err = mod.Contents.GetField(g.MakeStr("main"))
+	assert(t, err == nil)
+	f, ok := v.(g.BytecodeFunc)
 	assert(t, ok)
 	assert(t, f.Template().Arity == 1)
+
+	err = mod.Contents.SetField(g.MakeStr("a"), g.NEG_ONE)
+	assert(t, err == nil)
+	v, err = mod.Contents.GetField(g.MakeStr("a"))
+	okVal(t, v, err, g.NEG_ONE)
+
+	err = mod.Contents.SetField(g.MakeStr("b"), g.NEG_ONE)
+	failVal(t, nil, err, "ReadonlyField: Field 'b' is readonly")
+
+	err = mod.Contents.SetField(g.MakeStr("main"), g.NEG_ONE)
+	failVal(t, nil, err, "ReadonlyField: Field 'main' is readonly")
 }

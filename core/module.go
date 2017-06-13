@@ -20,21 +20,20 @@ import (
 )
 
 //---------------------------------------------------------------
-// Ref
+// BytecodeModule
 
-type Module struct {
+type BytecodeModule struct {
 	Pool       []Basic
 	Refs       []*Ref
 	StructDefs [][]*StructEntryDef
 	Templates  []*Template
-
-	Symbols map[string]*Symbol
+	Contents   Struct
 }
 
-func (m *Module) String() string {
+func (m *BytecodeModule) String() string {
 	var buf bytes.Buffer
 	buf.WriteString("----------------------------\n")
-	buf.WriteString("Module:\n")
+	buf.WriteString("BytecodeModule:\n")
 
 	buf.WriteString("    Pool:\n")
 	for i, val := range m.Pool {
@@ -86,7 +85,7 @@ func (m *Module) String() string {
 }
 
 //---------------------------------------------------------------
-// A Ref is a reference, i.e. a container for a value
+// A Ref is a container for a value
 
 type Ref struct {
 	Val Value
@@ -98,20 +97,4 @@ func NewRef(val Value) *Ref {
 
 func (r *Ref) String() string {
 	return fmt.Sprintf("Ref(%v)", r.Val)
-}
-
-//---------------------------------------------------------------
-// A Symbol is a Ref that is visible outside the module
-
-type Symbol struct {
-	RefIndex int
-	IsConst  bool
-}
-
-func NewSymbol(refIndex int, isConst bool) *Symbol {
-	return &Symbol{refIndex, isConst}
-}
-
-func (s *Symbol) String() string {
-	return fmt.Sprintf("Symbol(%d,%v)", s.RefIndex, s.IsConst)
 }

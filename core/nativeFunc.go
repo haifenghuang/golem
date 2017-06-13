@@ -30,6 +30,10 @@ type nativeFunc struct {
 	invoke func([]Value) (Value, Error)
 }
 
+func NewNativeFunc(f func([]Value) (Value, Error)) NativeFunc {
+	return &nativeFunc{f}
+}
+
 func (f *nativeFunc) funcMarker() {}
 
 func (f *nativeFunc) TypeOf() Type { return TFUNC }

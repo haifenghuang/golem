@@ -25,7 +25,7 @@ import (
 
 type Compiler interface {
 	ast.Visitor
-	Compile() *g.Module
+	Compile() *g.BytecodeModule
 }
 
 type compiler struct {
@@ -49,7 +49,7 @@ func NewCompiler(anl analyzer.Analyzer) Compiler {
 	return &compiler{g.EmptyHashMap(), nil, nil, nil, funcs, templates, structDefs, 0}
 }
 
-func (c *compiler) Compile() *g.Module {
+func (c *compiler) Compile() *g.BytecodeModule {
 
 	// compile all the funcs
 	for c.idx < len(c.funcs) {
@@ -60,38 +60,75 @@ func (c *compiler) Compile() *g.Module {
 	}
 
 	// done
-	return &g.Module{
-		makePoolSlice(c.pool), nil, c.structDefs, c.templates, c.makeSymbols()}
+	mod := &g.BytecodeModule{makePoolSlice(c.pool), nil, c.structDefs, c.templates, nil}
+	mod.Contents = c.makeModuleContents(mod)
+	return mod
 }
 
-func (c *compiler) makeSymbols() map[string]*g.Symbol {
-	symbols := make(map[string]*g.Symbol)
-	module := c.funcs[0]
-	nodes := module.Body.Nodes
+func (c *compiler) makeModuleContents(mod *g.BytecodeModule) g.Struct {
+
+	entries := []*g.StructEntry{}
+	nodes := c.funcs[0].Body.Nodes
 	for _, n := range nodes {
 		switch t := n.(type) {
 		case *ast.Let:
 			if t.IsPub {
 				for _, d := range t.Decls {
 					vbl := d.Ident.Variable
-					symbols[d.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+					entries = append(entries, c.makeModuleProperty(
+						mod, d.Ident.Symbol.Text, vbl.Index, vbl.IsConst))
 				}
 			}
 		case *ast.Const:
 			if t.IsPub {
 				for _, d := range t.Decls {
 					vbl := d.Ident.Variable
-					symbols[d.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+					entries = append(entries, c.makeModuleProperty(
+						mod, d.Ident.Symbol.Text, vbl.Index, vbl.IsConst))
 				}
 			}
 		case *ast.NamedFn:
 			if t.IsPub {
 				vbl := t.Ident.Variable
-				symbols[t.Ident.Symbol.Text] = g.NewSymbol(vbl.Index, vbl.IsConst)
+				entries = append(entries, c.makeModuleProperty(
+					mod, t.Ident.Symbol.Text, vbl.Index, vbl.IsConst))
 			}
 		}
 	}
-	return symbols
+
+	stc, err := g.NewStruct(entries)
+	g.Assert(err == nil, "invalid module contents")
+	return stc
+}
+
+func (c *compiler) makeModuleProperty(
+	mod *g.BytecodeModule,
+	key string,
+	refIndex int,
+	isConst bool) *g.StructEntry {
+
+	getter := g.NewNativeFunc(
+		func(values []g.Value) (g.Value, g.Error) {
+			if len(values) != 0 {
+				return nil, g.ArityMismatchError("0", len(values))
+			}
+			return mod.Refs[refIndex].Val, nil
+		})
+
+	var setter g.NativeFunc = nil
+	if !isConst {
+		setter = g.NewNativeFunc(
+			func(values []g.Value) (g.Value, g.Error) {
+				if len(values) != 1 {
+					return nil, g.ArityMismatchError("1", len(values))
+				}
+				mod.Refs[refIndex].Val = values[0]
+				return g.NULL, nil
+			})
+	}
+
+	prop := g.NewTuple([]g.Value{getter, setter})
+	return &g.StructEntry{key, isConst, true, prop}
 }
 
 func (c *compiler) compileFunc(fe *ast.FnExpr) *g.Template {
@@ -917,7 +954,7 @@ func (c *compiler) visitStructExpr(stc *ast.StructExpr) {
 	// create def and entries
 	def := []*g.StructEntryDef{}
 	for _, k := range stc.Keys {
-		def = append(def, &g.StructEntryDef{k.Text, false})
+		def = append(def, &g.StructEntryDef{k.Text, false, false})
 	}
 	defIdx := len(c.structDefs)
 	c.structDefs = append(c.structDefs, def)

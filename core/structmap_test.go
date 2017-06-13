@@ -30,7 +30,7 @@ func TestStructMap(t *testing.T) {
 	_, has = sm.get("b")
 	assert(t, !has)
 
-	sm.put(&StructEntry{"a", true, ZERO})
+	sm.put(&StructEntry{"a", true, false, ZERO})
 	assert(t, sm.size == 1)
 	assert(t, len(sm.buckets) == 5)
 	assert(t, reflect.DeepEqual(sm.keys(), []string{"a"}))
@@ -41,7 +41,7 @@ func TestStructMap(t *testing.T) {
 	_, has = sm.get("b")
 	assert(t, !has)
 
-	sm.put(&StructEntry{"b", true, ONE})
+	sm.put(&StructEntry{"b", true, false, ONE})
 	assert(t, sm.size == 2)
 	assert(t, len(sm.buckets) == 5)
 	assert(t, reflect.DeepEqual(sm.keys(), []string{"b", "a"}))
@@ -53,7 +53,7 @@ func TestStructMap(t *testing.T) {
 	assert(t, has)
 	ok(t, e.Value, nil, ONE)
 
-	sm.put(&StructEntry{"c", true, NEG_ONE})
+	sm.put(&StructEntry{"c", true, false, NEG_ONE})
 	assert(t, sm.size == 3)
 	assert(t, len(sm.buckets) == 11)
 	assert(t, reflect.DeepEqual(sm.keys(), []string{"b", "a", "c"}))
@@ -62,7 +62,7 @@ func TestStructMap(t *testing.T) {
 	assert(t, has)
 	ok(t, e.Value, nil, NEG_ONE)
 
-	sm.put(&StructEntry{"c", true, ZERO})
+	sm.put(&StructEntry{"c", true, false, ZERO})
 
 	e, has = sm.get("c")
 	assert(t, has)

@@ -124,11 +124,11 @@ func makeError(kind ErrorKind, msg string) Error {
 	var err Error
 	if msg == "" {
 		stc, err = NewStruct([]*StructEntry{
-			{"kind", true, MakeStr(kind.String())}})
+			{"kind", true, false, MakeStr(kind.String())}})
 	} else {
 		stc, err = NewStruct([]*StructEntry{
-			{"kind", true, MakeStr(kind.String())},
-			{"msg", true, MakeStr(msg)}})
+			{"kind", true, false, MakeStr(kind.String())},
+			{"msg", true, false, MakeStr(msg)}})
 	}
 	if err != nil {
 		panic("invalid struct")

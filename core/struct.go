@@ -19,14 +19,16 @@ import (
 )
 
 type StructEntry struct {
-	Key     string
-	IsConst bool
-	Value   Value
+	Key        string
+	IsConst    bool
+	IsProperty bool
+	Value      Value
 }
 
 type StructEntryDef struct {
-	Key     string
-	IsConst bool
+	Key        string
+	IsConst    bool
+	IsProperty bool
 }
 
 //--------------------------------------------------------------
@@ -51,7 +53,7 @@ func BlankStruct(def []*StructEntryDef) (Struct, Error) {
 		if _, has := smap.get(d.Key); has {
 			return nil, DuplicateFieldError(d.Key)
 		}
-		smap.put(&StructEntry{d.Key, d.IsConst, NULL})
+		smap.put(&StructEntry{d.Key, d.IsConst, d.IsProperty, NULL})
 	}
 
 	return &_struct{smap}, nil
@@ -179,9 +181,41 @@ func (stc *_struct) Set(index Value, val Value) Error {
 func (stc *_struct) GetField(key Str) (Value, Error) {
 	e, has := stc.smap.get(key.String())
 	if has {
-		return e.Value, nil
+		if e.IsProperty {
+			// The value for a property is always a tuple
+			// containing two functions: the getter, and the setter.
+			// TODO Add support for BytecodeFunc properties.
+			fn := ((e.Value.(tuple))[0]).(NativeFunc)
+			return fn.Invoke(nil)
+		} else {
+			return e.Value, nil
+		}
 	} else {
 		return nil, NoSuchFieldError(key.String())
+	}
+}
+
+func (stc *_struct) SetField(key Str, val Value) Error {
+	e, has := stc.smap.get(key.String())
+	if has {
+		if e.IsConst {
+			return ReadonlyFieldError(key.String())
+		} else {
+
+			if e.IsProperty {
+				// The value for a property is always a tuple
+				// containing two functions: the getter, and the setter.
+				// TODO Add support for BytecodeFunc properties.
+				fn := ((e.Value.(tuple))[1]).(NativeFunc)
+				_, err := fn.Invoke([]Value{val})
+				return err
+			} else {
+				e.Value = val
+				return nil
+			}
+		}
+	} else {
+		return NoSuchFieldError(key.String())
 	}
 }
 
@@ -204,20 +238,6 @@ func (stc *_struct) InitField(key Str, val Value) Error {
 		// We ignore IsConst here, since we are initializing the value
 		e.Value = val
 		return nil
-	} else {
-		return NoSuchFieldError(key.String())
-	}
-}
-
-func (stc *_struct) SetField(key Str, val Value) Error {
-	e, has := stc.smap.get(key.String())
-	if has {
-		if e.IsConst {
-			return ReadonlyFieldError(key.String())
-		} else {
-			e.Value = val
-			return nil
-		}
 	} else {
 		return NoSuchFieldError(key.String())
 	}
